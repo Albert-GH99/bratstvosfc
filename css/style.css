@@ -1,0 +1,110 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body{
+  background:#0b0f14;
+  color:#ffffff;
+}
+
+.navbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 8%;
+  background:#0f141b;
+  border-bottom:1px solid #1e2732;
+}
+
+.logo{
+  font-weight:700;
+  letter-spacing:2px;
+}
+
+nav a{
+  margin-left:25px;
+  text-decoration:none;
+  color:#aaa;
+  transition:0.3s;
+}
+
+nav a:hover{
+  color:#fff;
+}
+
+.nav-btn{
+  padding:8px 18px;
+  border:1px solid #2a8cff;
+  border-radius:20px;
+}
+
+.hero{
+  text-align:center;
+  padding:120px 8%;
+}
+
+.hero h1{
+  font-size:48px;
+  margin-bottom:20px;
+  background:linear-gradient(90deg,#2a8cff,#00ffd5);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.hero p{
+  max-width:600px;
+  margin:auto;
+  color:#aaa;
+  margin-bottom:40px;
+  line-height:1.6;
+}
+
+.hero-buttons{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+}
+
+.btn-primary{
+  background:#2a8cff;
+  padding:12px 28px;
+  border-radius:30px;
+  text-decoration:none;
+  color:#fff;
+  transition:0.3s;
+}
+
+.btn-primary:hover{
+  transform:translateY(-3px);
+  box-shadow:0 0 20px #2a8cff66;
+}
+
+.btn-secondary{
+  border:1px solid #2a8cff;
+  padding:12px 28px;
+  border-radius:30px;
+  text-decoration:none;
+  color:#2a8cff;
+  transition:0.3s;
+}
+
+.btn-secondary:hover{
+  background:#2a8cff;
+  color:#fff;
+}
+
+.credibility{
+  text-align:center;
+  padding:60px 8%;
+  border-top:1px solid #1e2732;
+  border-bottom:1px solid #1e2732;
+}
+
+.footer{
+  text-align:center;
+  padding:30px;
+  color:#777;
+}
