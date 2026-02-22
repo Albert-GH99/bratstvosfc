@@ -13,18 +13,27 @@ body {
 /* NAVBAR */
 
 .navbar {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   padding: 20px 8%;
   background: #0B1F19;
-  border-bottom: 1px solid rgba(0, 196, 140, 0.15);
+  border-bottom: 1px solid rgba(0,196,140,0.15);
 }
 
 .logo {
+  text-align: center;
   font-weight: 700;
   letter-spacing: 2px;
   color: #00C48C;
+}
+
+.nav-left {
+  justify-self: start;
+}
+
+.nav-right {
+  justify-self: end;
 }
 
 nav a {
@@ -52,9 +61,7 @@ nav a:hover {
 }
 
 .hero h1 {
-  font-size: 48px;
-  color: #00C48C;
-  margin-bottom: 20px;
+  color: #ffffff;
 }
 
 .hero p {
@@ -120,3 +127,21 @@ nav a:hover {
   padding: 30px;
   color: #5F8C7D;
 }
+
+<div class="navbar">
+  <div class="nav-left">
+    <div class="lang-switch">
+      <span onclick="setLanguage('en')">EN</span> |
+      <span onclick="setLanguage('bm')">BM</span>
+    </div>
+  </div>
+
+  <div class="logo">BRATSTVO</div>
+
+  <div class="nav-right">
+    <a href="#">Team</a>
+    <a href="#">Templates</a>
+    <a href="#">Pricing</a>
+    <a class="nav-btn" href="#">Shop</a>
+  </div>
+</div>
