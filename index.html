@@ -1,52 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Bratstvo Digital</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="css/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bratstvo Digital</title>
+<link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
 <header class="navbar">
-
   <div class="logo">BRATSTVO</div>
 
-  <div class="nav-right">
+  <nav class="nav-links">
     <a href="#">Team</a>
     <a href="#">Templates</a>
-    <a href="#">Pricing</a>
+    <a href="pricing.html">Pricing</a>
     <a href="#">Shop</a>
+  </nav>
 
-    <div class="lang-switch">
-      <span onclick="setLanguage('en')" class="active">EN</span>
-      <span>|</span>
-      <span onclick="setLanguage('my')">MY</span>
-    </div>
+  <div class="lang-switch">
+    <span id="en" class="active">EN</span> |
+    <span id="my">MY</span>
   </div>
-
 </header>
 
 <section class="hero">
-  <h1 id="hero-title">
-Stop Managing Orders Manually.
-</h1>
-
-<p id="hero-desc">
-We build modern digital systems that help small businesses automate orders.
-</p>
+  <h1 id="hero-title">Stop Managing Orders Manually.</h1>
+  <p id="hero-desc">
+    We build modern digital systems that help small businesses automate orders.
+  </p>
 
   <div class="hero-buttons">
-    <a href="templates.html" class="btn-primary">View Templates</a>
+    <a href="#" class="btn-primary">View Templates</a>
     <a href="pricing.html" class="btn-secondary">See Pricing</a>
   </div>
 </section>
 
-<section class="credibility">
-  <div>
-    <h3>Built For</h3>
-     <div class="built-items">
+<section class="built-for">
+  <h3>BUILT FOR</h3>
+
+  <div class="built-items">
     <span>Home Bakers</span>
     <span>Qurban Agency</span>
     <span>Printing</span>
@@ -60,6 +54,5 @@ We build modern digital systems that help small businesses automate orders.
 </footer>
 
 <script src="js/main.js"></script>
-
 </body>
 </html>

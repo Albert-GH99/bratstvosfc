@@ -1,39 +1,23 @@
-function setLanguage(lang) {
+const enBtn = document.getElementById("en");
+const myBtn = document.getElementById("my");
 
-  const enText = {
-    heroTitle: "Stop Managing Orders Manually.",
-    heroDesc: "We build modern digital systems that help small businesses automate orders.",
-    btn1: "View Templates",
-    btn2: "See Pricing"
-  };
+const heroTitle = document.getElementById("hero-title");
+const heroDesc = document.getElementById("hero-desc");
 
-  const myText = {
-    heroTitle: "Berhenti Urus Order Secara Manual.",
-    heroDesc: "Kami bina sistem digital moden untuk bantu bisnes kecil automasikan tempahan.",
-    btn1: "Lihat Template",
-    btn2: "Lihat Harga"
-  };
+enBtn.addEventListener("click", () => {
+  enBtn.classList.add("active");
+  myBtn.classList.remove("active");
 
-  const content = lang === "my" ? myText : enText;
+  heroTitle.textContent = "Stop Managing Orders Manually.";
+  heroDesc.textContent =
+    "We build modern digital systems that help small businesses automate orders.";
+});
 
-  const title = document.querySelector(".hero h1");
-  const desc = document.querySelector(".hero p");
-  const btn1 = document.querySelector(".btn-primary");
-  const btn2 = document.querySelector(".btn-secondary");
+myBtn.addEventListener("click", () => {
+  myBtn.classList.add("active");
+  enBtn.classList.remove("active");
 
-  title.classList.remove("show");
-  desc.classList.remove("show");
-
-  setTimeout(() => {
-    title.textContent = content.heroTitle;
-    desc.textContent = content.heroDesc;
-    btn1.textContent = content.btn1;
-    btn2.textContent = content.btn2;
-
-    title.classList.add("show");
-    desc.classList.add("show");
-  }, 200);
-
-  document.querySelectorAll(".lang-switch span").forEach(el => el.classList.remove("active"));
-  document.querySelector(`[onclick="setLanguage('${lang}')"]`).classList.add("active");
-}
+  heroTitle.textContent = "Berhenti Urus Tempahan Secara Manual.";
+  heroDesc.textContent =
+    "Kami bina sistem digital moden untuk bantu bisnes kecil automasikan tempahan.";
+});
