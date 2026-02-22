@@ -6,7 +6,10 @@
 }
 
 body {
-  background: linear-gradient(180deg, #0B0F14 0%, #0F1720 100%);
+  background: radial-gradient(circle at 50% 20%, 
+    rgba(30,215,96,0.15), 
+    transparent 40%),
+    linear-gradient(180deg, #05090F 0%, #0A1320 100%);
   color: #ffffff;
 }
 
@@ -93,8 +96,12 @@ a:hover {
 }
 
 .hero h1 {
-  font-size: 48px;
-  margin-bottom: 20px;
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.2;
+  background: linear-gradient(90deg, #ffffff, #a6ffcb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .hero p {
@@ -137,6 +144,34 @@ a:hover {
 .btn-secondary:hover {
   background: #1ED760;
   color: #0B0F14;
+}
+
+.built-for {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.built-for h3 {
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 25px;
+}
+
+.built-items {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 25px;
+}
+
+.built-items span {
+  padding: 8px 18px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 30px;
+  font-size: 14px;
+  opacity: 0.8;
 }
 
 .footer {
