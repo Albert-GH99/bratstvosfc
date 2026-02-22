@@ -1,0 +1,220 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',sans-serif;
+}
+
+body{
+  background:linear-gradient(180deg,#05090F,#0A1320);
+  color:white;
+}
+
+/* NAVBAR */
+
+.navbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:20px 8%;
+  background:#0B0F14;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+}
+
+.logo{
+  font-weight:700;
+  letter-spacing:3px;
+}
+
+.nav-right{
+  display:flex;
+  align-items:center;
+  gap:25px;
+}
+
+nav a{
+  text-decoration:none;
+  color:#aaa;
+  transition:0.3s;
+}
+
+nav a:hover{
+  color:#1ED760;
+}
+
+.lang-switch{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  cursor:pointer;
+}
+
+.lang-switch span{
+  opacity:0.5;
+}
+
+.lang-switch span.active{
+  opacity:1;
+  color:#1ED760;
+  font-weight:600;
+}
+
+/* HERO */
+
+.hero{
+  text-align:center;
+  padding:140px 20px;
+}
+
+.hero h1{
+  font-size:48px;
+  margin-bottom:20px;
+  background:linear-gradient(90deg,#ffffff,#1ED760);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.hero p{
+  max-width:600px;
+  margin:auto;
+  color:#aaa;
+  margin-bottom:40px;
+}
+
+.hero-buttons{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+}
+
+.btn-primary{
+  background:#1ED760;
+  padding:14px 32px;
+  border-radius:30px;
+  color:black;
+  font-weight:600;
+  text-decoration:none;
+  transition:0.3s;
+}
+
+.btn-primary:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 30px rgba(30,215,96,0.3);
+}
+
+.btn-secondary{
+  border:1px solid #1ED760;
+  padding:14px 32px;
+  border-radius:30px;
+  text-decoration:none;
+  color:#1ED760;
+}
+
+.built-for{
+  text-align:center;
+  padding:80px 20px;
+}
+
+.built-items{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:20px;
+}
+
+.built-items span{
+  border:1px solid rgba(255,255,255,0.1);
+  padding:8px 18px;
+  border-radius:20px;
+}
+
+/* PRICING */
+
+.pricing-section{
+  text-align:center;
+  padding:120px 20px;
+}
+
+.pricing-grid{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:30px;
+  margin-top:50px;
+}
+
+.card{
+  background:#0F1720;
+  padding:40px;
+  border-radius:16px;
+  width:280px;
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-8px);
+  box-shadow:0 20px 40px rgba(0,0,0,0.4);
+}
+
+.card.highlight{
+  border:2px solid #1ED760;
+}
+
+.price{
+  font-size:28px;
+  margin:20px 0;
+  color:#1ED760;
+}
+
+.card ul{
+  list-style:none;
+  margin-bottom:20px;
+}
+
+.card ul li{
+  margin:10px 0;
+  color:#bbb;
+}
+
+.card button{
+  background:#1ED760;
+  border:none;
+  padding:12px 20px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+/* FOOTER */
+
+.footer{
+  text-align:center;
+  padding:40px;
+  margin-top:80px;
+  color:#777;
+}
+
+/* MOBILE */
+
+@media(max-width:768px){
+
+.navbar{
+  flex-direction:column;
+  gap:15px;
+}
+
+.nav-right{
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.hero h1{
+  font-size:34px;
+}
+
+.pricing-grid{
+  flex-direction:column;
+  align-items:center;
+}
+
+}
