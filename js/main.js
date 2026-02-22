@@ -7,14 +7,14 @@ function setLanguage(lang) {
     btn2: "See Pricing"
   };
 
-  const bmText = {
+  const myText = {
     heroTitle: "Berhenti Urus Order Secara Manual.",
     heroDesc: "Kami bina sistem digital moden untuk bantu bisnes kecil automasikan tempahan.",
     btn1: "Lihat Template",
     btn2: "Lihat Harga"
   };
 
-  const content = lang === "bm" ? bmText : enText;
+  const content = lang === "my" ? myText : enText;
 
   const title = document.querySelector(".hero h1");
   const desc = document.querySelector(".hero p");
