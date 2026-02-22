@@ -11,18 +11,7 @@ body {
     transparent 40%),
     linear-gradient(180deg, #05090F 0%, #0A1320 100%);
   color: #ffffff;
-}
 
-.lang-switch span {
-  cursor: pointer;
-  user-select: none;
-}
-
-.lang-switch span.active {
-  opacity: 1;
-  color: #1ED760;
-  font-weight: 600;
-}
 
 /* ===== NAVBAR ===== */
 
@@ -54,6 +43,7 @@ body {
 
 .lang-switch span {
   cursor: pointer;
+  user-select: none;
   opacity: 0.6;
 }
 
@@ -91,8 +81,9 @@ a:hover {
 /* ===== HERO ===== */
 
 .hero {
-  text-align: center;
-  padding: 120px 8%;
+  padding: 160px 20px 120px;
+  animation: fadeIn 1s ease forwards;
+  opacity: 0;
 }
 
 .hero h1 {
@@ -100,7 +91,6 @@ a:hover {
   font-weight: 700;
   line-height: 1.2;
   background: linear-gradient(90deg, #ffffff, #a6ffcb);
-  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -119,17 +109,18 @@ a:hover {
 }
 
 .btn-primary {
-  background: #1ED760;
-  color: #0B0F14;
-  padding: 14px 32px;
-  border-radius: 30px;
-  text-decoration: none;
+  background: linear-gradient(90deg, #1ED760, #00C853);
+  color: #000;
+  padding: 14px 34px;
+  border-radius: 50px;
   font-weight: 600;
+  box-shadow: 0 10px 30px rgba(30,215,96,0.25);
   transition: 0.3s;
 }
 
 .btn-primary:hover {
-  background: #17b653;
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(30,215,96,0.4);
 }
 
 .btn-secondary {
@@ -155,7 +146,7 @@ a:hover {
   font-size: 18px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  opacity: 0.6;
+  opacity: 0.5;
   margin-bottom: 25px;
 }
 
@@ -183,6 +174,43 @@ a:hover {
   font-size: 14px;
 }
 
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  padding: 100px 0;
+}
+
+.card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  border-color: #1ED760;
+}
+
+.card.featured {
+  border: 1px solid #1ED760;
+  box-shadow: 0 20px 60px rgba(30,215,96,0.2);
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  padding: 100px 0;
+}
+
 /* ===== MOBILE ===== */
 
 @media (max-width: 768px) {
@@ -202,7 +230,11 @@ a:hover {
   }
 
   .hero h1 {
-    font-size: 32px;
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  background: linear-gradient(90deg, #ffffff, #a6ffcb);
+  -webkit-text-fill-color: transparent;
   }
 
   .hero-buttons {
@@ -219,4 +251,4 @@ a:hover {
 .fade.show {
   opacity: 1;
 }
-
+}
