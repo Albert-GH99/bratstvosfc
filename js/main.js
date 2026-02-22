@@ -1,40 +1,39 @@
-const translations = {
-  en: {
-    heroTitle: "Stop Managing Orders Manually.",
-    heroDesc: "We build modern digital systems that help small businesses automate orders.",
-    navHome: "Home",
-    navTemplates: "Templates",
-    navPricing: "Pricing"
-  },
-  bm: {
-    heroTitle: "Berhenti Urus Order Secara Manual.",
-    heroDesc: "Kami bina sistem digital moden untuk bantu bisnes kecil autokan tempahan.",
-    navHome: "Utama",
-    navTemplates: "Template",
-    navPricing: "Harga"
-  }
-};
-
 function setLanguage(lang) {
+
   const enText = {
     heroTitle: "Stop Managing Orders Manually.",
-    heroDesc: "We build modern digital systems that help small businesses automate orders."
+    heroDesc: "We build modern digital systems that help small businesses automate orders.",
+    btn1: "View Templates",
+    btn2: "See Pricing"
   };
 
   const bmText = {
     heroTitle: "Berhenti Urus Order Secara Manual.",
-    heroDesc: "Kami bina sistem digital moden untuk bantu bisnes kecil automasikan tempahan."
+    heroDesc: "Kami bina sistem digital moden untuk bantu bisnes kecil automasikan tempahan.",
+    btn1: "Lihat Template",
+    btn2: "Lihat Harga"
   };
 
   const content = lang === "bm" ? bmText : enText;
 
-  document.querySelector(".hero h1").textContent = content.heroTitle;
-  document.querySelector(".hero p").textContent = content.heroDesc;
-}
+  const title = document.querySelector(".hero h1");
+  const desc = document.querySelector(".hero p");
+  const btn1 = document.querySelector(".btn-primary");
+  const btn2 = document.querySelector(".btn-secondary");
 
-function initLanguage() {
-  const savedLang = localStorage.getItem("language") || "en";
-  setLanguage(savedLang);
-}
+  title.classList.remove("show");
+  desc.classList.remove("show");
 
-document.addEventListener("DOMContentLoaded", initLanguage);
+  setTimeout(() => {
+    title.textContent = content.heroTitle;
+    desc.textContent = content.heroDesc;
+    btn1.textContent = content.btn1;
+    btn2.textContent = content.btn2;
+
+    title.classList.add("show");
+    desc.classList.add("show");
+  }, 200);
+
+  document.querySelectorAll(".lang-switch span").forEach(el => el.classList.remove("active"));
+  document.querySelector(`[onclick="setLanguage('${lang}')"]`).classList.add("active");
+}
