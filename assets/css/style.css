@@ -2,12 +2,12 @@
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:'Segoe UI',sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 body{
-  background:linear-gradient(180deg,#05090F,#0A1320);
-  color:white;
+  background:#0B0F14;
+  color:#ffffff;
 }
 
 /* NAVBAR */
@@ -23,62 +23,60 @@ body{
 
 .logo{
   font-weight:700;
-  letter-spacing:3px;
+  letter-spacing:2px;
+  text-decoration:none;
+  color:#fff;
 }
 
-.nav-right{
+.nav-links{
   display:flex;
-  align-items:center;
-  gap:25px;
+  gap:30px;
 }
 
-nav a{
+.nav-links a{
   text-decoration:none;
   color:#aaa;
+  font-size:14px;
   transition:0.3s;
 }
 
-nav a:hover{
+.nav-links a:hover{
   color:#1ED760;
 }
 
 .lang-switch{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  cursor:pointer;
+  font-size:14px;
 }
 
 .lang-switch span{
+  cursor:pointer;
   opacity:0.5;
 }
 
 .lang-switch span.active{
   opacity:1;
   color:#1ED760;
-  font-weight:600;
 }
 
 /* HERO */
 
 .hero{
   text-align:center;
-  padding:140px 20px;
+  padding:160px 20px;
+  background: radial-gradient(circle at 50% 20%, rgba(30,215,96,0.12), transparent 60%);
 }
 
 .hero h1{
-  font-size:48px;
-  margin-bottom:20px;
-  background:linear-gradient(90deg,#ffffff,#1ED760);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  font-size:56px;
+  max-width:900px;
+  margin:0 auto 25px;
+  line-height:1.1;
 }
 
 .hero p{
   max-width:600px;
-  margin:auto;
+  margin:0 auto 40px;
   color:#aaa;
-  margin-bottom:40px;
 }
 
 .hero-buttons{
@@ -89,132 +87,126 @@ nav a:hover{
 
 .btn-primary{
   background:#1ED760;
+  color:#0B0F14;
   padding:14px 32px;
-  border-radius:30px;
-  color:black;
-  font-weight:600;
+  border-radius:40px;
   text-decoration:none;
+  font-weight:600;
   transition:0.3s;
 }
 
 .btn-primary:hover{
   transform:translateY(-3px);
-  box-shadow:0 10px 30px rgba(30,215,96,0.3);
+  box-shadow:0 15px 40px rgba(30,215,96,0.3);
 }
 
 .btn-secondary{
   border:1px solid #1ED760;
   padding:14px 32px;
-  border-radius:30px;
+  border-radius:40px;
   text-decoration:none;
   color:#1ED760;
 }
 
 .built-for{
   text-align:center;
-  padding:80px 20px;
+  padding:100px 20px;
+}
+
+.built-for h3{
+  font-size:14px;
+  letter-spacing:3px;
+  opacity:0.4;
+  margin-bottom:30px;
 }
 
 .built-items{
   display:flex;
   justify-content:center;
-  flex-wrap:wrap;
   gap:20px;
+  flex-wrap:wrap;
 }
 
 .built-items span{
-  border:1px solid rgba(255,255,255,0.1);
   padding:8px 18px;
-  border-radius:20px;
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:30px;
+  font-size:13px;
 }
-
-/* PRICING */
-
-.pricing-section{
-  text-align:center;
-  padding:120px 20px;
-}
-
-.pricing-grid{
-  display:flex;
-  justify-content:center;
-  flex-wrap:wrap;
-  gap:30px;
-  margin-top:50px;
-}
-
-.card{
-  background:#0F1720;
-  padding:40px;
-  border-radius:16px;
-  width:280px;
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-8px);
-  box-shadow:0 20px 40px rgba(0,0,0,0.4);
-}
-
-.card.highlight{
-  border:2px solid #1ED760;
-}
-
-.price{
-  font-size:28px;
-  margin:20px 0;
-  color:#1ED760;
-}
-
-.card ul{
-  list-style:none;
-  margin-bottom:20px;
-}
-
-.card ul li{
-  margin:10px 0;
-  color:#bbb;
-}
-
-.card button{
-  background:#1ED760;
-  border:none;
-  padding:12px 20px;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:600;
-}
-
-/* FOOTER */
 
 .footer{
-  text-align:center;
-  padding:40px;
-  margin-top:80px;
-  color:#777;
+  border-top:1px solid rgba(255,255,255,0.05);
+  padding:40px 8%;
 }
 
-/* MOBILE */
-
-@media(max-width:768px){
-
-.navbar{
-  flex-direction:column;
-  gap:15px;
-}
-
-.nav-right{
-  flex-wrap:wrap;
+.footer-inner{
+  display:flex;
   justify-content:center;
-}
-
-.hero h1{
-  font-size:34px;
-}
-
-.pricing-grid{
-  flex-direction:column;
   align-items:center;
+  gap:30px;
+  color:#666;
+  font-size:13px;
 }
+
+/* =========================
+   MOBILE REFINEMENT
+========================= */
+
+@media (max-width: 768px){
+
+  .navbar{
+    flex-direction:column;
+    gap:15px;
+    padding:20px;
+  }
+
+  .nav-links{
+    gap:20px;
+  }
+
+  .hero{
+    padding:100px 20px 80px;
+  }
+
+  .hero h1{
+    font-size:32px;
+    line-height:1.2;
+  }
+
+  .hero p{
+    font-size:14px;
+    max-width:100%;
+  }
+
+  .hero-buttons{
+    flex-direction:column;
+    gap:15px;
+  }
+
+  .btn-primary,
+  .btn-secondary{
+    width:100%;
+    text-align:center;
+    font-size:14px;
+  }
+
+  .built-for{
+    padding:60px 20px;
+  }
+
+  .built-items{
+    gap:12px;
+  }
+
+  .built-items span{
+    font-size:12px;
+    padding:6px 14px;
+  }
+
+  .footer-inner{
+    flex-direction:column;
+    gap:10px;
+    text-align:center;
+  }
 
 }
