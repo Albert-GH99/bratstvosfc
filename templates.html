@@ -3,86 +3,128 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Templates | Bratstvo Digital</title>
+<title>System Architecture | Bratstvo Digital</title>
 <link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="assets/css/pricing.css">
+
 </head>
 
 <body>
 
 <header class="navbar">
-  <a href="index.html" class="logo">BRATSTVO DIGITAL</a>
+  <div class="container nav-flex">
+    <a href="index.html" class="logo">BRATSTVO DIGITAL</a>
 
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="templates.html">Templates</a>
-    <a href="pricing.html">Pricing</a>
-  </nav>
+    <div class="nav-right">
+      <nav class="nav-links">
+        <a href="templates.html" data-key="nav_templates">Architecture</a>
+        <a href="pricing.html" data-key="nav_pricing">Engagement</a>
+      </nav>
+
+      <div class="lang-switch">
+        <span id="en-btn" onclick="setLang('en')" class="active">EN</span>
+        <span>|</span>
+        <span id="my-btn" onclick="setLang('my')">MY</span>
+      </div>
+
+      <a href="onboarding.html" class="nav-cta" data-key="nav_cta">
+        Request Consultation
+      </a>
+
+      <div class="hamburger" onclick="toggleMenu()">☰</div>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="templates.html">Architecture</a>
+    <a href="pricing.html">Engagement</a>
+    <a href="onboarding.html">Request Consultation</a>
+  </div>
 </header>
 
-<section class="pricing-hero">
-  <h1>Structured System Templates</h1>
-  <p>Pre-built systems designed for growing businesses.</p>
+<section class="hero">
+  <div class="container hero-inner">
+    <h1 data-key="templates_title">
+      Structured System Architecture
+    </h1>
+
+    <p data-key="templates_desc">
+      Pre-built infrastructure models designed for growing businesses seeking operational clarity and automation.
+    </p>
+  </div>
 </section>
 
-<section class="pricing-grid">
+<section class="features">
+  <div class="container grid-3">
 
-  <!-- BOOKING SYSTEM -->
-  <div class="card">
-    <h3>Booking System</h3>
-    <ul>
-      <li>Date & Slot Selection</li>
-      <li>Automated Summary</li>
-      <li>WhatsApp Confirmation</li>
-      <li>Google Sheet Collection</li>
-    </ul>
-    <a href="https://wa.me/601135318911?text=Hi%20I'm%20interested%20in%20Booking%20System"
-       class="btn-primary"
-       style="display:inline-block;margin-top:20px;">
-       Get This System
-    </a>
+    <!-- BOOKING -->
+    <div class="card">
+      <h3 data-key="booking_title">Booking Infrastructure</h3>
+
+      <ul class="feature-list">
+        <li data-key="booking_f1">Smart date & slot selection</li>
+        <li data-key="booking_f2">Automated WhatsApp confirmation</li>
+        <li data-key="booking_f3">Structured booking summary</li>
+        <li data-key="booking_f4">Google Sheet integration</li>
+      </ul>
+
+      <a href="demo-booking.html" class="btn-secondary" data-key="view_demo">
+        View Live Demo
+      </a>
+
+      <a href="onboarding.html" class="btn-primary" data-key="implement_btn">
+        Initiate Implementation
+      </a>
+    </div>
+
+    <!-- PREORDER -->
+    <div class="card">
+      <h3 data-key="preorder_title">Preorder System</h3>
+
+      <ul class="feature-list">
+        <li data-key="preorder_f1">Variant selection (Size / Color)</li>
+        <li data-key="preorder_f2">Auto order calculation</li>
+        <li data-key="preorder_f3">WhatsApp checkout integration</li>
+        <li data-key="preorder_f4">Tracking sheet automation</li>
+      </ul>
+
+      <a href="demo-preorder.html" class="btn-secondary" data-key="view_demo">
+        View Live Demo
+      </a>
+
+      <a href="onboarding.html" class="btn-primary" data-key="implement_btn">
+        Initiate Implementation
+      </a>
+    </div>
+
+    <!-- SHOWCASE -->
+    <div class="card">
+      <h3 data-key="showcase_title">Product Showcase</h3>
+
+      <ul class="feature-list">
+        <li data-key="showcase_f1">Premium catalog layout</li>
+        <li data-key="showcase_f2">Direct WhatsApp CTA buttons</li>
+        <li data-key="showcase_f3">Mobile-first structure</li>
+        <li data-key="showcase_f4">Conversion-optimised design</li>
+      </ul>
+
+      <a href="demo-showcase.html" class="btn-secondary" data-key="view_demo">
+        View Live Demo
+      </a>
+
+      <a href="onboarding.html" class="btn-primary" data-key="implement_btn">
+        Initiate Implementation
+      </a>
+    </div>
+
   </div>
-
-  <!-- PREORDER SYSTEM -->
-  <div class="card highlight">
-    <h3>Preorder System</h3>
-    <ul>
-      <li>Variant Selection (Size / Color)</li>
-      <li>Auto Order Summary</li>
-      <li>WhatsApp Checkout</li>
-      <li>Order Tracking Sheet</li>
-    </ul>
-    <a href="https://wa.me/601135318911?text=Hi%20I'm%20interested%20in%20Preorder%20System"
-       class="btn-primary"
-       style="display:inline-block;margin-top:20px;">
-       Get This System
-    </a>
-  </div>
-
-  <!-- PRODUCT SHOWCASE -->
-  <div class="card">
-    <h3>Product Showcase</h3>
-    <ul>
-      <li>Premium Layout</li>
-      <li>Clean Catalog Display</li>
-      <li>WhatsApp Button Integration</li>
-      <li>Mobile Optimised</li>
-    </ul>
-    <a href="https://wa.me/601135318911?text=Hi%20I'm%20interested%20in%20Product%20Showcase%20System"
-       class="btn-primary"
-       style="display:inline-block;margin-top:20px;">
-       Get This System
-    </a>
-  </div>
-
 </section>
 
 <footer class="footer">
-  <div class="footer-inner">
-    <div>© 2026 Bratstvo Digital</div>
-    <div>Structured systems for serious growth.</div>
+  <div class="container">
+    © 2026 Bratstvo Digital — Structured Digital Infrastructure Studio
   </div>
 </footer>
 
+<script src="assets/js/main.js"></script>
 </body>
 </html>
