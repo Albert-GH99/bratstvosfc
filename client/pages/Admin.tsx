@@ -86,19 +86,19 @@ const translations = {
   },
   my: {
     title: "Tetapan Admin",
-    subtitle: "Urus platform Bratstvo Digital kamu",
+    subtitle: "Selenggara platform Bratstvo Digital kamu",
     login: {
       title: "Admin Access",
-      subtitle: "Masuk password admin untuk lanjut",
+      subtitle: "Masukkan password admin untuk teruskan",
       password: "Password Admin",
       submit: "Access Dashboard",
       error: "Password salah",
     },
     dashboard: {
-      welcome: "Welcome balik, Admin!",
+      welcome: "Selamat kembali, Admin!",
       sections: {
-        content: "Urus Content",
-        pricing: "Harga & Packages",
+        content: "Edit",
+        pricing: "Harga & Pakej",
         products: "Shop Products",
         settings: "Tetapan Site",
       },
@@ -109,12 +109,12 @@ const translations = {
           status: "active",
         },
         {
-          title: "Urus Harga",
+          title: "Edit Harga",
           desc: "Update harga package dan description",
           status: "active",
         },
         {
-          title: "Urus Shop",
+          title: "Edit Kedai",
           desc: "Add, edit, atau remove merchandise",
           status: "active",
         },
@@ -125,7 +125,7 @@ const translations = {
         },
         {
           title: "Configure System",
-          desc: "Urus automation system features",
+          desc: "Edit automation system features",
           status: "active",
         },
         {
@@ -136,10 +136,10 @@ const translations = {
       ],
     },
     buttons: {
-      manage: "Urus",
+      manage: "Edit",
       edit: "Edit Content",
-      managePricing: "Urus Pricing",
-      manageShop: "Urus Shop",
+      managePricing: "Edit Pricing",
+      manageShop: "Edit Shop",
       settings: "Tetapan Site",
       back: "Balik ke Dashboard",
       close: "Tutup",
@@ -149,7 +149,7 @@ const translations = {
     },
     modals: {
       contentTitle: "Edit Homepage Content",
-      pricingTitle: "Urus Pricing & Packages",
+      pricingTitle: "Edit Pricing & Packages",
       shopTitle: "Shop Products Management",
       settingsTitle: "Tetapan Site",
       saved: "Changes saved successfully!",
@@ -692,7 +692,7 @@ export default function Admin() {
               <p className="text-foreground/60 mb-6">
                 {language === "en"
                   ? "Manage all pricing packages, features, monthly care plans, and pricing descriptions. Update prices without touching code."
-                  : "Urus semua pricing package, features, monthly care plan, dan pricing description. Update harga tanpa touch code."}
+                  : "Edit semua pricing package, features, monthly care plan, dan pricing description. Update harga tanpa touch code."}
               </p>
               <motion.button
                 onClick={() => setActiveSection("pricing")}
@@ -719,7 +719,7 @@ export default function Admin() {
               <p className="text-foreground/60 mb-6">
                 {language === "en"
                   ? "Add, edit, or remove merchandise products from your shop. Manage inventory, pricing, images, and product descriptions."
-                  : "Add, edit, atau remove merchandise dari shop kamu. Manage inventory, pricing, image, dan product description."}
+                  : "Add, edit, atau remove merchandise dari kedai kamu. Manage inventory, pricing, image, dan product description."}
               </p>
               <motion.button
                 onClick={() => setActiveSection("shop")}
@@ -780,7 +780,7 @@ export default function Admin() {
       {/* Modals */}
       {activeSection === "content" && <ContentModal />}
       {activeSection === "pricing" && <PricingModal />}
-      {activeSection === "shop" && <ShopModal />}
+      {activeSection === "kedai" && <ShopModal />}
       {activeSection === "settings" && <SettingsModal />}
     </div>
   );
