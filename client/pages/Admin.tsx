@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Lock, LogOut, Home, Settings, AlertCircle, CheckCircle, X, Plus } from "lucide-react";
 import { motion } from "framer-motion";
+import ShopManagement from "@/components/admin/ShopManagement";
 
 type Language = "en" | "my";
 type AdminSection = "dashboard" | "content" | "pricing" | "shop" | "settings";
@@ -448,76 +449,10 @@ export default function Admin() {
   );
 
   const ShopModal = () => (
-    <motion.div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      onClick={() => setActiveSection("dashboard")}
-    >
-      <motion.div
-        className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="sticky top-0 bg-card border-b border-border p-6 flex justify-between items-center">
-          <h2 className="text-2xl font-bold">{t.modals.shopTitle}</h2>
-          <button
-            onClick={() => setActiveSection("dashboard")}
-            className="text-foreground/60 hover:text-foreground transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
-        <div className="p-6 space-y-6">
-          {["Jersey", "Sim Card", "Hoodie", "Cap", "Bottle", "Sticker"].map((product, i) => (
-            <div key={i} className="border border-border rounded-lg p-4">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold">{product}</h3>
-                <button className="text-red-500 hover:text-red-600 text-sm">
-                  {t.buttons.delete}
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  placeholder="Price (RM)"
-                  className="px-3 py-2 bg-background border border-border rounded text-sm text-foreground"
-                />
-                <input
-                  type="text"
-                  placeholder="Stock"
-                  className="px-3 py-2 bg-background border border-border rounded text-sm text-foreground"
-                />
-              </div>
-            </div>
-          ))}
-          <motion.button
-            className="w-full flex items-center justify-center gap-2 py-2 border border-border text-primary font-semibold rounded-lg hover:border-primary transition-colors"
-            whileHover={{ scale: 1.02 }}
-          >
-            <Plus size={16} /> {t.buttons.add}
-          </motion.button>
-          <motion.button
-            onClick={handleSave}
-            className="w-full bg-primary text-primary-foreground py-2 rounded-lg font-semibold hover:opacity-90 transition-opacity"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {t.buttons.save}
-          </motion.button>
-          {saveMessage && (
-            <motion.div
-              className="p-3 bg-green-500/20 border border-green-500 rounded text-green-500 text-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              ✓ {saveMessage}
-            </motion.div>
-          )}
-        </div>
-      </motion.div>
-    </motion.div>
+    <ShopManagement
+      onClose={() => setActiveSection("dashboard")}
+      language={language}
+    />
   );
 
   const SettingsModal = () => (
