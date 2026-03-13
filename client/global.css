@@ -1,0 +1,107 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme
+   * Bratstvo Digital - Premium technology automation platform
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+  */
+  :root {
+    /* Bratstvo Digital Brand Colors */
+    --background: 210 56% 4.5%;          /* #050B12 - Main dark background */
+    --foreground: 210 27% 93%;           /* #E6EDF3 - Primary text */
+
+    --card: 210 50% 8.8%;                /* #0B1622 - Card background */
+    --card-foreground: 210 27% 93%;      /* #E6EDF3 - Card text */
+
+    --popover: 210 50% 8.8%;
+    --popover-foreground: 210 27% 93%;
+
+    /* Primary is the accent green */
+    --primary: 150 91% 50%;              /* #18E68C - Premium green accent */
+    --primary-foreground: 210 56% 4.5%;  /* Dark text on green */
+
+    --secondary: 210 30% 12%;            /* Slightly lighter dark blue */
+    --secondary-foreground: 210 27% 93%;
+
+    --muted: 210 20% 20%;
+    --muted-foreground: 210 27% 70%;
+
+    --accent: 150 91% 50%;               /* #18E68C - Green accent */
+    --accent-foreground: 210 56% 4.5%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 27% 93%;
+
+    --border: 210 30% 15%;               /* Slightly lighter for borders */
+    --input: 210 50% 8.8%;
+    --ring: 150 91% 50%;                 /* Green for focus rings */
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 210 56% 4.5%;
+    --sidebar-foreground: 210 27% 93%;
+    --sidebar-primary: 150 91% 50%;
+    --sidebar-primary-foreground: 210 56% 4.5%;
+    --sidebar-accent: 210 50% 8.8%;
+    --sidebar-accent-foreground: 210 27% 93%;
+    --sidebar-border: 210 30% 15%;
+    --sidebar-ring: 150 91% 50%;
+  }
+
+  .dark {
+    --background: 210 56% 4.5%;
+    --foreground: 210 27% 93%;
+    --card: 210 50% 8.8%;
+    --card-foreground: 210 27% 93%;
+    --popover: 210 50% 8.8%;
+    --popover-foreground: 210 27% 93%;
+    --primary: 150 91% 50%;
+    --primary-foreground: 210 56% 4.5%;
+    --secondary: 210 30% 12%;
+    --secondary-foreground: 210 27% 93%;
+    --muted: 210 20% 20%;
+    --muted-foreground: 210 27% 70%;
+    --accent: 150 91% 50%;
+    --accent-foreground: 210 56% 4.5%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 27% 93%;
+    --border: 210 30% 15%;
+    --input: 210 50% 8.8%;
+    --ring: 150 91% 50%;
+    --sidebar-background: 210 56% 4.5%;
+    --sidebar-foreground: 210 27% 93%;
+    --sidebar-primary: 150 91% 50%;
+    --sidebar-primary-foreground: 210 56% 4.5%;
+    --sidebar-accent: 210 50% 8.8%;
+    --sidebar-accent-foreground: 210 27% 93%;
+    --sidebar-border: 210 30% 15%;
+    --sidebar-ring: 150 91% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+  }
+}
