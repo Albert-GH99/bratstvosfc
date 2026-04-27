@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, Send } from 'lucide-react';
-import { businessSystems, getSystemName, getText, oneTimePackages, salesEmail, subscriptionPlans } from '../data/systems';
+import { businessSystems, getSystemName, getText, oneTimePackages, subscriptionPlans } from '../data/systems';
 import { useLanguage } from '../context/LanguageContext';
+import { supabase } from '../lib/supabase';
 
 const copy = {
   en: {
@@ -24,9 +25,12 @@ const copy = {
     next: 'Next',
     back: 'Back',
     submit: 'Create pending request',
+    submitting: 'Submitting...',
     confirmTitle: 'Review your request',
-    confirmSub: 'After this, you will be sent to a processing page and WhatsApp will open with your brief.',
+    confirmSub: 'After this, your request will be saved and our team will review it.',
     noCare: 'No care plan for now',
+    emailError: 'Please enter a valid email address.',
+    submitError: 'Unable to submit request. Please try again.',
     oneTime: 'One-Time Build',
     monthly: 'Monthly Care',
     yearly: 'Yearly SaaS',
@@ -51,9 +55,12 @@ const copy = {
     next: 'Seterusnya',
     back: 'Kembali',
     submit: 'Cipta request pending',
+    submitting: 'Sedang hantar...',
     confirmTitle: 'Semak permintaan anda',
-    confirmSub: 'Selepas ini, anda akan pergi ke processing page dan WhatsApp akan terbuka dengan brief anda.',
+    confirmSub: 'Selepas ini, request anda akan disimpan dan team kami akan semak.',
     noCare: 'Tiada care plan dahulu',
+    emailError: 'Sila masukkan alamat e-mel yang sah.',
+    submitError: 'Request gagal dihantar. Sila cuba lagi.',
     oneTime: 'Build Sekali Bayar',
     monthly: 'Care Bulanan',
     yearly: 'SaaS Tahunan',
@@ -65,11 +72,18 @@ function packageLabel(plan, suffix = '') {
   return `${plan.name} - RM${plan.price.toLocaleString()}${suffix}`;
 }
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
 export default function Setup() {
   const { lang } = useLanguage();
   const navigate = useNavigate();
   const t = copy[lang] || copy.en;
   const [step, setStep] = useState(1);
+  const [emailError, setEmailError] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     businessName: '',
     ownerName: '',
@@ -77,80 +91,137 @@ export default function Setup() {
     email: '',
     industry: '',
     systemId: businessSystems[0].id,
-    packageType: 'one-time',
     packageId: 'business',
+    careType: 'monthly',
     careId: 'none',
     notes: '',
   });
 
   const selectedSystem = businessSystems.find(system => system.id === form.systemId) || businessSystems[0];
-  const packageOptions = form.packageType === 'one-time' ? oneTimePackages : subscriptionPlans[form.packageType === 'monthly' ? 'monthly' : 'yearly'];
-  const selectedPackage = packageOptions.find(plan => plan.id === form.packageId) || packageOptions[0];
-  const careOptions = [
-    { id: 'none', name: t.noCare, price: 0, includes: { en: [], my: [] } },
-    ...subscriptionPlans.monthly,
-    ...subscriptionPlans.yearly,
-  ];
-  const selectedCare = careOptions.find(plan => plan.id === form.careId) || careOptions[0];
+  const selectedPackage = oneTimePackages.find(plan => plan.id === form.packageId) || oneTimePackages[0];
+  const visibleCareOptions = subscriptionPlans[form.careType];
+  const selectedCare = form.careId === 'none' ? null : visibleCareOptions.find(plan => plan.id === form.careId);
 
-  const canNext1 = form.businessName && form.ownerName && form.phone && form.email && form.industry;
+  const emailFormatError = form.email && !isValidEmail(form.email) ? t.emailError : '';
+  const canNext1 = form.businessName && form.ownerName && form.phone && form.email && isValidEmail(form.email) && form.industry;
   const canNext2 = form.systemId && form.packageId;
 
   const set = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }));
+
+    // Validation: clear the email error as soon as the user edits the email field.
+    if (key === 'email') setEmailError('');
   };
 
-  const choosePackageType = type => {
-    const firstPlan = type === 'one-time' ? oneTimePackages[2] : subscriptionPlans[type][type === 'monthly' ? 2 : 2];
-    setForm(prev => ({ ...prev, packageType: type, packageId: firstPlan.id }));
+  const chooseCareType = type => {
+    setForm(prev => ({ ...prev, careType: type, careId: 'none' }));
   };
 
   const submission = useMemo(() => {
-    const pkgSuffix = form.packageType === 'monthly' ? (lang === 'en' ? '/month' : '/bulan') : form.packageType === 'yearly' ? (lang === 'en' ? '/year' : '/tahun') : '';
-    const careSuffix = selectedCare.id === 'none' ? '' : selectedCare.id.includes('yearly') ? (lang === 'en' ? '/year' : '/tahun') : (lang === 'en' ? '/month' : '/bulan');
+    const careSuffix = form.careType === 'yearly' ? (lang === 'en' ? '/year' : '/tahun') : (lang === 'en' ? '/month' : '/bulan');
     return {
-      id: `BD-PENDING-${Date.now().toString().slice(-6)}`,
       status: 'pending',
-      salesEmail,
       businessName: form.businessName,
       ownerName: form.ownerName,
       phone: form.phone,
       email: form.email,
       industry: form.industry,
       system: getSystemName(selectedSystem, lang),
-      package: packageLabel(selectedPackage, pkgSuffix),
-      care: selectedCare.id === 'none' ? t.noCare : packageLabel(selectedCare, careSuffix),
+      package: packageLabel(selectedPackage),
+      care: selectedCare ? packageLabel(selectedCare, careSuffix) : t.noCare,
       notes: form.notes || (lang === 'en' ? 'No notes' : 'Tiada nota'),
       createdAt: new Date().toISOString(),
     };
   }, [form, lang, selectedCare, selectedPackage, selectedSystem, t.noCare]);
 
-  const buildMessage = () => `${t.whatsappIntro}
+  const buildMessage = request => `${t.whatsappIntro}
 
-Request ID: ${submission.id}
+Request ID: ${request.request_id}
 Status: PENDING
-Business: ${submission.businessName}
-Owner: ${submission.ownerName}
-Phone: ${submission.phone}
-Email: ${submission.email}
-Industry: ${submission.industry}
-System: ${submission.system}
-Package: ${submission.package}
-Care: ${submission.care}
-Notes: ${submission.notes}
+Business: ${request.business_name}
+Owner: ${request.owner_name}
+Phone: ${request.phone}
+Email: ${request.email}
+Industry: ${request.industry}
+System: ${request.system}
+Package: ${request.package}
+Plan: ${request.plan}
+Notes: ${request.notes}`;
 
-Sales email: ${salesEmail}`;
-
-  const submit = () => {
-    const payload = { ...submission, whatsappMessage: buildMessage() };
-    window.localStorage.setItem('bd_pending_setup', JSON.stringify(payload));
-
-    const salesWhatsapp = import.meta.env.VITE_SALES_WHATSAPP || '';
-    if (salesWhatsapp) {
-      window.open(`https://wa.me/${salesWhatsapp}?text=${encodeURIComponent(payload.whatsappMessage)}`, '_blank', 'noopener,noreferrer');
+  const goToStep2 = () => {
+    // Validation: block the next step when the email format is not valid.
+    if (!isValidEmail(form.email)) {
+      setEmailError(t.emailError);
+      return;
     }
 
-    navigate('/setup-processing', { state: payload });
+    setStep(2);
+  };
+
+  const submit = async () => {
+    setSubmitError('');
+    setIsSubmitting(true);
+
+    const requestId = `BD-${Date.now().toString().slice(-8)}`;
+    const createdAt = new Date().toISOString();
+
+    const request = {
+      request_id: requestId,
+      business_name: submission.businessName,
+      owner_name: submission.ownerName,
+      email: submission.email,
+      phone: submission.phone,
+      industry: submission.industry,
+      system: submission.system,
+      package: submission.package,
+      plan: submission.care,
+      notes: submission.notes,
+      status: 'pending',
+      created_at: createdAt,
+    };
+
+    try {
+      if (!supabase) throw new Error('Supabase is not configured.');
+
+      // Supabase insert: save the setup request before showing the success page.
+      const { error } = await supabase
+        .from('setup_requests')
+        .insert(request);
+
+      if (error) throw error;
+
+      const payload = {
+        id: requestId,
+        request_id: requestId,
+        status: request.status,
+        businessName: request.business_name,
+        ownerName: request.owner_name,
+        phone: request.phone,
+        email: request.email,
+        industry: request.industry,
+        system: request.system,
+        package: request.package,
+        care: request.plan,
+        notes: request.notes,
+        createdAt,
+        whatsappMessage: buildMessage(request),
+      };
+
+    window.localStorage.setItem('bd_pending_setup', JSON.stringify(payload));
+
+      // WhatsApp logic: open WhatsApp only when the env value exists.
+      const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '';
+      if (whatsappNumber) {
+        window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(payload.whatsappMessage)}`, '_blank', 'noopener,noreferrer');
+      }
+
+      navigate('/setup-processing', { state: payload });
+    } catch (error) {
+      console.error('Setup request submit failed:', error);
+      setSubmitError(t.submitError);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -185,14 +256,19 @@ Sales email: ${salesEmail}`;
                     ['phone', t.phone],
                     ['email', t.email],
                   ].map(([key, placeholder]) => (
-                    <input key={key} value={form[key]} onChange={event => set(key, event.target.value)} placeholder={placeholder} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-input-border)', color: 'var(--c-text)' }} />
+                    <div key={key}>
+                      <input value={form[key]} onChange={event => set(key, event.target.value)} placeholder={placeholder} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--c-input-bg)', border: key === 'email' && emailError ? '1px solid #ef4444' : '1px solid var(--c-input-border)', color: 'var(--c-text)' }} />
+                      {key === 'email' && (emailError || emailFormatError) && (
+                        <p className="text-xs mt-1.5" style={{ color: '#ef4444' }}>{emailError || emailFormatError}</p>
+                      )}
+                    </div>
                   ))}
                 </div>
                 <select value={form.industry} onChange={event => set('industry', event.target.value)} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--c-surface-strong)', border: '1px solid var(--c-input-border)', color: form.industry ? 'var(--c-text)' : 'var(--c-muted)' }}>
                   <option value="">{t.industry}</option>
                   {t.industries.map(industry => <option key={industry} value={industry}>{industry}</option>)}
                 </select>
-                <button onClick={() => canNext1 && setStep(2)} disabled={!canNext1} className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 mt-4 transition-all hover:brightness-110 disabled:opacity-40" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+                <button onClick={goToStep2} disabled={!canNext1} className="w-full py-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 mt-4 transition-all hover:brightness-110 disabled:opacity-40" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
                   {t.next} <ChevronRight size={16} />
                 </button>
               </div>
@@ -214,39 +290,47 @@ Sales email: ${salesEmail}`;
 
                 <div>
                   <p className="text-sm font-bold mb-3" style={{ color: 'var(--c-text)' }}>{t.packageLabel}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {[
-                      ['one-time', t.oneTime],
-                      ['monthly', t.monthly],
-                      ['yearly', t.yearly],
-                    ].map(([id, label]) => (
-                      <button key={id} onClick={() => choosePackageType(id)} className="rounded-full px-4 py-2 text-sm font-black" style={{ background: form.packageType === id ? 'var(--c-accent)' : 'var(--c-input-bg)', color: form.packageType === id ? 'var(--c-accent-contrast)' : 'var(--c-muted)', border: '1px solid var(--c-border)' }}>
-                        {label}
-                      </button>
-                    ))}
+                  <div className="inline-flex rounded-full px-4 py-2 text-sm font-black mb-4" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+                    {t.oneTime}
                   </div>
                   <div className="grid md:grid-cols-2 gap-2">
-                    {packageOptions.map(plan => {
-                      const suffix = form.packageType === 'monthly' ? (lang === 'en' ? '/month' : '/bulan') : form.packageType === 'yearly' ? (lang === 'en' ? '/year' : '/tahun') : '';
-                      return (
-                        <button key={plan.id} onClick={() => set('packageId', plan.id)} className="text-left p-4 rounded-xl text-sm transition-all" style={{ background: form.packageId === plan.id ? 'rgba(32,200,117,0.14)' : 'var(--c-input-bg)', border: form.packageId === plan.id ? '1px solid var(--c-accent)' : '1px solid var(--c-border)', color: 'var(--c-text)' }}>
-                          <span className="font-black block">{packageLabel(plan, suffix)}</span>
-                          {plan.bestFor && <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{getText(plan.bestFor, lang)}</span>}
-                        </button>
-                      );
-                    })}
+                    {oneTimePackages.map(plan => (
+                      <button key={plan.id} onClick={() => set('packageId', plan.id)} className="text-left p-4 rounded-xl text-sm transition-all" style={{ background: form.packageId === plan.id ? 'rgba(32,200,117,0.14)' : 'var(--c-input-bg)', border: form.packageId === plan.id ? '1px solid var(--c-accent)' : '1px solid var(--c-border)', color: 'var(--c-text)' }}>
+                        <span className="font-black block">{packageLabel(plan)}</span>
+                        {plan.bestFor && <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{getText(plan.bestFor, lang)}</span>}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 <div>
                   <p className="text-sm font-bold mb-1" style={{ color: 'var(--c-text)' }}>{t.careLabel}</p>
                   <p className="text-xs mb-3" style={{ color: 'var(--c-muted)' }}>{t.careSub}</p>
-                  <select value={form.careId} onChange={event => set('careId', event.target.value)} className="w-full px-4 py-3 rounded-xl text-sm outline-none" style={{ background: 'var(--c-surface-strong)', border: '1px solid var(--c-input-border)', color: 'var(--c-text)' }}>
-                    {careOptions.map(plan => {
-                      const suffix = plan.id === 'none' ? '' : plan.id.includes('yearly') ? (lang === 'en' ? '/year' : '/tahun') : (lang === 'en' ? '/month' : '/bulan');
-                      return <option key={plan.id} value={plan.id}>{plan.id === 'none' ? plan.name : packageLabel(plan, suffix)}</option>;
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {[
+                      ['monthly', t.monthly],
+                      ['yearly', t.yearly],
+                    ].map(([id, label]) => (
+                      <button key={id} onClick={() => chooseCareType(id)} className="rounded-full px-4 py-2 text-sm font-black" style={{ background: form.careType === id ? 'var(--c-accent)' : 'var(--c-input-bg)', color: form.careType === id ? 'var(--c-accent-contrast)' : 'var(--c-muted)', border: '1px solid var(--c-border)' }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-2">
+                    <button onClick={() => set('careId', 'none')} className="text-left p-4 rounded-xl text-sm transition-all" style={{ background: form.careId === 'none' ? 'rgba(32,200,117,0.14)' : 'var(--c-input-bg)', border: form.careId === 'none' ? '1px solid var(--c-accent)' : '1px solid var(--c-border)', color: 'var(--c-text)' }}>
+                      <span className="font-black block">{t.noCare}</span>
+                      <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{lang === 'en' ? 'Skip care plan for now' : 'Langkau care plan dahulu'}</span>
+                    </button>
+                    {visibleCareOptions.map(plan => {
+                      const suffix = form.careType === 'yearly' ? (lang === 'en' ? '/year' : '/tahun') : (lang === 'en' ? '/month' : '/bulan');
+                      return (
+                        <button key={plan.id} onClick={() => set('careId', plan.id)} className="text-left p-4 rounded-xl text-sm transition-all" style={{ background: form.careId === plan.id ? 'rgba(32,200,117,0.14)' : 'var(--c-input-bg)', border: form.careId === plan.id ? '1px solid var(--c-accent)' : '1px solid var(--c-border)', color: 'var(--c-text)' }}>
+                          <span className="font-black block">{packageLabel(plan, suffix)}</span>
+                          <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{getText(plan.includes, lang).slice(0, 3).join(' • ')}</span>
+                        </button>
+                      );
                     })}
-                  </select>
+                  </div>
                 </div>
 
                 <textarea value={form.notes} onChange={event => set('notes', event.target.value)} placeholder={t.notes} rows={4} className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-input-border)', color: 'var(--c-text)' }} />
@@ -276,7 +360,6 @@ Sales email: ${salesEmail}`;
                     [t.systemLabel, submission.system],
                     [t.packageLabel, submission.package],
                     [t.careLabel, submission.care],
-                    ['Sales email', salesEmail],
                   ].map(([key, value]) => (
                     <div key={key} className="flex justify-between gap-4 py-2" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
                       <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{key}</span>
@@ -288,10 +371,11 @@ Sales email: ${salesEmail}`;
                   <button onClick={() => setStep(2)} className="flex items-center gap-1 px-5 py-3 rounded-xl text-sm font-medium transition-all" style={{ border: '1px solid var(--c-border)', color: 'var(--c-muted)' }}>
                     <ChevronLeft size={16} /> {t.back}
                   </button>
-                  <button onClick={submit} className="flex-1 py-3 rounded-xl font-bold text-sm text-center transition-all hover:brightness-110 flex items-center justify-center gap-2" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
-                    {t.submit} <Send size={16} />
+                  <button onClick={submit} disabled={isSubmitting} className="flex-1 py-3 rounded-xl font-bold text-sm text-center transition-all hover:brightness-110 disabled:opacity-50 flex items-center justify-center gap-2" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+                    {isSubmitting ? t.submitting : t.submit} <Send size={16} />
                   </button>
                 </div>
+                {submitError && <p className="text-sm mt-4" style={{ color: '#ef4444' }}>{submitError}</p>}
               </div>
             )}
           </div>

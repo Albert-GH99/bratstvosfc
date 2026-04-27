@@ -47,6 +47,22 @@ create table if not exists public.orders (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.setup_requests (
+  id uuid primary key default gen_random_uuid(),
+  request_id text not null unique,
+  business_name text not null,
+  owner_name text,
+  email text not null,
+  phone text,
+  industry text,
+  system text,
+  package text,
+  plan text,
+  notes text,
+  status text not null default 'pending',
+  created_at timestamptz not null default now()
+);
+
 create or replace function public.provision_client_from_auth()
 returns trigger
 language plpgsql
@@ -113,6 +129,7 @@ alter table public.clients enable row level security;
 alter table public.users enable row level security;
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
+alter table public.setup_requests enable row level security;
 
 create policy "owners can read own client"
 on public.clients for select
@@ -171,3 +188,8 @@ with check (
       and u.id = auth.uid()
   )
 );
+
+create policy "anyone can create setup requests"
+on public.setup_requests for insert
+to anon, authenticated
+with check (true);

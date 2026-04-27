@@ -1,26 +1,23 @@
 import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CheckCircle2, Home, Mail, MessageSquareText } from 'lucide-react';
-import { salesEmail } from '../data/systems';
+import { CheckCircle2, Home, MessageSquareText } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const copy = {
   en: {
     label: 'Request submitted',
-    title: 'Your setup request is now pending.',
-    text: 'We have prepared your request summary. If WhatsApp did not open automatically, use the button below after VITE_SALES_WHATSAPP is configured.',
-    status: 'Pending confirmation',
-    emailLabel: 'Sales email',
+    title: 'Your request has been received',
+    text: 'Our team will review and contact you shortly',
+    status: 'Pending review',
     whatsapp: 'Open WhatsApp confirmation',
     home: 'OK, back to home',
     noData: 'No setup data found. Please submit the setup form again.',
   },
   my: {
     label: 'Request dihantar',
-    title: 'Permintaan setup anda sedang diproses.',
-    text: 'Ringkasan request sudah disediakan. Kalau WhatsApp tidak terbuka automatik, guna button di bawah selepas VITE_SALES_WHATSAPP dikonfigurasi.',
-    status: 'Menunggu confirmation',
-    emailLabel: 'Email sales',
+    title: 'Your request has been received',
+    text: 'Our team will review and contact you shortly',
+    status: 'Pending review',
     whatsapp: 'Buka confirmation WhatsApp',
     home: 'OK, kembali ke home',
     noData: 'Tiada data setup dijumpai. Sila hantar borang setup semula.',
@@ -40,8 +37,8 @@ export default function SetupProcessing() {
     }
   }, [location.state]);
 
-  const salesWhatsapp = import.meta.env.VITE_SALES_WHATSAPP || '';
-  const whatsappUrl = payload && salesWhatsapp ? `https://wa.me/${salesWhatsapp}?text=${encodeURIComponent(payload.whatsappMessage)}` : '';
+  const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '';
+  const whatsappUrl = payload && whatsappNumber ? `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(payload.whatsappMessage)}` : '';
 
   return (
     <div style={{ background: 'var(--c-bg)', minHeight: '100vh' }}>
@@ -64,7 +61,6 @@ export default function SetupProcessing() {
                   ['Owner', payload.ownerName],
                   ['System', payload.system],
                   ['Package', payload.package],
-                  [t.emailLabel, salesEmail],
                 ].map(([key, value]) => (
                   <div key={key} className="flex justify-between gap-4 py-2" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
                     <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{key}</span>
@@ -80,9 +76,6 @@ export default function SetupProcessing() {
                   <MessageSquareText size={16} /> {t.whatsapp}
                 </a>
               )}
-              <a href={`mailto:${salesEmail}`} className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black" style={{ color: 'var(--c-text)', border: '1px solid var(--c-border)' }}>
-                <Mail size={16} /> {salesEmail}
-              </a>
               <Link to="/home" className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black" style={{ color: 'var(--c-text)', border: '1px solid var(--c-border)' }}>
                 <Home size={16} /> {t.home}
               </Link>
