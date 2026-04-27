@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Layers, LayoutDashboard, Play } from 'lucide-react';
-import { useLang } from './LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const tabs = [
   { href: '/home', icon: Home, label: 'Home', labelMy: 'Utama' },
@@ -12,7 +12,7 @@ const tabs = [
 
 export default function BottomTabNavigation() {
   const { pathname } = useLocation();
-  const { lang } = useLang();
+  const { lang } = useLanguage();
   const currentPath = pathname.toLowerCase();
 
   return (

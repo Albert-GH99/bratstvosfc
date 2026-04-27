@@ -47,8 +47,8 @@ const copy = {
 };
 
 const systems = ['Food Preorder', 'Product Order', 'Booking System', 'CRM & Lead', 'Invoice & Quotation', 'POS', 'Inventory', 'Custom System'];
-const packages = ['Basic - RM1,099/year', 'Growth - RM3,299/year', 'Business - RM6,599/year', 'Pro - RM9,889/year', 'Elite - RM15,599/year', 'Starter - RM149', 'Growth Build - RM499', 'Business Build - RM1,499', 'Pro - RM4,999', 'Elite - RM19,999'];
-const carePlans = ['none', 'Hosting - RM99/mo', 'Maintenance - RM299/mo', 'Growth Care - RM599/mo', 'Scale Care - RM899/mo', 'Technical Partner - RM1,599/mo'];
+const packages = ['Starter - RM149', 'Growth - RM499', 'Business - RM1,499', 'Pro - RM2,999', 'Elite Custom - Custom quotation', 'Basic - RM1,099/year', 'Business - RM3,299/year', 'Pro - RM6,599/year', 'Elite - Custom quotation'];
+const carePlans = ['none', 'Basic - RM99/mo', 'Business - RM299/mo', 'Pro - RM599/mo', 'Elite - Custom quotation'];
 
 export default function Signup() {
   const { lang } = useLanguage();
@@ -65,7 +65,7 @@ export default function Signup() {
     password: '',
     industry: '',
     selectedSystem: 'Food Preorder',
-    selectedPackage: 'Business - RM6,599/year',
+    selectedPackage: 'Business - RM1,499',
     maintenancePlan: 'none',
   });
 

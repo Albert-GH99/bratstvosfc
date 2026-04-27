@@ -1,9 +1,9 @@
 import { Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useLang } from './LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function PricingSection() {
-  const { t } = useLang();
+  const { t } = useLanguage();
   const s = t.shop;
 
   return (
@@ -61,7 +61,7 @@ export default function PricingSection() {
                   border: pkg.popular ? 'none' : '1px solid rgba(255,255,255,0.15)',
                 }}
               >
-                {pkg.price === 'Custom' ? s.ctaCustom : s.cta}
+                {pkg.price === 'Custom quotation' ? s.ctaCustom : s.cta}
               </Link>
             </div>
           ))}

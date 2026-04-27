@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, ClipboardCheck, CreditCard, FileUp, LayoutDashboard, MessageSquareText, Minus, Plus, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { businessSystems, getDemoItems, getSystemName, getText } from '../data/systems';
+import { getDemoItems, getSystemName, getText, systemsData } from '../data/systemsData';
 import { useLanguage } from '../context/LanguageContext';
 
 const dates = ['2026-04-28', '2026-04-29', '2026-04-30', '2026-05-01'];
@@ -172,6 +172,16 @@ function FlowForm({ flowType, form, setForm, system }) {
     );
   }
 
+  if (system.type === 'service') {
+    return (
+      <ServiceFlow
+        form={form}
+        setForm={setForm}
+        services={getDemoItems(system.id)}
+      />
+    );
+  }
+
   if (flowType === 'invoice') {
     return (
       <div className="grid sm:grid-cols-2 gap-3">
@@ -327,8 +337,61 @@ function OrderFlow({ flowType, form, setForm, items }) {
   );
 }
 
+function ServiceFlow({ form, setForm, services }) {
+  const fallbackServices = services.length ? services : [{ name: 'Consultation Slot', price: 50, slots: 6 }];
+  const selectedService = fallbackServices.find(item => item.name === form.service) || fallbackServices[0];
+  const set = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
+
+  return (
+    <div className="space-y-5">
+      <div className="space-y-3">
+        {fallbackServices.map(item => {
+          const active = selectedService.name === item.name;
+          return (
+            <button
+              key={item.name}
+              onClick={() => set('service', item.name)}
+              className="w-full rounded-xl p-4 flex items-center justify-between gap-4 text-left"
+              style={{
+                background: active ? 'rgba(32,200,117,0.12)' : 'var(--c-bg)',
+                border: active ? '1px solid rgba(32,200,117,0.45)' : '1px solid var(--c-border)',
+              }}
+            >
+              <div>
+                <p className="font-black" style={{ color: 'var(--c-text)' }}>{item.name}</p>
+                <p className="text-xs" style={{ color: 'var(--c-muted)' }}>{item.slots || item.stock || 1} slots left</p>
+              </div>
+              <p className="font-black" style={{ color: 'var(--c-accent)' }}>{formatMoney(item.price)}</p>
+            </button>
+          );
+        })}
+      </div>
+      <div className="grid sm:grid-cols-2 gap-3">
+        <Field label="Customer name" value={form.name || form.participant || form.donor || form.client || ''} onChange={value => set('name', value)} />
+        <Field label="WhatsApp" value={form.phone || ''} onChange={value => set('phone', value)} />
+        <Field label="Date" value={form.date || dates[0]} onChange={value => set('date', value)} type="select" options={dates} />
+        <Field label="Time" value={form.time || times[0]} onChange={value => set('time', value)} type="select" options={times} />
+      </div>
+      <div className="rounded-xl p-4 flex items-center justify-between gap-4" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
+        <span className="text-sm font-bold" style={{ color: 'var(--c-muted)' }}>Selected service</span>
+        <span className="text-sm font-black text-right" style={{ color: 'var(--c-text)' }}>{selectedService.name} - {formatMoney(selectedService.price)}</span>
+      </div>
+    </div>
+  );
+}
+
 function buildRecord(flowType, form, system, lang) {
   const systemName = getSystemName(system, lang);
+  if (system.type === 'service') {
+    const services = getDemoItems(system.id);
+    const selectedService = services.find(item => item.name === form.service) || services[0];
+    return [
+      ['Customer', `${form.name || form.participant || form.donor || form.client || 'Customer'} - ${form.phone || 'No phone'}`],
+      ['Service', selectedService ? `${selectedService.name} - ${formatMoney(selectedService.price)}` : systemName],
+      ['Slot', `${form.date || dates[0]}, ${form.time || times[0]}`],
+      ['Status', 'Pending confirmation'],
+    ];
+  }
   const records = {
     leave: [
       ['Request', `${form.leaveType} - ${form.days}`],
@@ -347,6 +410,12 @@ function buildRecord(flowType, form, system, lang) {
       ['Source / budget', `${form.source} - ${form.budget}`],
       ['Stage', form.stage],
       ['Next follow-up', form.followUp],
+    ],
+    booking: [
+      ['Customer', `${form.name} - ${form.phone}`],
+      ['Service', form.service],
+      ['Slot', `${form.date}, ${form.time}`],
+      ['Status', 'Booking pending confirmation'],
     ],
     invoice: [
       ['Document', `${form.documentType} for ${form.client}`],
@@ -403,8 +472,9 @@ function buildRecord(flowType, form, system, lang) {
 export default function Demo() {
   const { lang } = useLanguage();
   const t = copy[lang] || copy.en;
-  const [activeId, setActiveId] = useState(businessSystems[0].id);
-  const activeSystem = businessSystems.find(system => system.id === activeId) || businessSystems[0];
+  const demoSystems = systemsData.filter(system => system.demoEnabled);
+  const [activeId, setActiveId] = useState(demoSystems[0].id);
+  const activeSystem = demoSystems.find(system => system.id === activeId) || demoSystems[0];
   const flowType = getFlowType(activeSystem.id);
   const [form, setForm] = useState(() => getInitialForm(flowType, lang));
   const [submitted, setSubmitted] = useState(true);
@@ -413,7 +483,7 @@ export default function Demo() {
   const record = buildRecord(flowType, form, activeSystem, lang);
 
   const switchSystem = id => {
-    const system = businessSystems.find(item => item.id === id) || businessSystems[0];
+    const system = demoSystems.find(item => item.id === id) || demoSystems[0];
     const nextFlow = getFlowType(system.id);
     setActiveId(id);
     setForm(getInitialForm(nextFlow, lang));
@@ -431,11 +501,11 @@ export default function Demo() {
           </div>
 
           <div className="flex gap-2 overflow-x-auto pb-3 mb-7">
-            {businessSystems.map(system => {
+            {demoSystems.map(system => {
               const active = system.id === activeId;
               return (
                 <button key={system.id} onClick={() => switchSystem(system.id)} className="shrink-0 rounded-full px-4 py-2 text-sm font-black transition-all" style={{ background: active ? 'var(--c-accent)' : 'var(--c-surface)', color: active ? 'var(--c-accent-contrast)' : 'var(--c-muted)', border: '1px solid var(--c-border)' }}>
-                  {system.emoji} {getText(system.shortName, lang)}
+                  {system.icon} {getText(system.shortName, lang)}
                 </button>
               );
             })}

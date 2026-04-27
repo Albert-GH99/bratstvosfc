@@ -1,7 +1,7 @@
-import { useLang } from './LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AboutSection() {
-  const { t } = useLang();
+  const { t } = useLanguage();
   const a = t.about;
 
   return (

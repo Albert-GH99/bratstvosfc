@@ -1,10 +1,10 @@
 import { BarChart2, Compass, Globe, MessageCircle, ShoppingBag, Zap } from 'lucide-react';
-import { useLang } from './LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const icons = [Globe, MessageCircle, BarChart2, ShoppingBag, Zap, Compass];
 
 export default function ServicesSection() {
-  const { t } = useLang();
+  const { t } = useLanguage();
   const s = t.services;
 
   return (

@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import brandMark from '../assets/brand/bd-mark-military.png';
-import { useLang } from './LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Footer() {
-  const { lang, t } = useLang();
+  const { lang, t } = useLanguage();
 
   const links = [
     { en: 'Home', my: 'Utama', href: '/home' },
@@ -16,7 +16,7 @@ export default function Footer() {
   return (
     <footer className="py-16 px-6" style={{ background: '#05090D', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span
@@ -45,24 +45,6 @@ export default function Footer() {
                 </Link>
               ))}
             </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--c-accent)' }}>
-              {lang === 'en' ? 'Next Step' : 'Langkah Seterusnya'}
-            </p>
-            <p className="text-sm mb-4" style={{ color: '#9BA6B2' }}>
-              {lang === 'en'
-                ? 'Start with setup. WhatsApp opens only after the business details are complete.'
-                : 'Mula dengan setup. WhatsApp hanya dibuka selepas detail bisnes lengkap supaya perbualan terus ada konteks.'}
-            </p>
-            <Link
-              to="/setup"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all hover:brightness-110"
-              style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}
-            >
-              {lang === 'en' ? 'Start Setup' : 'Mula Setup'}
-            </Link>
           </div>
         </div>
 

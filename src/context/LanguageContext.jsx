@@ -55,8 +55,8 @@ const en = {
   shop: {
     label: 'Pricing',
     title: 'Simple Packages',
-    subtitle: 'Start lean, then scale your system when your business grows.',
-    popular: 'Popular',
+    subtitle: 'Start small. Upgrade anytime.',
+    popular: 'Most Popular',
     cta: 'Start Setup',
     ctaCustom: 'Request Quote',
     packages: [
@@ -67,15 +67,15 @@ const en = {
         features: ['1 core system', 'WhatsApp-ready flow', 'Basic branding', '14-day support'],
       },
       {
-        name: 'Growth',
-        price: 'RM6,599/year',
-        desc: 'For active businesses that need admin, automation and real support.',
-        features: ['Full system suite', 'Admin PRO', 'Realtime automation', 'Fast support'],
+        name: 'Business',
+        price: 'RM1,499',
+        desc: 'Most Popular setup for serious businesses.',
+        features: ['Admin PRO', 'Realtime updates', 'Workflow or order records', 'Fast support'],
         popular: true,
       },
       {
-        name: 'Custom',
-        price: 'RM15,599/year',
+        name: 'Elite Custom',
+        price: 'Custom quotation',
         desc: 'For teams that need a tailored platform or advanced integrations.',
         features: ['Custom feature planning', 'Advanced integrations', 'Dashboard options', 'Long-term support options'],
       },
@@ -142,8 +142,8 @@ const my = {
   shop: {
     label: 'Harga',
     title: 'Pakej Mudah',
-    subtitle: 'Mula secara ringkas, kemudian naik taraf sistem apabila bisnes berkembang.',
-    popular: 'Popular',
+    subtitle: 'Mula kecil. Upgrade bila-bila masa.',
+    popular: 'Most Popular',
     cta: 'Mula Setup',
     ctaCustom: 'Minta Quote',
     packages: [
@@ -154,15 +154,15 @@ const my = {
         features: ['1 sistem utama', 'Aliran siap WhatsApp', 'Branding asas', 'Sokongan 14 hari'],
       },
       {
-        name: 'Growth',
-        price: 'RM6,599/tahun',
-        desc: 'Untuk bisnes aktif yang perlukan admin, automasi dan support sebenar.',
-        features: ['Full system suite', 'Admin PRO', 'Automasi realtime', 'Fast support'],
+        name: 'Business',
+        price: 'RM1,499',
+        desc: 'Setup Most Popular untuk bisnes serius.',
+        features: ['Admin PRO', 'Realtime updates', 'Rekod workflow atau order', 'Fast support'],
         popular: true,
       },
       {
-        name: 'Custom',
-        price: 'RM15,599/tahun',
+        name: 'Elite Custom',
+        price: 'Custom quotation',
         desc: 'Untuk pasukan yang perlukan platform khas atau integrasi lanjutan.',
         features: ['Perancangan ciri khas', 'Integrasi lanjutan', 'Pilihan dashboard', 'Pilihan sokongan jangka panjang'],
       },
@@ -207,6 +207,4 @@ export function useLanguage() {
   return useContext(LanguageContext);
 }
 
-export function useLang() {
-  return useContext(LanguageContext);
-}
+export const useLang = useLanguage;

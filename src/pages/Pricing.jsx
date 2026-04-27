@@ -9,13 +9,13 @@ const copy = {
   en: {
     badge: 'Clear pricing, clear scope',
     title: 'Start with one-time build. Add monthly or yearly care when the system is live.',
-    subtitle: 'Pricing follows the production model: Starter, Growth, Business, Pro and Elite. Business is the main product; Elite is the upsell.',
+    subtitle: 'Start small. Upgrade anytime. Business is highlighted as the default plan for serious operations.',
     oneTimeLabel: 'First',
     oneTimeTitle: 'One-Time Build Packages',
     careLabel: 'After launch',
     careTitle: 'Monthly or Yearly Plans',
     careSub: 'Monthly plans cover hosting, maintenance and support. Yearly plans package the system, hosting, admin, chatbot and support into a cleaner SaaS offer.',
-    popular: 'Main product',
+    popular: 'Most Popular',
     choose: 'Choose this plan',
     monthly: 'Monthly',
     yearly: 'Yearly',
@@ -26,7 +26,7 @@ const copy = {
     careDiffTitle: 'Build vs care',
     careDiffText: 'Build is the system development work. Care is what happens after launch: hosting, fixes, updates, automation tuning and support.',
     bestTitle: 'Which plan is best?',
-    bestText: 'Starter is for testing. Growth is for small businesses. Business RM1,499 or Business RM6,599/year is the main serious-business anchor.',
+    bestText: 'Starter is for testing. Growth is for small businesses. Business is the default plan. Elite is quoted custom.',
     ctaTitle: 'Need an accurate quote?',
     ctaText: 'Fill setup once. Your request becomes a pending account and opens WhatsApp with the full brief.',
     cta: 'Start setup',
@@ -34,13 +34,13 @@ const copy = {
   my: {
     badge: 'Harga jelas, scope jelas',
     title: 'Mula dengan build sekali bayar. Tambah penjagaan bulanan atau tahunan bila sistem sudah live.',
-    subtitle: 'Harga ikut production model: Starter, Growth, Business, Pro dan Elite. Business ialah produk utama; Elite ialah upsell.',
+    subtitle: 'Mula kecil. Upgrade bila-bila masa. Business ditanda sebagai pelan default untuk operasi serius.',
     oneTimeLabel: 'Pertama',
     oneTimeTitle: 'Pakej Build Sekali Bayar',
     careLabel: 'Selepas launch',
     careTitle: 'Pelan Bulanan atau Tahunan',
     careSub: 'Monthly cover hosting, maintenance dan support. Yearly package sistem, hosting, admin, chatbot dan support sebagai offer SaaS yang lebih kemas.',
-    popular: 'Produk utama',
+    popular: 'Most Popular',
     choose: 'Pilih pakej ini',
     monthly: 'Monthly',
     yearly: 'Yearly',
@@ -51,7 +51,7 @@ const copy = {
     careDiffTitle: 'Build vs care',
     careDiffText: 'Build ialah kerja bina sistem. Care ialah penjagaan selepas launch: hosting, fix, update, tuning automasi dan support.',
     bestTitle: 'Pakej mana terbaik?',
-    bestText: 'Starter untuk testing. Growth untuk small business. Business RM1,499 atau Business RM6,599/year ialah anchor utama untuk bisnes serius.',
+    bestText: 'Starter untuk testing. Growth untuk small business. Business ialah pelan default. Elite ikut sebutharga custom.',
     ctaTitle: 'Nak quote yang tepat?',
     ctaText: 'Isi setup sekali sahaja. Request akan jadi pending account dan WhatsApp terbuka dengan brief lengkap.',
     cta: 'Mula setup',
@@ -87,8 +87,8 @@ function PlanCard({ plan, lang, labels, suffix = '', compact = false }) {
         {plan.bestFor && <p className="text-sm leading-relaxed min-h-[44px]" style={{ color: 'var(--c-muted)' }}>{getText(plan.bestFor, lang)}</p>}
       </div>
       <div className="flex items-end gap-2 mb-5">
-        <span className={compact ? 'text-3xl font-black' : 'text-4xl md:text-5xl font-black'} style={{ color: plan.popular ? 'var(--c-accent)' : 'var(--c-text)' }}>{formatPrice(plan.price)}</span>
-        {suffix && <span className="text-sm mb-1" style={{ color: 'var(--c-muted)' }}>{suffix}</span>}
+        <span className={compact ? 'text-3xl font-black' : 'text-4xl md:text-5xl font-black'} style={{ color: plan.popular ? 'var(--c-accent)' : 'var(--c-text)' }}>{plan.priceLabel || formatPrice(plan.price)}</span>
+        {suffix && !plan.priceLabel && <span className="text-sm mb-1" style={{ color: 'var(--c-muted)' }}>{suffix}</span>}
       </div>
       <ul className="space-y-3 flex-1 mb-6">
         {includes.map(item => (
@@ -156,7 +156,7 @@ export default function Pricing() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 xl:grid-cols-5 gap-4">
+            <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
               {recurringPlans.map(plan => (
                 <PlanCard key={plan.id} plan={plan} lang={lang} labels={t} suffix={billing === 'monthly' ? t.monthSuffix : t.yearSuffix} compact />
               ))}

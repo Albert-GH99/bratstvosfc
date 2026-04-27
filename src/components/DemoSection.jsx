@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useLang } from './LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function DemoSection() {
-  const { t } = useLang();
+  const { t } = useLanguage();
   const d = t.demo;
   const [step, setStep] = useState(1);
   const [selected, setSelected] = useState(null);

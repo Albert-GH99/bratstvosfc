@@ -70,6 +70,7 @@ const copy = {
 };
 
 function packageLabel(plan, suffix = '') {
+  if (plan.priceLabel) return `${plan.name} - ${plan.priceLabel}`;
   return `${plan.name} - RM${plan.price.toLocaleString()}${suffix}`;
 }
 

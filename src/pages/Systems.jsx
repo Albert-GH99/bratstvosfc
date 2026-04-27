@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, CircleDollarSign, ClipboardList, LayoutDashboard, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { businessSystems, getDemoItems, getSystemName, getText } from '../data/systems';
+import { getDemoItems, getSystemName, getSystemPriceLabel, getText, systemsData } from '../data/systemsData';
 import { useLanguage } from '../context/LanguageContext';
 
 const copy = {
   en: {
     badge: 'All systems',
     title: 'Choose a system based on your business problem.',
-    subtitle: 'No hidden category filtering. These are the systems available for client setup, with emoji, pricing anchor and practical use case.',
+    subtitle: 'No hidden category filtering. These are the systems available for client setup, with the right demo type and practical use case.',
     search: 'Search system, example: booking, stock, invoice',
     customer: 'Customer page',
     customerText: 'Customers submit from their phone',
@@ -22,6 +22,8 @@ const copy = {
     problem: 'Problem solved',
     outcome: 'Client outcome',
     starts: 'Starts from',
+    custom: 'Custom quotation',
+    workflow: 'Workflow',
     note: 'Final package depends on modules, dashboard, automation, payment gateway and support level.',
     demo: 'Try demo',
     proceed: 'Proceed',
@@ -31,7 +33,7 @@ const copy = {
   my: {
     badge: 'Semua sistem',
     title: 'Pilih sistem ikut masalah bisnes.',
-    subtitle: 'Tiada kategori yang sorok sistem. Ini senarai sistem untuk setup client, lengkap dengan emoji, harga anchor dan use case.',
+    subtitle: 'Tiada kategori yang sorok sistem. Ini senarai sistem untuk setup client, lengkap dengan jenis demo yang betul dan use case.',
     search: 'Cari sistem, contoh: booking, stok, invoice',
     customer: 'Customer page',
     customerText: 'Pelanggan submit dari telefon',
@@ -44,6 +46,8 @@ const copy = {
     problem: 'Masalah yang diselesaikan',
     outcome: 'Hasil yang client dapat',
     starts: 'Harga mula',
+    custom: 'Custom quotation',
+    workflow: 'Workflow',
     note: 'Pakej akhir bergantung pada modul, dashboard, automation, payment gateway dan tahap support.',
     demo: 'Cuba demo',
     proceed: 'Proceed',
@@ -54,22 +58,29 @@ const copy = {
 
 function MiniPreview({ system, lang, labels }) {
   const items = getDemoItems(system.id);
+  const isWorkflow = system.type === 'workflow';
+  const isService = system.type === 'service';
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(2,16,10,0.74)', border: '1px solid var(--c-border)' }}>
       <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <div>
-          <p className="text-sm font-black text-white">{system.emoji} {getText(system.shortName, lang)} Demo</p>
-          <p className="text-xs" style={{ color: '#A9B9AD' }}>Customer order page</p>
+          <p className="text-sm font-black text-white">{system.icon} {getText(system.shortName, lang)} Demo</p>
+          <p className="text-xs" style={{ color: '#A9B9AD' }}>{isWorkflow ? 'Status workflow' : isService ? 'Service booking page' : 'Customer order page'}</p>
         </div>
         <span className="text-xs font-bold" style={{ color: '#20C875' }}>{labels.preview}</span>
       </div>
       <div className="p-4 space-y-3">
-        {items.map(item => (
+        {isWorkflow ? (system.workflow || system.features).map(step => (
+          <div key={step} className="rounded-lg p-3 flex items-center justify-between gap-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
+            <p className="text-sm font-bold text-white">{step}</p>
+            <span className="text-xs font-black" style={{ color: '#20C875' }}>Status</span>
+          </div>
+        )) : items.map(item => (
           <div key={item.name} className="rounded-lg p-3 flex items-center justify-between gap-3" style={{ background: 'rgba(255,255,255,0.06)' }}>
             <div>
               <p className="text-sm font-bold text-white">{item.name}</p>
-              <p className="text-xs" style={{ color: '#A9B9AD' }}>{item.stock} {labels.stock}</p>
+              <p className="text-xs" style={{ color: '#A9B9AD' }}>{item.stock || item.slots} {isService ? 'slots left' : labels.stock}</p>
             </div>
             <p className="text-sm font-black" style={{ color: '#20C875' }}>RM{item.price.toLocaleString()}</p>
           </div>
@@ -83,12 +94,12 @@ export default function Systems() {
   const { lang } = useLanguage();
   const t = copy[lang] || copy.en;
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState(businessSystems[0]);
+  const [selected, setSelected] = useState(systemsData[0]);
 
   const filteredSystems = useMemo(() => {
     const q = query.toLowerCase();
-    return businessSystems.filter(system => {
-      const text = `${getText(system.name, lang)} ${getText(system.shortName, lang)} ${getText(system.bestFor, lang)} ${getText(system.tagline, lang)} ${getText(system.problem, lang)}`.toLowerCase();
+    return systemsData.filter(system => {
+      const text = `${getText(system.name, lang)} ${getText(system.shortName, lang)} ${getText(system.bestFor, lang)} ${getText(system.description, lang)} ${getText(system.problem, lang)}`.toLowerCase();
       return text.includes(q);
     });
   }, [lang, query]);
@@ -134,9 +145,9 @@ export default function Systems() {
                       <p className="text-xs font-bold mb-1" style={{ color: 'var(--c-accent)' }}>{getText(system.category, lang)}</p>
                       <h2 className="font-black" style={{ color: 'var(--c-text)' }}>{getSystemName(system, lang)}</h2>
                     </div>
-                    <span className="rounded-full px-3 py-1 text-xs font-black" style={{ background: 'rgba(32,200,117,0.12)', color: 'var(--c-accent)' }}>RM{system.priceFrom}+</span>
+                    <span className="rounded-full px-3 py-1 text-xs font-black" style={{ background: 'rgba(32,200,117,0.12)', color: 'var(--c-accent)' }}>{getSystemPriceLabel(system, lang) || t.workflow}</span>
                   </div>
-                  <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--c-muted)' }}>{getText(system.tagline, lang)}</p>
+                  <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--c-muted)' }}>{getText(system.description, lang)}</p>
                   <p className="text-xs font-bold mb-2" style={{ color: 'var(--c-text)' }}>{t.suitable}</p>
                   <p className="text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>{getText(system.bestFor, lang)}</p>
                 </motion.button>
@@ -168,7 +179,7 @@ export default function Systems() {
                 <div className="rounded-xl p-4" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
                   <div className="flex items-center gap-2 mb-2">
                     <CircleDollarSign size={16} style={{ color: 'var(--c-gold)' }} />
-                    <p className="text-sm font-black" style={{ color: 'var(--c-text)' }}>{t.starts} RM{selected.priceFrom}</p>
+                    <p className="text-sm font-black" style={{ color: 'var(--c-text)' }}>{selected.fromPrice == null ? t.custom : `${t.starts} RM${selected.fromPrice}`}</p>
                   </div>
                   <p className="text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>{t.note}</p>
                 </div>

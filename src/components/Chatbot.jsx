@@ -60,8 +60,8 @@ function buildReply(text) {
 
   if (intent === 'pricing') {
     return my
-      ? 'Boleh. Structure sekarang ikut production pricing: build sekali bayar Starter RM149, Growth RM499, Business RM1,499, Pro RM4,999, Elite RM19,999. Yearly pula Basic RM1,099, Growth RM3,299, Business RM6,599, Pro RM9,889, Elite RM15,599. Untuk bisnes serius, Business ialah anchor utama.'
-      : 'Sure. Current structure follows production pricing: one-time builds are Starter RM149, Growth RM499, Business RM1,499, Pro RM4,999, Elite RM19,999. Yearly plans are Basic RM1,099, Growth RM3,299, Business RM6,599, Pro RM9,889, Elite RM15,599. Business is the main anchor for serious operations.';
+      ? 'Boleh. Build sekali bayar: Starter RM149, Growth RM499, Business RM1,499, Pro RM2,999, Elite Custom ikut sebutharga. Monthly care: Basic RM99, Business RM299, Pro RM599, Elite custom. Yearly: Basic RM1,099, Business RM3,299, Pro RM6,599, Elite custom. Business ialah Most Popular.'
+      : 'Sure. One-time setup: Starter RM149, Growth RM499, Business RM1,499, Pro RM2,999, Elite Custom by quotation. Monthly care: Basic RM99, Business RM299, Pro RM599, Elite custom. Yearly: Basic RM1,099, Business RM3,299, Pro RM6,599, Elite custom. Business is Most Popular.';
   }
 
   if (intent === 'demo') {

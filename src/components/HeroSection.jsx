@@ -1,7 +1,7 @@
-import { useLang } from './LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function HeroSection() {
-  const { t } = useLang();
+  const { t } = useLanguage();
 
   return (
     <section

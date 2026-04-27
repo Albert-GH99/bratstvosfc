@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, Moon, Sun, X } from 'lucide-react';
 import brandMark from '../assets/brand/bd-mark-military.png';
-import { useLang } from './LanguageContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Navbar() {
-  const { lang, setLang, theme, setTheme } = useLang();
+  const { lang, setLang, theme, setTheme } = useLanguage();
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const currentPath = pathname.toLowerCase();
@@ -115,7 +115,7 @@ export default function Navbar() {
               className="text-xs px-3 py-1.5 rounded-md"
               style={{ color: 'var(--c-muted)', border: '1px solid var(--c-border)' }}
             >
-              {lang === 'en' ? 'MY' : 'EN'}
+              {lang === 'en' ? 'BM' : 'EN'}
             </button>
             <Link
               to="/setup"
