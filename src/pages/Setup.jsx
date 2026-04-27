@@ -140,12 +140,12 @@ Request ID: ${request.request_id}
 Status: PENDING
 Business: ${request.business_name}
 Owner: ${request.owner_name}
-Phone: ${request.phone}
+WhatsApp: ${request.whatsapp}
 Email: ${request.email}
 Industry: ${request.industry}
-System: ${request.system}
-Package: ${request.package}
-Plan: ${request.plan}
+System: ${request.system_name}
+Package: ${request.package_name}
+Plan: ${request.plan_name}
 Notes: ${request.notes}`;
 
   const goToStep2 = () => {
@@ -166,16 +166,21 @@ Notes: ${request.notes}`;
     const createdAt = new Date().toISOString();
 
     const request = {
+      // Unique public reference shown to the customer on the success page.
       request_id: requestId,
+      // Business and owner details from step 1.
       business_name: submission.businessName,
       owner_name: submission.ownerName,
+      // Contact fields used by the sales/admin team.
       email: submission.email,
-      phone: submission.phone,
+      whatsapp: submission.phone,
       industry: submission.industry,
-      system: submission.system,
-      package: submission.package,
-      plan: submission.care,
+      // Selected setup options from step 2.
+      system_name: submission.system,
+      package_name: submission.package,
+      plan_name: submission.care,
       notes: submission.notes,
+      // New requests always start as pending until reviewed internally.
       status: 'pending',
       created_at: createdAt,
     };
@@ -196,12 +201,12 @@ Notes: ${request.notes}`;
         status: request.status,
         businessName: request.business_name,
         ownerName: request.owner_name,
-        phone: request.phone,
+        phone: request.whatsapp,
         email: request.email,
         industry: request.industry,
-        system: request.system,
-        package: request.package,
-        care: request.plan,
+        system: request.system_name,
+        package: request.package_name,
+        care: request.plan_name,
         notes: request.notes,
         createdAt,
         whatsappMessage: buildMessage(request),
@@ -217,7 +222,7 @@ Notes: ${request.notes}`;
 
       navigate('/setup-processing', { state: payload });
     } catch (error) {
-      console.error('Setup request submit failed:', error);
+      console.error('Setup request submit failed. Supabase table: setup_requests. Error:', error);
       setSubmitError(t.submitError);
     } finally {
       setIsSubmitting(false);

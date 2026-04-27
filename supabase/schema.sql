@@ -49,16 +49,22 @@ create table if not exists public.orders (
 
 create table if not exists public.setup_requests (
   id uuid primary key default gen_random_uuid(),
+  -- Public reference shown to the customer after submit.
   request_id text not null unique,
+  -- Business and owner details from the setup form.
   business_name text not null,
   owner_name text,
+  -- Contact details used by the internal sales/admin team.
+  whatsapp text,
   email text not null,
-  phone text,
   industry text,
-  system text,
-  package text,
-  plan text,
+  -- Selected setup options from the package/system step.
+  system_name text,
+  package_name text,
+  plan_name text,
+  -- Extra context from the customer.
   notes text,
+  -- New requests stay pending until reviewed internally.
   status text not null default 'pending',
   created_at timestamptz not null default now()
 );
