@@ -30,7 +30,7 @@ const copy = {
     confirmSub: 'After this, your request will be saved and our team will review it.',
     noCare: 'No care plan for now',
     emailError: 'Please enter a valid email address.',
-    submitError: 'Unable to submit request. Please try again.',
+    submitError: 'We could not submit your request right now. Please try again.',
     oneTime: 'One-Time Build',
     monthly: 'Monthly Care',
     yearly: 'Yearly SaaS',
@@ -60,7 +60,7 @@ const copy = {
     confirmSub: 'Selepas ini, request anda akan disimpan dan team kami akan semak.',
     noCare: 'Tiada care plan dahulu',
     emailError: 'Sila masukkan alamat e-mel yang sah.',
-    submitError: 'Request gagal dihantar. Sila cuba lagi.',
+    submitError: 'We could not submit your request right now. Please try again.',
     oneTime: 'Build Sekali Bayar',
     monthly: 'Care Bulanan',
     yearly: 'SaaS Tahunan',
@@ -134,7 +134,7 @@ export default function Setup() {
     };
   }, [form, lang, selectedCare, selectedPackage, selectedSystem, t.noCare]);
 
-  const buildMessage = request => `${t.whatsappIntro}
+  const buildMessage = (request, summary) => `${t.whatsappIntro}
 
 Request ID: ${request.request_id}
 Status: PENDING
@@ -146,7 +146,7 @@ Industry: ${request.industry}
 System: ${request.system_name}
 Package: ${request.package_name}
 Plan: ${request.plan_name}
-Notes: ${request.notes}`;
+Notes: ${summary.notes}`;
 
   const goToStep2 = () => {
     // Validation: block the next step when the email format is not valid.
@@ -162,27 +162,36 @@ Notes: ${request.notes}`;
     setSubmitError('');
     setIsSubmitting(true);
 
-    const requestId = `BD-${Date.now().toString().slice(-8)}`;
-    const createdAt = new Date().toISOString();
+    const generatedRequestId = `BD-${Date.now().toString().slice(-8)}`;
+    const selectedSystemName = submission.system;
+    const selectedPackageName = submission.package;
+    const selectedPlanName = submission.care;
 
     const request = {
-      // Unique public reference shown to the customer on the success page.
-      request_id: requestId,
-      // Business and owner details from step 1.
-      business_name: submission.businessName,
-      owner_name: submission.ownerName,
-      // Contact fields used by the sales/admin team.
-      email: submission.email,
-      whatsapp: submission.phone,
-      industry: submission.industry,
-      // Selected setup options from step 2.
-      system_name: submission.system,
-      package_name: submission.package,
-      plan_name: submission.care,
-      notes: submission.notes,
-      // New requests always start as pending until reviewed internally.
+      // Supabase columns are snake_case, so this payload matches the database table exactly.
+      request_id: generatedRequestId,
+      business_name: form.businessName || '',
+      owner_name: form.ownerName || '',
+      whatsapp: form.phone || '',
+      email: form.email || '',
+      industry: form.industry || '',
+      system_name: selectedSystemName || '',
+      package_name: selectedPackageName || '',
+      plan_name: selectedPlanName || '',
       status: 'pending',
-      created_at: createdAt,
+      // id and created_at are not sent because Supabase fills them with database defaults.
+    };
+
+    const summary = {
+      businessName: form.businessName || '',
+      ownerName: form.ownerName || '',
+      phone: form.phone || '',
+      email: form.email || '',
+      industry: form.industry || '',
+      system: selectedSystemName || '',
+      package: selectedPackageName || '',
+      care: selectedPlanName || '',
+      notes: form.notes || (lang === 'en' ? 'No notes' : 'Tiada nota'),
     };
 
     try {
@@ -196,23 +205,23 @@ Notes: ${request.notes}`;
       if (error) throw error;
 
       const payload = {
-        id: requestId,
-        request_id: requestId,
+        id: generatedRequestId,
+        request_id: generatedRequestId,
         status: request.status,
-        businessName: request.business_name,
-        ownerName: request.owner_name,
-        phone: request.whatsapp,
-        email: request.email,
-        industry: request.industry,
-        system: request.system_name,
-        package: request.package_name,
-        care: request.plan_name,
-        notes: request.notes,
-        createdAt,
-        whatsappMessage: buildMessage(request),
+        summary,
+        businessName: summary.businessName,
+        ownerName: summary.ownerName,
+        phone: summary.phone,
+        email: summary.email,
+        industry: summary.industry,
+        system: summary.system,
+        package: summary.package,
+        care: summary.care,
+        notes: summary.notes,
+        whatsappMessage: buildMessage(request, summary),
       };
 
-    window.localStorage.setItem('bd_pending_setup', JSON.stringify(payload));
+      window.localStorage.setItem('bd_pending_setup', JSON.stringify(payload));
 
       // WhatsApp logic: open WhatsApp only when the env value exists.
       const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '';
@@ -222,7 +231,14 @@ Notes: ${request.notes}`;
 
       navigate('/setup-processing', { state: payload });
     } catch (error) {
-      console.error('Setup request submit failed. Supabase table: setup_requests. Error:', error);
+      // Read these console fields together: message is the main failure, while details/hint/code explain the Supabase cause.
+      console.error('Setup request submit failed. Supabase table: setup_requests.', {
+        'error.message': error?.message,
+        'error.details': error?.details,
+        'error.hint': error?.hint,
+        'error.code': error?.code,
+        'insert payload': request,
+      });
       setSubmitError(t.submitError);
     } finally {
       setIsSubmitting(false);
