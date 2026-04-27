@@ -4,6 +4,7 @@ import { Check, ChevronLeft, ChevronRight, Send } from 'lucide-react';
 import { businessSystems, getSystemName, getText, oneTimePackages, subscriptionPlans } from '../data/systems';
 import { useLanguage } from '../context/LanguageContext';
 import { supabase } from '../lib/supabase';
+import { notifyAdminSetupRequest } from '../services/setupRequestService';
 
 const copy = {
   en: {
@@ -178,6 +179,7 @@ Notes: ${summary.notes}`;
       system_name: selectedSystemName || '',
       package_name: selectedPackageName || '',
       plan_name: selectedPlanName || '',
+      notes: form.notes || '',
       status: 'pending',
       // id and created_at are not sent because Supabase fills them with database defaults.
     };
@@ -204,6 +206,16 @@ Notes: ${summary.notes}`;
 
       if (error) throw error;
 
+      try {
+        await notifyAdminSetupRequest(generatedRequestId);
+      } catch (notifyError) {
+        // Email runs in an Edge Function, so frontend logs help debug without exposing email API keys.
+        console.error('Admin setup email notification failed.', {
+          'error.message': notifyError?.message,
+          'request_id': generatedRequestId,
+        });
+      }
+
       const payload = {
         id: generatedRequestId,
         request_id: generatedRequestId,
@@ -222,12 +234,6 @@ Notes: ${summary.notes}`;
       };
 
       window.localStorage.setItem('bd_pending_setup', JSON.stringify(payload));
-
-      // WhatsApp logic: open WhatsApp only when the env value exists.
-      const whatsappNumber = import.meta.env.VITE_WHATSAPP_NUMBER || '';
-      if (whatsappNumber) {
-        window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(payload.whatsappMessage)}`, '_blank', 'noopener,noreferrer');
-      }
 
       navigate('/setup-processing', { state: payload });
     } catch (error) {

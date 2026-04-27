@@ -55,3 +55,22 @@ export async function getClientByUser(userId) {
   if (error) throw error;
   return data;
 }
+
+export async function getClientPortalData(userId) {
+  const db = requireSupabase();
+  const profile = await getClientByUser(userId);
+
+  const { data: systems, error } = await db
+    .from('client_systems')
+    .select('*')
+    .eq('client_id', profile.client_id)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  return {
+    profile,
+    client: profile.clients,
+    systems: systems || [],
+  };
+}

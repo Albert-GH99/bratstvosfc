@@ -14,8 +14,11 @@ import Pricing from './pages/Pricing';
 import Setup from './pages/Setup';
 import SetupProcessing from './pages/SetupProcessing';
 import Signup from './pages/Signup';
+import Login from './pages/Login';
+import Payment from './pages/Payment';
 import Admin from './pages/Admin';
 import Dashboard from "./pages/Admin/Dashboard";
+import ProtectedRoute from './components/ProtectedRoute';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -45,8 +48,14 @@ const AuthenticatedApp = () => {
           <Route path="/setup" element={<Setup />} />
           <Route path="/setup-processing" element={<SetupProcessing />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/payment/:invoiceId" element={<Payment />} />
+          <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/admin" replace />} />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
+          <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to="/login?next=/dashboard" replace />} />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+          </Route>
         </Route>
         <Route path="*" element={<PageNotFound />} />
       </Routes>

@@ -1,75 +1,101 @@
-import { useMemo, useState } from 'react';
-import {
-  CheckCircle2,
-  ClipboardList,
-  CreditCard,
-  Eye,
-  LayoutDashboard,
-  Package,
-  Plus,
-  Save,
-  ShoppingBag,
-  Trash2,
-} from 'lucide-react';
-import { businessSystems, getDemoItems } from '../data/systems';
+import { useEffect, useMemo, useState } from 'react';
+import { CheckCircle2, Clock3, CreditCard, ExternalLink, RefreshCw, ShieldCheck, XCircle } from 'lucide-react';
+import { listSetupRequests, reviewPayment, reviewSetupRequest } from '../services/setupRequestService';
+import { useAuth } from '../context/AuthContext';
 
-const starterProducts = getDemoItems(businessSystems[0].id).map((item, index) => ({
-  id: index + 1,
-  name: item.name,
-  price: item.price,
-  stock: item.stock,
-  status: index === 2 ? 'draft' : 'active',
-}));
-
-const starterOrders = [
-  { id: 'BD-FOO-1126', customer: 'Aina Rahman', total: 25.8, payment: 'Paid - QR DuitNow', status: 'Baru', time: '10:42 AM' },
-  { id: 'BD-FOO-1127', customer: 'Farid Amin', total: 54, payment: 'Pending receipt', status: 'Packing', time: '11:08 AM' },
-  { id: 'BD-FOO-1128', customer: 'Nadia Saleh', total: 18, payment: 'Cash pickup', status: 'Siap', time: '11:31 AM' },
-];
+function formatDate(value) {
+  if (!value) return '-';
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  }).format(new Date(value));
+}
 
 function formatMoney(value) {
-  return `RM${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `RM${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function statusColor(status) {
+  if (['approved', 'verified'].includes(status)) return 'var(--c-accent)';
+  if (['rejected', 'payment_rejected'].includes(status)) return '#DC2626';
+  return '#B45309';
 }
 
 export default function Admin() {
-  const [tab, setTab] = useState('overview');
-  const [products, setProducts] = useState(starterProducts);
-  const [orders] = useState(starterOrders);
-  const [draft, setDraft] = useState({ name: '', price: '', stock: '' });
+  const { user } = useAuth();
+  const [tab, setTab] = useState('requests');
+  const [requests, setRequests] = useState([]);
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [workingId, setWorkingId] = useState('');
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   const stats = useMemo(() => {
-    const activeProducts = products.filter(item => item.status === 'active').length;
-    const totalStock = products.reduce((sum, item) => sum + Number(item.stock || 0), 0);
-    const sales = orders.reduce((sum, order) => sum + order.total, 0);
+    const pending = requests.filter(item => item.status === 'pending').length;
+    const submitted = invoices.filter(item => item.payment_status === 'payment_submitted').length;
+    const verified = invoices.filter(item => item.payment_status === 'verified').length;
     return [
-      ['Produk aktif', activeProducts, Package],
-      ['Order hari ini', orders.length, ShoppingBag],
-      ['Jumlah stok', totalStock, ClipboardList],
-      ['Jualan demo', formatMoney(sales), CreditCard],
+      ['Pending requests', pending, Clock3],
+      ['Receipts to review', submitted, CreditCard],
+      ['Verified payments', verified, CheckCircle2],
     ];
-  }, [orders, products]);
+  }, [invoices, requests]);
 
-  const addProduct = () => {
-    if (!draft.name || !draft.price) return;
-    setProducts(prev => [
-      {
-        id: Date.now(),
-        name: draft.name,
-        price: Number(draft.price),
-        stock: Number(draft.stock || 0),
-        status: 'active',
-      },
-      ...prev,
-    ]);
-    setDraft({ name: '', price: '', stock: '' });
+  const loadData = async () => {
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    try {
+      const data = await listSetupRequests();
+      setRequests(data.requests);
+      setInvoices(data.invoices);
+    } catch (err) {
+      setError(err.message || 'Unable to load admin data. Confirm your admin account and Edge Function env vars.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeProduct = id => {
-    setProducts(prev => prev.filter(item => item.id !== id));
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const reviewRequest = async (requestId, action) => {
+    setWorkingId(`${requestId}:${action}`);
+    setError('');
+    setMessage('');
+
+    try {
+      const result = await reviewSetupRequest({ requestId, action });
+      setMessage(action === 'approve'
+        ? `Invoice ${result.invoice?.invoice_id || ''} created and payment link sent.`
+        : `Request ${requestId} rejected.`);
+      await loadData();
+    } catch (err) {
+      setError(err.message || 'Unable to review this setup request.');
+    } finally {
+      setWorkingId('');
+    }
   };
 
-  const toggleProduct = id => {
-    setProducts(prev => prev.map(item => item.id === id ? { ...item, status: item.status === 'active' ? 'draft' : 'active' } : item));
+  const reviewReceipt = async (invoiceId, action) => {
+    setWorkingId(`${invoiceId}:${action}`);
+    setError('');
+    setMessage('');
+
+    try {
+      await reviewPayment({ invoiceId, action });
+      setMessage(action === 'approve_payment'
+        ? `Payment ${invoiceId} verified and client access activated.`
+        : `Payment ${invoiceId} rejected. Client was asked to re-upload.`);
+      await loadData();
+    } catch (err) {
+      setError(err.message || 'Unable to review this payment.');
+    } finally {
+      setWorkingId('');
+    }
   };
 
   return (
@@ -78,18 +104,18 @@ export default function Admin() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Admin preview</p>
-              <h1 className="text-4xl md:text-5xl font-black mb-3" style={{ color: 'var(--c-text)' }}>Produk, order dan bayaran dalam satu dashboard.</h1>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Admin review</p>
+              <h1 className="text-4xl md:text-5xl font-black mb-3" style={{ color: 'var(--c-text)' }}>Onboarding control centre</h1>
               <p className="text-sm md:text-base max-w-3xl leading-relaxed" style={{ color: 'var(--c-muted)' }}>
-                Ini preview admin yang akan disambung ke Supabase. Dalam live mode, produk dan order datang dari database, bukan data contoh.
+                Approve setup requests, issue manual payment invoices, review receipts, then activate client access after payment verification.
               </p>
             </div>
-            <span className="rounded-full px-4 py-2 text-xs font-black" style={{ background: 'rgba(32,200,117,0.12)', color: 'var(--c-accent)', border: '1px solid rgba(32,200,117,0.24)' }}>
-              Supabase-ready
-            </span>
+            <div className="rounded-full px-4 py-2 text-xs font-black inline-flex items-center gap-2" style={{ background: 'rgba(32,200,117,0.12)', color: 'var(--c-accent)', border: '1px solid rgba(32,200,117,0.24)' }}>
+              <ShieldCheck size={14} /> {user?.email || 'Signed in'}
+            </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid sm:grid-cols-3 gap-4 mb-8">
             {stats.map(([label, value, Icon]) => (
               <div key={label} className="rounded-2xl p-5" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
                 <Icon size={19} className="mb-4" style={{ color: 'var(--c-accent)' }} />
@@ -101,9 +127,8 @@ export default function Admin() {
 
           <div className="flex rounded-xl p-1 mb-8 max-w-xl" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
             {[
-              ['overview', 'Overview'],
-              ['products', 'Produk'],
-              ['orders', 'Order'],
+              ['requests', 'Setup requests'],
+              ['payments', 'Payments'],
             ].map(([id, label]) => (
               <button
                 key={id}
@@ -116,114 +141,106 @@ export default function Admin() {
             ))}
           </div>
 
-          {tab === 'overview' && (
-            <div className="grid lg:grid-cols-2 gap-5">
-              <div className="rounded-2xl p-6" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                <div className="flex items-center gap-2 mb-5">
-                  <LayoutDashboard size={19} style={{ color: 'var(--c-accent)' }} />
-                  <h2 className="font-black" style={{ color: 'var(--c-text)' }}>Bagaimana ia berfungsi live</h2>
-                </div>
-                <div className="space-y-3">
-                  {[
-                    'Customer submit order dari demo/customer page.',
-                    'Order disimpan ke table orders dalam Supabase.',
-                    'Owner nampak status order dan status payment.',
-                    'Jika gateway disambung, payment boleh auto update kepada paid.',
-                  ].map(item => (
-                    <div key={item} className="flex gap-2 text-sm" style={{ color: 'var(--c-muted)' }}>
-                      <CheckCircle2 size={15} className="mt-0.5 shrink-0" style={{ color: 'var(--c-accent)' }} />
-                      {item}
-                    </div>
-                  ))}
-                </div>
+          <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+            <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
+              <div>
+                <h2 className="font-black" style={{ color: 'var(--c-text)' }}>{tab === 'requests' ? 'Client setup requests' : 'Manual payment receipts'}</h2>
+                <p className="text-xs mt-1" style={{ color: 'var(--c-muted)' }}>Admin actions run through protected Supabase Edge Functions.</p>
               </div>
-              <div className="rounded-2xl p-6" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                <h2 className="font-black mb-5" style={{ color: 'var(--c-text)' }}>Action pantas</h2>
-                <div className="grid gap-3">
-                  <button onClick={() => setTab('products')} className="rounded-xl p-4 text-left" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
-                    <p className="font-black mb-1" style={{ color: 'var(--c-text)' }}>Urus produk</p>
-                    <p className="text-sm" style={{ color: 'var(--c-muted)' }}>Tambah produk, ubah stok dan publish/draft.</p>
-                  </button>
-                  <button onClick={() => setTab('orders')} className="rounded-xl p-4 text-left" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
-                    <p className="font-black mb-1" style={{ color: 'var(--c-text)' }}>Semak order</p>
-                    <p className="text-sm" style={{ color: 'var(--c-muted)' }}>Pantau order baru, packing dan payment.</p>
-                  </button>
-                </div>
-              </div>
+              <button onClick={loadData} disabled={loading} className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-black disabled:opacity-50" style={{ border: '1px solid var(--c-border)', color: 'var(--c-text)' }}>
+                <RefreshCw size={15} /> Refresh
+              </button>
             </div>
-          )}
 
-          {tab === 'products' && (
-            <div className="grid lg:grid-cols-[380px_1fr] gap-5">
-              <div className="rounded-2xl p-5" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                <h2 className="font-black mb-4" style={{ color: 'var(--c-text)' }}>Tambah produk demo</h2>
-                <div className="space-y-3">
-                  {[
-                    ['name', 'Nama produk'],
-                    ['price', 'Harga RM'],
-                    ['stock', 'Stok'],
-                  ].map(([key, label]) => (
-                    <input
-                      key={key}
-                      value={draft[key]}
-                      onChange={event => setDraft(prev => ({ ...prev, [key]: event.target.value }))}
-                      placeholder={label}
-                      type={key === 'name' ? 'text' : 'number'}
-                      className="w-full rounded-xl px-4 py-3 text-sm outline-none"
-                      style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-input-border)', color: 'var(--c-text)' }}
-                    />
-                  ))}
-                  <button onClick={addProduct} className="w-full rounded-xl py-3 text-sm font-black flex items-center justify-center gap-2" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
-                    <Plus size={16} /> Tambah produk
-                  </button>
-                </div>
-              </div>
+            {message && <p className="p-4 text-sm" style={{ color: 'var(--c-accent)' }}>{message}</p>}
+            {error && <p className="p-4 text-sm" style={{ color: '#DC2626' }}>{error}</p>}
+            {loading && <p className="p-5 text-sm" style={{ color: 'var(--c-muted)' }}>Loading...</p>}
 
-              <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                {products.map(product => (
-                  <div key={product.id} className="p-4 flex items-center justify-between gap-4" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
-                    <div>
-                      <p className="font-black" style={{ color: 'var(--c-text)' }}>{product.name}</p>
-                      <p className="text-xs" style={{ color: 'var(--c-muted)' }}>{formatMoney(product.price)} - stok {product.stock} - {product.status}</p>
-                    </div>
-                    <div className="flex gap-1">
-                      <button onClick={() => toggleProduct(product.id)} className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ color: product.status === 'active' ? 'var(--c-accent)' : 'var(--c-muted)', border: '1px solid var(--c-border)' }}>
-                        <Eye size={15} />
-                      </button>
-                      <button onClick={() => removeProduct(product.id)} className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ color: '#EF4444', border: '1px solid var(--c-border)' }}>
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
+            {!loading && tab === 'requests' && requests.length === 0 && <p className="p-5 text-sm" style={{ color: 'var(--c-muted)' }}>No setup requests found.</p>}
+            {!loading && tab === 'requests' && requests.map(request => (
+              <div key={request.request_id} className="p-5 grid lg:grid-cols-[1.2fr_1fr_auto] gap-5" style={{ borderTop: '1px solid var(--c-border-subtle)' }}>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <p className="font-black" style={{ color: 'var(--c-text)' }}>{request.business_name || 'Unnamed business'}</p>
+                    <span className="rounded-full px-3 py-1 text-xs font-black" style={{ color: statusColor(request.status), background: 'var(--c-bg)' }}>{request.status}</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {tab === 'orders' && (
-            <div className="rounded-2xl overflow-hidden" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-              {orders.map(order => (
-                <div key={order.id} className="p-5 grid md:grid-cols-[1fr_1fr_1fr_auto] gap-4 md:items-center" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
-                  <div>
-                    <p className="font-black" style={{ color: 'var(--c-text)' }}>{order.id}</p>
-                    <p className="text-xs" style={{ color: 'var(--c-muted)' }}>{order.customer} - {order.time}</p>
-                  </div>
-                  <p className="text-sm font-black" style={{ color: 'var(--c-accent)' }}>{formatMoney(order.total)}</p>
-                  <p className="text-sm" style={{ color: 'var(--c-muted)' }}>{order.payment}</p>
-                  <span className="rounded-full px-3 py-1 text-xs font-black text-center" style={{ background: 'rgba(32,200,117,0.12)', color: 'var(--c-accent)' }}>{order.status}</span>
+                  <p className="text-xs mb-1" style={{ color: 'var(--c-muted)' }}>Request ID: {request.request_id}</p>
+                  <p className="text-xs mb-1" style={{ color: 'var(--c-muted)' }}>Owner: {request.owner_name || '-'} | {request.email || '-'} | {request.whatsapp || '-'}</p>
+                  <p className="text-xs" style={{ color: 'var(--c-muted)' }}>Submitted: {formatDate(request.created_at)}</p>
                 </div>
-              ))}
-            </div>
-          )}
 
-          <div className="mt-8 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-            <div>
-              <p className="font-black mb-1" style={{ color: 'var(--c-text)' }}>Untuk jadikan betul-betul live</p>
-              <p className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>Sambungkan form customer kepada `orders`, admin produk kepada `products`, dan payment gateway kepada status payment. Schema Supabase asas sudah ada dalam projek.</p>
-            </div>
-            <button className="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-black" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
-              <Save size={16} /> Demo saved locally
-            </button>
+                <div className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
+                  <p><strong style={{ color: 'var(--c-text)' }}>System:</strong> {request.system_name || '-'}</p>
+                  <p><strong style={{ color: 'var(--c-text)' }}>Package:</strong> {request.package_name || '-'}</p>
+                  <p><strong style={{ color: 'var(--c-text)' }}>Plan:</strong> {request.plan_name || '-'}</p>
+                  {request.notes && <p className="mt-2">{request.notes}</p>}
+                </div>
+
+                <div className="flex lg:flex-col gap-2">
+                  <button
+                    onClick={() => reviewRequest(request.request_id, 'approve')}
+                    disabled={request.status !== 'pending' || Boolean(workingId)}
+                    className="rounded-xl px-4 py-2 text-sm font-black disabled:opacity-40"
+                    style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}
+                  >
+                    {workingId === `${request.request_id}:approve` ? 'Creating invoice...' : 'Approve + invoice'}
+                  </button>
+                  <button
+                    onClick={() => reviewRequest(request.request_id, 'reject')}
+                    disabled={request.status !== 'pending' || Boolean(workingId)}
+                    className="rounded-xl px-4 py-2 text-sm font-black disabled:opacity-40"
+                    style={{ color: '#DC2626', border: '1px solid var(--c-border)' }}
+                  >
+                    {workingId === `${request.request_id}:reject` ? 'Rejecting...' : 'Reject'}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {!loading && tab === 'payments' && invoices.length === 0 && <p className="p-5 text-sm" style={{ color: 'var(--c-muted)' }}>No payment invoices found.</p>}
+            {!loading && tab === 'payments' && invoices.map(invoice => (
+              <div key={invoice.invoice_id} className="p-5 grid lg:grid-cols-[1.1fr_1fr_auto] gap-5" style={{ borderTop: '1px solid var(--c-border-subtle)' }}>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <p className="font-black" style={{ color: 'var(--c-text)' }}>{invoice.invoice_id}</p>
+                    <span className="rounded-full px-3 py-1 text-xs font-black" style={{ color: statusColor(invoice.payment_status), background: 'var(--c-bg)' }}>{invoice.payment_status}</span>
+                  </div>
+                  <p className="text-xs mb-1" style={{ color: 'var(--c-muted)' }}>Request ID: {invoice.request_id}</p>
+                  <p className="text-xs mb-1" style={{ color: 'var(--c-muted)' }}>Client: {invoice.client_name || '-'} | {invoice.email || '-'}</p>
+                  <p className="text-xs" style={{ color: 'var(--c-muted)' }}>Uploaded: {formatDate(invoice.receipt_uploaded_at)}</p>
+                </div>
+
+                <div className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
+                  <p><strong style={{ color: 'var(--c-text)' }}>Deposit:</strong> {formatMoney(invoice.deposit_amount)}</p>
+                  <p><strong style={{ color: 'var(--c-text)' }}>Balance:</strong> {formatMoney(invoice.balance_amount)}</p>
+                  <p><strong style={{ color: 'var(--c-text)' }}>Reference:</strong> {invoice.reference_code}</p>
+                  {invoice.receipt_url && (
+                    <a href={invoice.receipt_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-2 text-sm font-black" style={{ color: 'var(--c-accent)' }}>
+                      View receipt <ExternalLink size={14} />
+                    </a>
+                  )}
+                </div>
+
+                <div className="flex lg:flex-col gap-2">
+                  <button
+                    onClick={() => reviewReceipt(invoice.invoice_id, 'approve_payment')}
+                    disabled={invoice.payment_status !== 'payment_submitted' || Boolean(workingId)}
+                    className="rounded-xl px-4 py-2 text-sm font-black disabled:opacity-40"
+                    style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}
+                  >
+                    {workingId === `${invoice.invoice_id}:approve_payment` ? 'Verifying...' : 'Verify payment'}
+                  </button>
+                  <button
+                    onClick={() => reviewReceipt(invoice.invoice_id, 'reject_payment')}
+                    disabled={invoice.payment_status !== 'payment_submitted' || Boolean(workingId)}
+                    className="rounded-xl px-4 py-2 text-sm font-black disabled:opacity-40"
+                    style={{ color: '#DC2626', border: '1px solid var(--c-border)' }}
+                  >
+                    {workingId === `${invoice.invoice_id}:reject_payment` ? 'Rejecting...' : 'Reject receipt'}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
