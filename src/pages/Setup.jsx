@@ -138,11 +138,11 @@ export default function Setup() {
 
   const buildMessage = (request, summary) => `${t.whatsappIntro}
 
-Request ID: ${request.request_id}
+Request ID: ${request.id}
 Status: PENDING
 Business: ${request.business_name}
 Owner: ${request.owner_name}
-WhatsApp: ${request.whatsapp}
+WhatsApp: ${request.phone}
 Email: ${request.email}
 Industry: ${request.industry}
 System: ${request.system_name}
@@ -164,25 +164,21 @@ Notes: ${summary.notes}`;
     setSubmitError('');
     setIsSubmitting(true);
 
-    const generatedRequestId = `BD-${Date.now().toString().slice(-8)}`;
     const selectedSystemName = submission.system;
     const selectedPackageName = submission.package;
     const selectedPlanName = submission.care;
 
-    const request = {
-      // Supabase columns are snake_case, so this payload matches the database table exactly.
-      request_id: generatedRequestId,
-      business_name: form.businessName || '',
-      owner_name: form.ownerName || '',
-      whatsapp: form.phone || '',
+    const payload = {
+      business_name: form.businessName || form.name || '',
+      owner_name: form.ownerName || form.owner || '',
+      phone: form.phone || '',
       email: form.email || '',
       industry: form.industry || '',
-      system_name: selectedSystemName || '',
-      package_name: selectedPackageName || '',
-      plan_name: selectedPlanName || '',
+      system_name: form.system || form.systemName || selectedSystemName || '',
+      package_name: form.package || form.packageName || selectedPackageName || '',
+      plan_name: form.plan || form.budget || selectedPlanName || '',
       notes: form.notes || '',
       status: 'pending',
-      // id and created_at are not sent because Supabase fills them with database defaults.
     };
 
     const summary = {
@@ -201,25 +197,32 @@ Notes: ${summary.notes}`;
       if (!supabase) throw new Error('Supabase is not configured.');
 
       // Supabase insert: save the setup request before showing the success page.
-      const { error } = await supabase
+      const { data, error } = await supabase
+        .schema('public')
         .from('setup_requests')
-        .insert(request);
+        .insert([payload])
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Setup request submit failed. Supabase table: setup_requests', error);
+        throw error;
+      }
+
+      const request = data?.[0] || payload;
 
       try {
-        await notifyAdminSetupRequest(generatedRequestId);
+        await notifyAdminSetupRequest(request.id);
       } catch (notifyError) {
         // Email runs in an Edge Function, so frontend logs help debug without exposing email API keys.
         console.error('Admin setup email notification failed.', {
           'error.message': notifyError?.message,
-          'request_id': generatedRequestId,
+          'request_id': request.id,
         });
       }
 
-      const payload = {
-        id: generatedRequestId,
-        request_id: generatedRequestId,
+      const successPayload = {
+        id: request.id,
+        request_id: request.id,
         status: request.status,
         summary,
         businessName: summary.businessName,
@@ -234,18 +237,12 @@ Notes: ${summary.notes}`;
         whatsappMessage: buildMessage(request, summary),
       };
 
-      window.localStorage.setItem('bd_pending_setup', JSON.stringify(payload));
+      window.localStorage.setItem('bd_pending_setup', JSON.stringify(successPayload));
 
-      navigate('/setup-processing', { state: payload });
+      navigate('/setup-processing', { state: successPayload });
     } catch (error) {
       // Read these console fields together: message is the main failure, while details/hint/code explain the Supabase cause.
-      console.error('Setup request submit failed. Supabase table: setup_requests.', {
-        'error.message': error?.message,
-        'error.details': error?.details,
-        'error.hint': error?.hint,
-        'error.code': error?.code,
-        'insert payload': request,
-      });
+      console.error('Setup request submit failed. Supabase table: setup_requests', error);
       setSubmitError(t.submitError);
     } finally {
       setIsSubmitting(false);
