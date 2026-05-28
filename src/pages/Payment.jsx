@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Banknote, CheckCircle2, Copy, FileUp, Loader2, ReceiptText } from 'lucide-react';
 import { getPaymentInvoice, uploadPaymentReceipt } from '../services/paymentService';
+import { paymentProviders } from '@/config/paymentProviders';
 
 function formatMoney(value) {
   return `RM${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -9,7 +10,11 @@ function formatMoney(value) {
 
 function statusLabel(status) {
   if (status === 'payment_submitted') return 'Receipt submitted';
-  if (status === 'verified') return 'Payment verified';
+  if (status === 'verified' || status === 'paid') return 'Payment received';
+  if (status === 'pending' || status === 'pending_review' || status === 'pending_confirmation') return 'Pending review';
+  if (status === 'payment_pending') return 'Payment pending';
+  if (status === 'failed') return 'Payment failed';
+  if (status === 'refunded') return 'Refunded';
   if (status === 'payment_rejected') return 'Receipt rejected - please re-upload';
   return 'Awaiting payment';
 }
@@ -28,6 +33,12 @@ export default function Payment() {
 
   useEffect(() => {
     const loadInvoice = async () => {
+      if (!invoiceId) {
+        setLoading(false);
+        setError('Payment instruction will be sent after your setup request is reviewed.');
+        return;
+      }
+
       setLoading(true);
       setError('');
 
@@ -71,14 +82,14 @@ export default function Payment() {
   };
 
   return (
-    <div style={{ background: 'var(--c-bg)', minHeight: '100vh' }}>
+    <div className="page-shell">
       <section className="px-6 py-20">
         <div className="max-w-5xl mx-auto">
           <div className="mb-8">
-            <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Manual payment</p>
-            <h1 className="text-4xl md:text-5xl font-black mb-4" style={{ color: 'var(--c-text)' }}>Complete your setup deposit</h1>
+            <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Official payment instruction</p>
+            <h1 className="text-4xl md:text-5xl font-black mb-4" style={{ color: 'var(--c-text)' }}>Payment after request review</h1>
             <p className="text-sm md:text-base max-w-2xl leading-relaxed" style={{ color: 'var(--c-muted)' }}>
-              Pay using bank transfer or DuitNow QR, then upload your receipt for admin verification.
+              Official payment instructions will be sent after your request has been reviewed. Bank transfer, DuitNow QR or a payment link can be issued depending on the confirmed setup amount.
             </p>
           </div>
 
@@ -88,8 +99,17 @@ export default function Payment() {
             </div>
           )}
 
-          {error && <p className="rounded-xl p-4 text-sm mb-6" style={{ color: '#DC2626', background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>{error}</p>}
+          {error && <p className="rounded-xl p-4 text-sm mb-6" style={{ color: 'var(--c-muted)', background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>{error}</p>}
           {message && <p className="rounded-xl p-4 text-sm mb-6" style={{ color: 'var(--c-accent)', background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>{message}</p>}
+
+          <div className="mb-6 grid gap-3 md:grid-cols-4">
+            {paymentProviders.map(provider => (
+              <div key={provider.id} className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+                <p className="text-sm font-black" style={{ color: 'var(--c-text)' }}>{provider.name}</p>
+                <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>{provider.description}</p>
+              </div>
+            ))}
+          </div>
 
           {!loading && invoice && bank && (
             <div className="grid lg:grid-cols-[1fr_380px] gap-6">

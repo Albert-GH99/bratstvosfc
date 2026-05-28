@@ -1,500 +1,391 @@
-export const systemsData = [
-  {
-    id: 'food-preorder',
-    name: { en: 'Food Preorder System', my: 'Sistem Pra-Pesanan Makanan' },
-    description: {
-      en: 'Menu, pickup slot, customer notes and payment status for food orders.',
-      my: 'Menu, slot ambil, nota pelanggan dan status bayaran untuk order makanan.',
-    },
-    type: 'product',
-    priceMode: 'priced',
-    fromPrice: 149,
-    features: ['Menu items', 'Pickup slot', 'Order status', 'Customer notes'],
-    demoEnabled: true,
-    icon: 'FD',
-    category: { en: 'F&B', my: 'F&B' },
-    shortName: { en: 'Preorder', my: 'Pra-Pesanan' },
-    bestFor: { en: 'Bakeries, caterers, food vendors, home cooks', my: 'Bakeri, katering, vendor makanan, peniaga kuih' },
-    problem: { en: 'Orders are mixed inside WhatsApp and stock is hard to control.', my: 'Order bercampur dalam WhatsApp dan stok susah dikawal.' },
-    outcome: { en: 'Every order arrives with name, items, quantity, slot, payment status and notes.', my: 'Setiap order masuk dengan nama, item, kuantiti, slot, status bayaran dan nota.' },
-    items: [
-      { name: 'Nasi Lemak Ayam', price: 12.9, stock: 28 },
-      { name: 'Kuih Mix Box', price: 18, stock: 16 },
-      { name: 'Spaghetti Carbonara', price: 15.5, stock: 12 },
-    ],
+export const packageOptions = [
+  { id: 'Starter', name: 'Starter', price: 149, label: 'RM149' },
+  { id: 'Growth', name: 'Growth', price: 499, label: 'RM499' },
+  { id: 'Business', name: 'Business', price: 1499, label: 'RM1499' },
+  { id: 'Pro', name: 'Pro', price: 2999, label: 'RM2999' },
+  { id: 'Elite', name: 'Elite Custom', price: null, label: 'Custom quote' },
+];
+
+const packageNames = packageOptions.map(item => item.id);
+
+const packageFeatures = {
+  Starter: {
+    en: ['Basic customer page', 'Cleaner order or booking flow', 'WhatsApp summary'],
+    my: ['Halaman customer asas', 'Flow order atau booking lebih kemas', 'WhatsApp summary'],
   },
+  Growth: {
+    en: ['Simple owner dashboard', 'Customer records', 'Clearer status tracking'],
+    my: ['Dashboard owner ringkas', 'Rekod customer', 'Status lebih mudah track'],
+  },
+  Business: {
+    en: ['Owner dashboard', 'Product, order and customer records', 'More professional flow'],
+    my: ['Dashboard owner', 'Rekod produk, order dan customer', 'Flow lebih professional'],
+  },
+  Pro: {
+    en: ['Business analytics', 'Advanced automation', 'Team workflow support'],
+    my: ['Analytics bisnes', 'Automation lanjutan', 'Team lebih mudah urus kerja'],
+  },
+  Elite: {
+    en: ['Custom branding', 'Custom process planning', 'Premium planning session'],
+    my: ['Branding custom', 'Process planning khas', 'Sesi planning premium'],
+  },
+};
+
+const systems = [
   {
-    id: 'product-order',
-    name: { en: 'Product Order System', my: 'Sistem Pesanan Produk' },
-    description: {
-      en: 'Catalog, variants, stock and checkout structured for WhatsApp sellers.',
-      my: 'Katalog, variasi, stok dan checkout tersusun untuk seller WhatsApp.',
+    id: 'ecommerce',
+    name: { en: 'eCommerce System', my: 'eCommerce System' },
+    image: '',
+    shortDesc: {
+      en: 'Sell products with a polished catalogue, checkout flow, payment records and customer database.',
+      my: 'Untuk jual produk dengan katalog kemas, checkout, rekod payment dan database customer.',
     },
-    type: 'product',
-    priceMode: 'priced',
-    fromPrice: 149,
-    features: ['Catalog', 'Variants', 'Stock', 'Checkout'],
-    demoEnabled: true,
-    icon: 'PR',
-    category: { en: 'Retail', my: 'Runcit' },
-    shortName: { en: 'Product', my: 'Produk' },
-    bestFor: { en: 'Online sellers, dropshippers, boutiques, resellers', my: 'Seller online, dropshipper, butik, reseller' },
-    problem: { en: 'Customers ask price, stock, colour and size one by one.', my: 'Pelanggan tanya harga, stok, warna dan saiz satu-satu.' },
-    outcome: { en: 'Owner receives a complete order with variant, address and total.', my: 'Owner terima order lengkap dengan variasi, alamat dan jumlah.' },
-    items: [
-      { name: 'Premium Shawl', price: 55, stock: 22 },
-      { name: 'Cotton Tote Bag', price: 39, stock: 18 },
-      { name: 'Gift Box Add-on', price: 12, stock: 40 },
-    ],
+    longDesc: {
+      en: 'A product selling system for businesses that want customers to browse items, choose products, submit orders and pay with more confidence without losing everything inside chat.',
+      my: 'Sistem jualan untuk bisnes yang mahu customer browse produk, pilih item, submit order dan bayar dengan lebih yakin tanpa semuanya tenggelam dalam chat.',
+    },
+    suitableFor: {
+      en: 'Retail, boutiques, resellers, physical products, product launches and small online stores.',
+      my: 'Retail, butik, reseller, produk fizikal, launch produk dan online store kecil.',
+    },
+    packages: packageNames,
+    featuresByPackage: {
+      Starter: {
+        en: ['Simple shop page', 'Limited products and orders', 'Basic WhatsApp order summary'],
+        my: ['Shop page ringkas', 'Had produk dan order asas', 'WhatsApp order summary asas'],
+      },
+      Growth: {
+        en: ['More products', 'Voucher support', 'Cleaner checkout'],
+        my: ['Lebih banyak produk', 'Voucher', 'Checkout lebih kemas'],
+      },
+      Business: {
+        en: ['Dashboard analytics', 'Customer records', 'Payment status tracking'],
+        my: ['Dashboard analytics', 'Rekod customer', 'Status payment'],
+      },
+      Pro: {
+        en: ['Advanced order management', 'Automation', 'Popular product insights'],
+        my: ['Order management lanjutan', 'Automation', 'Insight produk popular'],
+      },
+      Elite: {
+        en: ['Custom flow and integration planning', 'Custom storefront branding', 'Premium dashboard'],
+        my: ['Custom flow dan integration planning', 'Storefront branding custom', 'Dashboard premium'],
+      },
+    },
+    demoType: 'ecommerce',
   },
   {
     id: 'booking',
-    name: { en: 'Appointment Booking System', my: 'Sistem Tempahan Temujanji' },
-    description: {
-      en: 'Clients choose service, date and slot without back-and-forth messages.',
-      my: 'Client pilih servis, tarikh dan slot tanpa ulang-alik mesej.',
+    name: { en: 'Booking System', my: 'Booking System' },
+    image: '',
+    shortDesc: {
+      en: 'Manage trips, events, activities, classes, participant slots, deposits and booking confirmations.',
+      my: 'Untuk trip, event, aktiviti, kelas, slot peserta, deposit dan booking confirmation.',
     },
-    type: 'service',
-    priceMode: 'priced',
-    fromPrice: 149,
-    features: ['Service list', 'Date slot', 'Staff assignment', 'Booking status'],
-    demoEnabled: true,
-    icon: 'BK',
-    category: { en: 'Service', my: 'Servis' },
-    shortName: { en: 'Booking', my: 'Tempahan' },
-    bestFor: { en: 'Salons, clinics, tutors, photographers, workshops', my: 'Salun, klinik, tutor, jurugambar, bengkel' },
-    problem: { en: 'Manual schedules cause double booking and slow replies.', my: 'Jadual manual mudah double booking dan lambat dibalas.' },
-    outcome: { en: 'Slots are controlled and the owner sees the day schedule clearly.', my: 'Slot terkawal dan owner nampak jadual harian dengan jelas.' },
-    services: [
-      { name: 'Haircut + Wash', price: 65, slots: 6 },
-      { name: 'Facial Treatment', price: 180, slots: 3 },
-      { name: 'Consultation Slot', price: 50, slots: 9 },
-    ],
+    longDesc: {
+      en: 'A booking system for events, trips, activities and classes. Customers can view activity details, dates, prices, itinerary, participant slots and deposit or full payment options.',
+      my: 'Booking System untuk event, trip, aktiviti atau kelas. Customer boleh lihat detail aktiviti, tarikh, harga, itinerary, slot peserta dan pilihan deposit atau full payment.',
+    },
+    suitableFor: {
+      en: 'Hiking groups, travel groups, event organisers, classes, workshops, tours, activities and sports sessions.',
+      my: 'Hiking group, travel group, event organiser, kelas, workshop, tour, aktiviti dan sports session.',
+    },
+    packages: packageNames,
+    featuresByPackage: {
+      Starter: {
+        en: ['Activity or trip page', 'Participant form', 'WhatsApp booking summary'],
+        my: ['Activity atau trip page', 'Participant form', 'WhatsApp booking summary'],
+      },
+      Growth: {
+        en: ['Trip and activity list', 'Slot availability', 'Deposit records'],
+        my: ['Senarai trip dan aktiviti', 'Slot availability', 'Rekod deposit'],
+      },
+      Business: {
+        en: ['Participant list', 'Booking calendar', 'Payment and deposit status'],
+        my: ['Senarai peserta', 'Booking calendar', 'Status payment dan deposit'],
+      },
+      Pro: {
+        en: ['Reminder settings', 'Itinerary editor', 'Capacity insights'],
+        my: ['Reminder settings', 'Itinerary editor', 'Capacity insights'],
+      },
+      Elite: {
+        en: ['Custom booking rules', 'Custom trip flow', 'Premium activity portal'],
+        my: ['Custom booking rules', 'Trip flow custom', 'Activity portal premium'],
+      },
+    },
+    demoType: 'booking',
   },
   {
-    id: 'ecommerce',
-    name: { en: 'eCommerce Store System', my: 'Sistem Kedai eCommerce' },
-    description: {
-      en: 'Product pages, cart, checkout and admin in one flow.',
-      my: 'Halaman produk, cart, checkout dan admin dalam satu flow.',
+    id: 'appointment',
+    name: { en: 'Appointment System', my: 'Appointment System' },
+    image: '',
+    shortDesc: {
+      en: 'Manage service appointments, customer records, reminders and visit status.',
+      my: 'Untuk servis appointment, rekod customer, reminder dan status kehadiran.',
     },
-    type: 'product',
-    priceMode: 'priced',
-    fromPrice: 499,
-    features: ['Product pages', 'Cart', 'Checkout', 'Admin orders'],
-    demoEnabled: true,
-    icon: 'EC',
-    category: { en: 'Store', my: 'Kedai' },
-    shortName: { en: 'eCommerce', my: 'eCommerce' },
-    bestFor: { en: 'Brands that need a real online store', my: 'Brand yang perlukan kedai online sebenar' },
-    problem: { en: 'Selling only through DM limits trust and scale.', my: 'Jual melalui DM sahaja susah nampak premium dan susah scale.' },
-    outcome: { en: 'Customers can shop directly and owner manages orders in admin.', my: 'Customer boleh beli terus dan owner urus order dalam admin.' },
-    items: [
-      { name: 'Signature Hoodie', price: 129, stock: 14 },
-      { name: 'Everyday Tee', price: 69, stock: 32 },
-      { name: 'Cap', price: 49, stock: 20 },
-    ],
+    longDesc: {
+      en: 'An appointment system for service businesses that need to manage customers, staff, appointment times, reminders and visit status with a more professional flow.',
+      my: 'Appointment System untuk bisnes servis yang perlu urus customer, staff, masa appointment, reminder dan status kehadiran dengan flow yang lebih professional.',
+    },
+    suitableFor: {
+      en: 'Clinics, salons, consultants, tutors, repair services and personal service teams.',
+      my: 'Klinik, salon, consultant, tutor, repair service dan personal service team.',
+    },
+    packages: packageNames,
+    featuresByPackage: {
+      Starter: {
+        en: ['Service display page', 'Appointment request form', 'WhatsApp appointment summary'],
+        my: ['Service display page', 'Appointment request form', 'WhatsApp appointment summary'],
+      },
+      Growth: {
+        en: ['Simple appointment list', 'Saved customer records', 'Manual schedule review'],
+        my: ['Senarai appointment ringkas', 'Rekod customer tersimpan', 'Semakan jadual manual'],
+      },
+      Business: {
+        en: ['Appointment calendar', 'Customer records', 'Clear appointment status'],
+        my: ['Appointment calendar', 'Rekod customer', 'Status appointment jelas'],
+      },
+      Pro: {
+        en: ['Staff schedule', 'Reminder automation', 'No-show, completed and cancelled tracking'],
+        my: ['Staff schedule', 'Reminder automation', 'No-show, completed dan cancelled tracking'],
+      },
+      Elite: {
+        en: ['Custom appointment flow', 'Custom staff or branch routing', 'Premium branded experience'],
+        my: ['Appointment flow custom', 'Routing staff atau branch custom', 'Experience branded premium'],
+      },
+    },
+    demoType: 'appointment',
   },
   {
-    id: 'membership',
-    name: { en: 'Membership System', my: 'Sistem Keahlian' },
-    description: {
-      en: 'Manage members, renewal, tiers and access in one place.',
-      my: 'Urus ahli, renewal, tier dan akses dalam satu tempat.',
+    id: 'food-order',
+    name: { en: 'Food Order System', my: 'Food Order System' },
+    image: '',
+    shortDesc: {
+      en: 'Support dine-in QR orders, online food orders, pickup, delivery, kitchen queues and payment status.',
+      my: 'Untuk QR dine-in, online food order, pickup, delivery, kitchen queue dan status payment.',
     },
-    type: 'service',
-    priceMode: 'priced',
-    fromPrice: 499,
-    features: ['Member tiers', 'Renewal status', 'Access records', 'Reminders'],
-    demoEnabled: true,
-    icon: 'MB',
-    category: { en: 'Subscription', my: 'Langganan' },
-    shortName: { en: 'Membership', my: 'Keahlian' },
-    bestFor: { en: 'Gyms, academies, paid communities, subscription boxes', my: 'Gym, akademi, komuniti berbayar, subscription box' },
-    problem: { en: 'Renewals are tracked manually and expired members are missed.', my: 'Renewal dibuat manual dan ahli tamat tempoh mudah terlepas.' },
-    outcome: { en: 'Members have clear status and renewal reminders are easier.', my: 'Ahli ada status jelas dan reminder renewal lebih mudah.' },
-    services: [
-      { name: 'Basic Member', price: 99, slots: 40 },
-      { name: 'Premium Member', price: 199, slots: 18 },
-      { name: 'Family Plan', price: 299, slots: 10 },
-    ],
-  },
-  {
-    id: 'pos',
-    name: { en: 'POS System', my: 'Sistem POS' },
-    description: {
-      en: 'Counter orders, payment and daily sales reports.',
-      my: 'Order kaunter, bayaran dan laporan jualan harian.',
+    longDesc: {
+      en: 'A food ordering system for restaurants, cafes and small food sellers. It can run QR table ordering for dine-in or online orders for pickup, delivery and preorder.',
+      my: 'Food Order System untuk restoran, cafe dan penjual makanan kecil. Boleh guna mode QR table order untuk dine-in atau online order untuk pickup, delivery dan preorder.',
     },
-    type: 'product',
-    priceMode: 'priced',
-    fromPrice: 1499,
-    features: ['Counter order', 'Payment method', 'Daily total', 'Sales report'],
-    demoEnabled: true,
-    icon: 'PS',
-    category: { en: 'Counter', my: 'Kaunter' },
-    shortName: { en: 'POS', my: 'POS' },
-    bestFor: { en: 'Cafes, retail counters, small restaurants', my: 'Kafe, kaunter runcit, restoran kecil' },
-    problem: { en: 'Cashier records are messy and end-day reports take time.', my: 'Rekod cashier bersepah dan laporan harian ambil masa.' },
-    outcome: { en: 'Transactions, payment method and daily totals are tracked.', my: 'Transaksi, kaedah bayaran dan jumlah harian boleh dijejak.' },
-    items: [
-      { name: 'Latte', price: 12, stock: 80 },
-      { name: 'Chicken Wrap', price: 16, stock: 25 },
-      { name: 'Brownie', price: 9, stock: 18 },
-    ],
-  },
-  {
-    id: 'invoice',
-    name: { en: 'Invoice & Quotation System', my: 'Sistem Invois & Sebut Harga' },
-    description: {
-      en: 'Create professional quotes and invoices with client and payment status.',
-      my: 'Jana quotation dan invois profesional dengan rekod client dan status bayaran.',
+    suitableFor: {
+      en: 'Restaurants, cafes, home bakers, caterers, kuih sellers, small food businesses and preorder food sellers.',
+      my: 'Restoran, cafe, home baker, catering, penjual kuih, small food business dan preorder food seller.',
     },
-    type: 'service',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Quotation', 'Invoice', 'Client record', 'Payment status'],
-    demoEnabled: true,
-    icon: 'IN',
-    category: { en: 'Finance', my: 'Kewangan' },
-    shortName: { en: 'Invoice', my: 'Invois' },
-    bestFor: { en: 'Freelancers, contractors, agencies, B2B services', my: 'Freelancer, kontraktor, agensi, servis B2B' },
-    problem: { en: 'Documents are made manually and payment follow-up is slow.', my: 'Dokumen dibuat manual dan follow-up bayaran lambat.' },
-    outcome: { en: 'Documents, client records and payment status are organised.', my: 'Dokumen, rekod client dan status bayaran jadi tersusun.' },
-    services: [
-      { name: 'Website + System Setup', price: 1499, slots: 1 },
-      { name: 'Monthly Retainer', price: 299, slots: 1 },
-      { name: 'Custom Module', price: 999, slots: 1 },
-    ],
-  },
-  {
-    id: 'qr-order',
-    name: { en: 'QR Table Ordering System', my: 'Sistem Pesanan QR Meja' },
-    description: {
-      en: 'Customers scan, order and kitchen receives it directly.',
-      my: 'Customer scan, order dan dapur terima terus.',
+    packages: packageNames,
+    featuresByPackage: {
+      Starter: {
+        en: ['Menu page', 'Basic cart', 'WhatsApp food order summary'],
+        my: ['Menu page', 'Basic cart', 'WhatsApp food order summary'],
+      },
+      Growth: {
+        en: ['QR table mode', 'Voucher support', 'Pickup and delivery records'],
+        my: ['QR table mode', 'Voucher support', 'Rekod pickup dan delivery'],
+      },
+      Business: {
+        en: ['Kitchen queue', 'Payment status', 'Open or close ordering setting'],
+        my: ['Kitchen queue', 'Status payment', 'Open atau close ordering setting'],
+      },
+      Pro: {
+        en: ['Repeat-order automation', 'Menu availability controls', 'Peak item insights'],
+        my: ['Repeat-order automation', 'Menu availability control', 'Insight item popular'],
+      },
+      Elite: {
+        en: ['Custom dine-in or online flow', 'Custom kitchen process', 'Premium operations dashboard'],
+        my: ['Dine-in atau online flow custom', 'Kitchen process custom', 'Dashboard operasi premium'],
+      },
     },
-    type: 'product',
-    priceMode: 'priced',
-    fromPrice: 499,
-    features: ['QR menu', 'Table number', 'Kitchen order', 'Payment status'],
-    demoEnabled: true,
-    icon: 'QR',
-    category: { en: 'F&B', my: 'F&B' },
-    shortName: { en: 'QR Order', my: 'QR Order' },
-    bestFor: { en: 'Restaurants, cafes, food courts, hotels', my: 'Restoran, kafe, food court, hotel' },
-    problem: { en: 'Staff spend too much time taking orders manually.', my: 'Staff banyak masa ambil order secara manual.' },
-    outcome: { en: 'Orders flow from table to kitchen with fewer mistakes.', my: 'Order masuk dari meja ke dapur dengan kurang kesilapan.' },
-    items: [
-      { name: 'Chicken Chop', price: 18.9, stock: 26 },
-      { name: 'Iced Lemon Tea', price: 5.5, stock: 60 },
-      { name: 'Mushroom Soup', price: 8, stock: 18 },
-    ],
-  },
-  {
-    id: 'crm',
-    name: { en: 'CRM & Lead Management', my: 'CRM & Pengurusan Prospek' },
-    description: {
-      en: 'Track leads from first contact to closed deal with value and next action.',
-      my: 'Track prospek dari first contact sampai close deal dengan nilai dan tindakan seterusnya.',
-    },
-    type: 'workflow',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Lead', 'Deal value', 'Pipeline', 'Follow-up'],
-    demoEnabled: true,
-    icon: 'CR',
-    category: { en: 'Sales', my: 'Sales' },
-    shortName: { en: 'CRM', my: 'CRM' },
-    bestFor: { en: 'Agents, sales teams, consultants, agencies', my: 'Ejen, sales team, consultant, agensi' },
-    problem: { en: 'Leads get lost in WhatsApp and follow-up is inconsistent.', my: 'Lead hilang dalam WhatsApp dan follow-up tidak konsisten.' },
-    outcome: { en: 'Each lead has status, value, next action and notes.', my: 'Setiap lead ada status, nilai, tindakan seterusnya dan nota.' },
-    workflow: ['Lead', 'Qualified', 'Deal', 'Closed'],
-    metrics: [
-      { label: 'Website Inquiry', value: 'RM3,000', status: 'Lead' },
-      { label: 'Product System Lead', value: 'RM1,500', status: 'Deal' },
-      { label: 'Retainer Prospect', value: 'RM650/mo', status: 'Follow-up' },
-    ],
-  },
-  {
-    id: 'visitor',
-    name: { en: 'Visitor Management System', my: 'Sistem Pengurusan Pelawat' },
-    description: {
-      en: 'Digital check-in, host alert and searchable visitor log.',
-      my: 'Check-in digital, alert host dan log pelawat yang boleh dicari.',
-    },
-    type: 'workflow',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Check-in', 'Host alert', 'Badge', 'Check-out'],
-    demoEnabled: true,
-    icon: 'VS',
-    category: { en: 'Operations', my: 'Operasi' },
-    shortName: { en: 'Visitor', my: 'Pelawat' },
-    bestFor: { en: 'Offices, factories, events, schools, condos', my: 'Pejabat, kilang, event, sekolah, kondominium' },
-    problem: { en: 'Paper logbooks are slow and hard to audit.', my: 'Buku log kertas lambat dan susah diaudit.' },
-    outcome: { en: 'Visitor data is searchable and host notifications are instant.', my: 'Data pelawat boleh dicari dan host dapat notifikasi segera.' },
-    workflow: ['Check-in', 'Notify host', 'Badge printed', 'Check-out'],
-  },
-  {
-    id: 'rental',
-    name: { en: 'Rental System', my: 'Sistem Sewa' },
-    description: {
-      en: 'Availability, deposit, rental period and return status.',
-      my: 'Availability, deposit, tempoh sewa dan status pulang.',
-    },
-    type: 'service',
-    priceMode: 'priced',
-    fromPrice: 499,
-    features: ['Availability', 'Deposit', 'Rental period', 'Return status'],
-    demoEnabled: true,
-    icon: 'RN',
-    category: { en: 'Operations', my: 'Operasi' },
-    shortName: { en: 'Rental', my: 'Sewa' },
-    bestFor: { en: 'Homestays, equipment rental, canopy rental', my: 'Homestay, sewa barang, sewa kanopi' },
-    problem: { en: 'Availability and deposits are tracked manually.', my: 'Availability dan deposit dijejak manual.' },
-    outcome: { en: 'Bookings, deposits and return dates are easier to monitor.', my: 'Tempahan, deposit dan tarikh pulang mudah dipantau.' },
-    services: [
-      { name: 'Canopy Set', price: 180, slots: 5 },
-      { name: 'PA System', price: 120, slots: 4 },
-      { name: 'Event Chairs', price: 2.5, slots: 300 },
-    ],
-  },
-  {
-    id: 'clinic-queue',
-    name: { en: 'Clinic Queue System', my: 'Sistem Queue Klinik' },
-    description: {
-      en: 'Patient intake, queue number and treatment status.',
-      my: 'Intake pesakit, nombor giliran dan status rawatan.',
-    },
-    type: 'workflow',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Patient intake', 'Queue number', 'Room assignment', 'Treatment status'],
-    demoEnabled: true,
-    icon: 'CQ',
-    category: { en: 'Healthcare', my: 'Kesihatan' },
-    shortName: { en: 'Clinic', my: 'Klinik' },
-    bestFor: { en: 'Clinics, dental centres, wellness centres', my: 'Klinik, dental, pusat wellness' },
-    problem: { en: 'Reception queue becomes crowded and unclear.', my: 'Queue reception jadi sesak dan tidak jelas.' },
-    outcome: { en: 'Patients and staff can track queue status clearly.', my: 'Pesakit dan staff boleh pantau status giliran dengan jelas.' },
-    workflow: ['Intake', 'Queue number', 'Consultation', 'Completed'],
-  },
-  {
-    id: 'tuition',
-    name: { en: 'Tuition/Class Booking System', my: 'Sistem Tempahan Kelas/Tuisyen' },
-    description: {
-      en: 'Class registration, level, schedule and trial request.',
-      my: 'Daftar kelas, tahap, jadual dan trial request.',
-    },
-    type: 'service',
-    priceMode: 'priced',
-    fromPrice: 499,
-    features: ['Class registration', 'Level', 'Schedule', 'Trial request'],
-    demoEnabled: true,
-    icon: 'TU',
-    category: { en: 'Education', my: 'Pendidikan' },
-    shortName: { en: 'Class', my: 'Kelas' },
-    bestFor: { en: 'Tuition centres, trainers, workshops', my: 'Pusat tuisyen, trainer, workshop' },
-    problem: { en: 'Class registrations are scattered across forms and chat.', my: 'Pendaftaran kelas berselerak antara form dan chat.' },
-    outcome: { en: 'Students, classes and schedules are organised.', my: 'Pelajar, kelas dan jadual jadi tersusun.' },
-    services: [
-      { name: 'Trial Class', price: 30, slots: 12 },
-      { name: 'Math Form 5', price: 180, slots: 8 },
-      { name: 'Coding Kids', price: 220, slots: 10 },
-    ],
-  },
-  {
-    id: 'property',
-    name: { en: 'Property Lead System', my: 'Sistem Prospek Hartanah' },
-    description: {
-      en: 'Qualify leads, budget and viewing appointments.',
-      my: 'Layakkan prospek, bajet dan appointment viewing.',
-    },
-    type: 'workflow',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Lead qualification', 'Budget', 'Viewing slot', 'Follow-up'],
-    demoEnabled: true,
-    icon: 'PT',
-    category: { en: 'Sales', my: 'Sales' },
-    shortName: { en: 'Property', my: 'Hartanah' },
-    bestFor: { en: 'Property agents, real estate teams, developers', my: 'Ejen hartanah, team real estate, developer' },
-    problem: { en: 'Agents waste time on unqualified enquiries.', my: 'Ejen banyak buang masa dengan enquiry tidak qualified.' },
-    outcome: { en: 'Hot leads and viewing slots are easier to prioritise.', my: 'Lead panas dan slot viewing lebih mudah diutamakan.' },
-    workflow: ['New lead', 'Qualified', 'Viewing', 'Closed'],
-    metrics: [
-      { label: 'Condo Inquiry', value: 'RM550k', status: 'Qualified' },
-      { label: 'Landed House Lead', value: 'RM820k', status: 'Viewing' },
-      { label: 'Investor Prospect', value: 'RM1.2m', status: 'Follow-up' },
-    ],
-  },
-  {
-    id: 'workshop',
-    name: { en: 'Workshop Job Card System', my: 'Sistem Job Card Workshop' },
-    description: {
-      en: 'Vehicle intake, job status, parts and billing.',
-      my: 'Intake kenderaan, status kerja, parts dan billing.',
-    },
-    type: 'workflow',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Vehicle intake', 'Job status', 'Parts', 'Billing note'],
-    demoEnabled: true,
-    icon: 'WS',
-    category: { en: 'Automotive', my: 'Automotif' },
-    shortName: { en: 'Workshop', my: 'Workshop' },
-    bestFor: { en: 'Car workshops, detailing shops, service centres', my: 'Bengkel kereta, detailing, pusat servis' },
-    problem: { en: 'Job progress is unclear and parts follow-up is manual.', my: 'Progress kerja tidak jelas dan follow-up parts manual.' },
-    outcome: { en: 'Jobs are tracked from intake to ready pickup.', my: 'Kerja dijejak dari intake sampai ready pickup.' },
-    workflow: ['Intake', 'Inspection', 'In progress', 'Ready pickup'],
-  },
-  {
-    id: 'event',
-    name: { en: 'Event Registration System', my: 'Sistem Pendaftaran Event' },
-    description: {
-      en: 'Ticket type, attendee list and check-in status.',
-      my: 'Jenis tiket, senarai peserta dan status check-in.',
-    },
-    type: 'service',
-    priceMode: 'priced',
-    fromPrice: 499,
-    features: ['Registration', 'Ticket type', 'Attendee list', 'Check-in'],
-    demoEnabled: true,
-    icon: 'EV',
-    category: { en: 'Event', my: 'Event' },
-    shortName: { en: 'Event', my: 'Event' },
-    bestFor: { en: 'Workshops, seminars, communities, conferences', my: 'Workshop, seminar, komuniti, conference' },
-    problem: { en: 'Attendee lists and check-ins are hard to manage manually.', my: 'Senarai peserta dan check-in susah diurus manual.' },
-    outcome: { en: 'Registration, payment note and attendance are centralised.', my: 'Pendaftaran, nota bayaran dan kehadiran berpusat.' },
-    services: [
-      { name: 'General Ticket', price: 49, slots: 80 },
-      { name: 'VIP Ticket', price: 149, slots: 20 },
-      { name: 'Workshop Pass', price: 89, slots: 35 },
-    ],
-  },
-  {
-    id: 'donation',
-    name: { en: 'Donation/NGO System', my: 'Sistem Donation/NGO' },
-    description: {
-      en: 'Campaign, donor record and receipt flow.',
-      my: 'Kempen, rekod penyumbang dan aliran resit.',
-    },
-    type: 'service',
-    priceMode: 'priced',
-    fromPrice: 499,
-    features: ['Campaign', 'Donor record', 'Receipt', 'Collection status'],
-    demoEnabled: true,
-    icon: 'DN',
-    category: { en: 'NGO', my: 'NGO' },
-    shortName: { en: 'Donation', my: 'Donation' },
-    bestFor: { en: 'NGOs, mosques, campaigns, community funds', my: 'NGO, masjid, kempen, tabung komuniti' },
-    problem: { en: 'Donor records and receipts are not centralised.', my: 'Rekod penyumbang dan resit tidak berpusat.' },
-    outcome: { en: 'Collections, donors and receipts are easier to audit.', my: 'Kutipan, penyumbang dan resit lebih mudah diaudit.' },
-    services: [
-      { name: 'Food Aid', price: 100, slots: 100 },
-      { name: 'Education Fund', price: 50, slots: 200 },
-      { name: 'Monthly Donor', price: 30, slots: 500 },
-    ],
-  },
-  {
-    id: 'hr-leave',
-    name: { en: 'HR Leave System', my: 'Sistem HR Cuti' },
-    description: {
-      en: 'Leave request, approval, pending status and team availability.',
-      my: 'Request cuti, approval, status pending dan availability team.',
-    },
-    type: 'workflow',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Apply Leave', 'Pending', 'Approved', 'Staff list'],
-    demoEnabled: true,
-    icon: 'HR',
-    category: { en: 'HR', my: 'HR' },
-    shortName: { en: 'HR Leave', my: 'HR Cuti' },
-    bestFor: { en: 'Small teams, operations teams, agencies', my: 'Team kecil, team operasi, agensi' },
-    problem: { en: 'Leave requests are buried in chat and hard to approve.', my: 'Request cuti tenggelam dalam chat dan susah approve.' },
-    outcome: { en: 'Managers see pending leave and team availability clearly.', my: 'Manager nampak cuti pending dan availability team dengan jelas.' },
-    workflow: ['Apply Leave', 'Pending', 'Approved', 'Staff list'],
-  },
-  {
-    id: 'inventory',
-    name: { en: 'Inventory System', my: 'Sistem Inventori' },
-    description: {
-      en: 'Stock in/out, low stock alerts and supplier notes.',
-      my: 'Stock masuk/keluar, low stock alert dan nota supplier.',
-    },
-    type: 'workflow',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Stock in', 'Stock out', 'Low stock', 'Supplier note'],
-    demoEnabled: true,
-    icon: 'IV',
-    category: { en: 'Operations', my: 'Operasi' },
-    shortName: { en: 'Inventory', my: 'Inventori' },
-    bestFor: { en: 'Retail, warehouses, F&B stock, spare parts', my: 'Runcit, gudang, stok F&B, spare parts' },
-    problem: { en: 'Stock counts are updated late and low-stock items are missed.', my: 'Kiraan stok lambat update dan item low-stock terlepas.' },
-    outcome: { en: 'Stock movement and reorder signals are clearer.', my: 'Pergerakan stok dan tanda reorder lebih jelas.' },
-    workflow: ['Stock in', 'Stock out', 'Low stock alert', 'Reorder'],
-  },
-  {
-    id: 'loyalty',
-    name: { en: 'Loyalty Rewards System', my: 'Sistem Loyalty Rewards' },
-    description: {
-      en: 'Points, rewards and repeat customer tracking.',
-      my: 'Point, reward dan tracking customer repeat.',
-    },
-    type: 'workflow',
-    priceMode: 'custom',
-    fromPrice: null,
-    features: ['Customer profile', 'Points', 'Reward claim', 'Repeat visit'],
-    demoEnabled: true,
-    icon: 'LY',
-    category: { en: 'Marketing', my: 'Marketing' },
-    shortName: { en: 'Loyalty', my: 'Loyalty' },
-    bestFor: { en: 'Cafes, beauty, retail, membership brands', my: 'Kafe, beauty, retail, brand membership' },
-    problem: { en: 'Repeat customers are not tracked or rewarded properly.', my: 'Customer repeat tidak dijejak atau diberi ganjaran dengan betul.' },
-    outcome: { en: 'Rewards can increase return visits and retention.', my: 'Reward boleh bantu customer datang semula dan kekal.' },
-    workflow: ['Earn points', 'Track profile', 'Claim reward', 'Repeat visit'],
+    demoType: 'food',
   },
   {
     id: 'dispatch',
-    name: { en: 'Delivery Dispatch System', my: 'Sistem Delivery Dispatch' },
-    description: {
-      en: 'Assign rider, route, status and proof of delivery.',
-      my: 'Assign rider, route, status dan bukti delivery.',
+    name: { en: 'Delivery Dispatch System', my: 'Delivery Dispatch System' },
+    image: '',
+    shortDesc: {
+      en: 'For companies with internal runners or staff who need job assignment, location tracking, work status and daily movement records.',
+      my: 'Untuk syarikat yang ada runner atau staff sendiri dan perlu assign job, track lokasi, monitor status kerja dan rekod perjalanan harian.',
     },
-    type: 'workflow',
+    longDesc: {
+      en: 'An operations system for HR, admin and operations managers who monitor runners or field staff. It focuses on job assignment, current status, location, proof notes and staff movement history, not large courier marketplace operations.',
+      my: 'Sistem operasi untuk HR, admin dan operations manager yang perlu monitor runner atau staff harian. Fokusnya ialah assignment kerja, status semasa, lokasi, proof note dan sejarah pergerakan staff, bukan marketplace courier besar.',
+    },
+    suitableFor: {
+      en: 'Companies with 5+ daily runners or field staff, HR/admin operations, laundry pickup teams, catering delivery teams, hardware shops, pharmacies and service dispatch teams.',
+      my: 'Company dengan 5+ runner atau staff harian, HR/admin operations, laundry pickup team, catering delivery team, hardware shop, pharmacy dan service dispatch team.',
+    },
+    packages: packageNames,
+    featuresByPackage: {
+      Starter: {
+        en: ['Basic job records', 'Staff or runner list', 'Manual status updates'],
+        my: ['Rekod job asas', 'Senarai staff atau runner', 'Status update manual'],
+      },
+      Growth: {
+        en: ['Create jobs or tasks', 'Assign staff or runners', 'Runner accepts job'],
+        my: ['Create job atau task', 'Assign staff atau runner', 'Runner accept job'],
+      },
+      Business: {
+        en: ['Assigned, on the way, arrived and completed status', 'Job history', 'Daily staff movement'],
+        my: ['Status assigned, on the way, arrived dan completed', 'Job history', 'Pergerakan staff harian'],
+      },
+      Pro: {
+        en: ['Location tracking flow', 'Proof photo and note support', 'Runner performance dashboard'],
+        my: ['Location tracking flow', 'Support proof photo dan note', 'Runner performance dashboard'],
+      },
+      Elite: {
+        en: ['Custom HR or operations workflow', 'Advanced dispatch dashboard', 'Priority support and integration planning'],
+        my: ['Workflow HR atau operasi custom', 'Dispatch dashboard lanjutan', 'Priority support dan integration planning'],
+      },
+    },
+    demoType: 'dispatch',
+  },
+  {
+    id: 'custom-website',
+    name: { en: 'Custom Website / System', my: 'Custom Website / System' },
+    image: '',
+    shortDesc: {
+      en: 'For businesses that need a custom website or system built around their own workflow.',
+      my: 'Untuk bisnes yang perlukan website atau system khas ikut workflow sendiri.',
+    },
+    longDesc: {
+      en: 'For businesses that need a custom website or system built around their own workflow. We review your needs and set a consultation before the final quote is confirmed.',
+      my: 'Untuk bisnes yang perlukan website atau system khas ikut workflow sendiri. Kami review keperluan anda dan set appointment sebelum harga akhir diberi.',
+    },
+    suitableFor: {
+      en: 'Company profiles, campaigns, premium brands, service providers, portfolios and businesses with custom workflows.',
+      my: 'Company profile, campaign, premium brand, service provider, portfolio dan bisnes dengan workflow khas.',
+    },
+    packages: packageNames,
+    featuresByPackage: {
+      Starter: {
+        en: ['Consultation request', 'Needs review', 'Basic direction planning'],
+        my: ['Consultation request', 'Review keperluan', 'Direction planning asas'],
+      },
+      Growth: {
+        en: ['Consultation request', 'Page and flow planning', 'Implementation roadmap'],
+        my: ['Consultation request', 'Page dan flow planning', 'Implementation roadmap'],
+      },
+      Business: {
+        en: ['Consultation request', 'Premium website direction', 'Custom quote after review'],
+        my: ['Consultation request', 'Arah website premium', 'Custom quote selepas review'],
+      },
+      Pro: {
+        en: ['Consultation request', 'Advanced process planning', 'Integration discussion'],
+        my: ['Consultation request', 'Process planning lanjutan', 'Integration discussion'],
+      },
+      Elite: {
+        en: ['Consultation request', 'Tailored feature planning', 'Priority architecture review'],
+        my: ['Consultation request', 'Feature planning mengikut keperluan', 'Priority architecture review'],
+      },
+    },
+    demoType: 'custom',
     priceMode: 'custom',
-    fromPrice: null,
-    features: ['Assign rider', 'Route', 'Delivery status', 'Proof'],
-    demoEnabled: true,
-    icon: 'DP',
-    category: { en: 'Delivery', my: 'Delivery' },
-    shortName: { en: 'Dispatch', my: 'Dispatch' },
-    bestFor: { en: 'Delivery teams, food businesses, logistics operations', my: 'Team delivery, bisnes makanan, operasi logistik' },
-    problem: { en: 'Delivery status is unclear and proof is scattered.', my: 'Status delivery tidak jelas dan bukti berselerak.' },
-    outcome: { en: 'Owner can track what is pending, out and completed.', my: 'Owner boleh track pending, out dan completed.' },
-    workflow: ['Ready for pickup', 'Out for delivery', 'Delivered', 'Proof captured'],
+    hasPrice: false,
   },
 ];
+
+function buildInitials(name) {
+  return String(name || 'BD')
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function toLegacySystem(system) {
+  const enName = getText(system.name, 'en');
+  const myName = getText(system.name, 'my');
+  const startingPackage = packageOptions[0];
+  const isCustom = system.priceMode === 'custom' || system.hasPrice === false;
+
+  return {
+    ...system,
+    icon: buildInitials(enName),
+    emoji: buildInitials(enName),
+    shortName: {
+      en: enName.replace(' System', ''),
+      my: myName.replace(' System', ''),
+    },
+    category: system.demoType === 'food' ? 'F&B' : system.demoType === 'dispatch' ? 'Operations' : 'Business',
+    description: system.shortDesc,
+    bestFor: system.suitableFor,
+    fromPrice: isCustom ? null : startingPackage.price,
+    price: isCustom ? null : startingPackage.price,
+    priceMode: isCustom ? 'custom' : 'fixed',
+    hasPrice: !isCustom,
+    availableInPackages: system.packages,
+    packageBreakdown: system.featuresByPackage,
+    features: getFeatureList(system.featuresByPackage.Starter, 'en'),
+    workflowSteps: getFeatureList(system.featuresByPackage.Business, 'en'),
+    dashboardFeatures: {
+      en: ['Demo records', 'Business dashboard structure', 'Manageable status flow'],
+      my: ['Rekod demo', 'Struktur dashboard bisnes', 'Status mudah diurus'],
+    },
+    paymentFeatures: {
+      en: ['Payment tracking', 'Collection notes', 'Payment flow ready to scale'],
+      my: ['Payment tracking', 'Nota collection', 'Payment flow ready to scale'],
+    },
+    whatsappFeatures: {
+      en: ['Automated WhatsApp summary', 'Customer details', 'Follow-up message'],
+      my: ['WhatsApp summary automatik', 'Detail customer', 'Follow-up message'],
+    },
+    demoEnabled: true,
+  };
+}
+
+export const systemsData = systems.map(toLegacySystem);
 
 export function getText(value, lang = 'en') {
   if (value && typeof value === 'object' && !Array.isArray(value)) return value[lang] || value.en || value.my || '';
   return value || '';
 }
 
-export function getSystemName(system, lang = 'en') {
-  return `${system.icon || ''} ${getText(system.name, lang)}`.trim();
+export function getFeatureList(value, lang = 'en') {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map(item => getText(item, lang)).filter(Boolean);
+  if (typeof value === 'object') {
+    const list = value[lang] || value.en || value.my || [];
+    return Array.isArray(list) ? list.filter(Boolean) : [list].filter(Boolean);
+  }
+  return [value].filter(Boolean);
 }
 
-export function getSystemPriceLabel(system, lang = 'en') {
-  if (system.priceMode === 'none') return '';
-  if (system.priceMode === 'custom' || system.fromPrice == null) return lang === 'en' ? 'Custom' : 'Custom';
-  return `RM${Number(system.fromPrice).toLocaleString()}+`;
+export function getSystemName(system, lang = 'en') {
+  return getText(system?.name, lang);
+}
+
+export function getSystemPriceLabel(system) {
+  if (!system?.hasPrice) return '';
+  return `RM${Number(system.price).toLocaleString()}+`;
 }
 
 export function getDemoItems(systemId) {
   const system = systemsData.find(item => item.id === systemId);
-  return system?.items || system?.services || [];
+  if (!system) return [];
+
+  const samples = {
+    ecommerce: [
+      { id: 'tee', name: 'Premium Tee', price: 69, stock: 30 },
+      { id: 'bag', name: 'Canvas Bag', price: 45, stock: 20 },
+    ],
+    booking: [
+      { id: 'broga', name: 'Broga Sunrise Hike', price: 120, slots: 18 },
+      { id: 'rafting', name: 'Gopeng Rafting Trip', price: 180, slots: 14 },
+    ],
+    appointment: [
+      { id: 'consult', name: 'Consultation Session', price: 60, slots: 8 },
+      { id: 'repair', name: 'Repair Appointment', price: 90, slots: 6 },
+    ],
+    food: [
+      { id: 'nasi', name: 'Nasi Lemak Ayam', price: 12.9, stock: 25 },
+      { id: 'kuih', name: 'Kuih Mix Box', price: 18, stock: 15 },
+    ],
+    dispatch: [
+      { id: 'pickup', name: 'Staff Movement Job', price: 0, slots: 20 },
+      { id: 'service', name: 'Service Dispatch Task', price: 0, slots: 10 },
+    ],
+  };
+
+  return samples[system.demoType] || [];
 }
+
+export { packageFeatures };

@@ -1,242 +1,279 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, BarChart3, CheckCircle2, CreditCard, LayoutDashboard, MessageSquareText, ShieldCheck, Sparkles, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { businessSystems, getText } from '../data/systems';
-import { useLanguage } from '../context/LanguageContext';
-
-const fadeUp = { hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0 } };
+import {
+  ArrowDown,
+  ArrowRight,
+  CalendarDays,
+  CheckCircle2,
+  CreditCard,
+  ShoppingBag,
+  Sparkles,
+  Store,
+} from 'lucide-react';
+import { useLang } from '@/context/LanguageContext';
+import BusinessProcessTimeline from '@/components/premium/BusinessProcessTimeline';
+import GradientBackground from '@/components/premium/GradientBackground';
+import PhoneOrderPreview from '@/components/premium/PhoneOrderPreview';
+import PremiumButton from '@/components/premium/PremiumButton';
+import PremiumCard from '@/components/premium/PremiumCard';
+import RealDashboardPreview from '@/components/premium/RealDashboardPreview';
+import SectionShell from '@/components/premium/SectionShell';
+import SystemShowcaseVisual from '@/components/premium/SystemShowcaseVisual';
+import WhatsAppToSystemVisual from '@/components/premium/WhatsAppToSystemVisual';
 
 const copy = {
   en: {
-    badge: 'Digital systems for Malaysian businesses',
-    titleA: 'Not an empty demo.',
-    titleB: 'A system you can sell.',
-    subtitle: 'Bratstvo Digital builds order, booking, product, CRM, invoice and membership systems with real client flow, owner dashboard and scalable SaaS structure.',
-    demo: 'Try live demo',
-    pricing: 'View pricing',
-    dashboard: 'Owner Dashboard',
-    dashSub: 'Today orders and payment',
-    stats: [['24h', 'early setup target for simple flow'], ['20', 'available business systems'], ['RM149+', 'one-time build starts'], ['Admin PRO', 'products, orders, customers and reports']],
-    valueLabel: 'What clients get',
-    valueTitle: 'A system for operations, not just a pretty page.',
-    valueText: 'Each module answers daily work: incoming orders, clear payment status, organised admin and owner visibility.',
-    promises: [
-      ['Not just a landing page', 'Every package focuses on real flow: customer submits, owner receives data, status is managed and reports can be read.'],
-      ['WhatsApp still stays central', 'We make WhatsApp cleaner: orders, bookings or leads arrive with complete context.'],
-      ['Payment can start simple', 'Start with QR or bank transfer. Upgrade to Billplz, ToyyibPay or Stripe when volume justifies it.'],
-      ['Built to grow', 'Database, dashboard and modules are structured for products, orders, clients, invoices and staff later.'],
+    badge: 'Premium websites and systems for Malaysian SMEs',
+    title: 'Premium websites and systems for businesses that want to look more professional.',
+    highlight: 'Orders, bookings, payments and customers - all more organised.',
+    subtitle: 'We build websites, order systems, booking systems, appointment systems, food order flows and dispatch tools for SMEs that want to stop managing everything manually on WhatsApp.',
+    explore: 'Explore Systems',
+    setup: 'Start Setup',
+    demo: 'Try Demo',
+    scroll: 'See how it works',
+    stats: [
+      ['Cleaner orders', 'No more scattered chat records'],
+      ['Easier booking', 'Slots and deposits in one flow'],
+      ['Payment status', 'Know what is paid and pending'],
+      ['Premium look', 'Customers trust the business faster'],
     ],
+    problemLabel: 'Before / After',
+    problemTitle: 'Your business feels messy now. We turn it into a cleaner buying experience.',
+    problemSub: 'Customers can order, book and pay with less friction. Owners can see products, bookings, customers and payment status from one place.',
+    beforeTitle: 'Before',
+    afterTitle: 'After',
+    before: ['Orders hidden inside long WhatsApp chats', 'Customers keep asking the same questions', 'Payment status is checked manually', 'Business looks smaller than it actually is'],
+    after: ['Customers order or book from a polished website', 'Products, slots and details are clearly displayed', 'Payment and customer records are easier to track', 'Business looks trusted, sharp and ready to grow'],
+    showcaseLabel: 'What customers see',
+    showcaseTitle: 'A modern website in front, a clear dashboard behind it.',
+    showcaseSub: 'Your customer gets a smooth mobile experience. You get a practical place to review orders, bookings, customers and payments.',
     systemsLabel: 'Popular systems',
-    systemsTitle: 'Choose based on business problem.',
-    allSystems: 'View all systems',
-    howLabel: 'How it works',
-    howTitle: 'From idea to usable system.',
-    howText: 'We do not pretend payment is automatic from day one. Start with the right stage, then upgrade when the business needs it.',
-    setup: 'Start setup',
-    ctaTitle: 'Try the demo first. If it fits, proceed.',
-    ctaText: 'The demo now has customer flow, owner dashboard, order summary, payment status and more realistic example data.',
-    checkSystems: 'Check systems',
+    systemsTitle: 'Pick the system that matches how your business sells.',
+    systemsSub: 'Start with one system or combine up to three on the setup page for bundle savings.',
+    processLabel: 'Simple way to start',
+    processTitle: 'From idea to a professional system without making it complicated.',
+    processSub: 'Choose the system, choose a package, send your business details and we confirm the best way to build it.',
   },
   my: {
-    badge: 'Sistem digital untuk bisnes Malaysia',
-    titleA: 'Bukan demo kosong.',
-    titleB: 'Ini sistem yang boleh dijual.',
-    subtitle: 'Bratstvo Digital bina sistem order, booking, produk, CRM, invoice dan membership dengan flow client sebenar, owner dashboard dan struktur SaaS yang boleh scale.',
-    demo: 'Cuba demo hidup',
-    pricing: 'Tengok harga',
-    dashboard: 'Dashboard Owner',
-    dashSub: 'Order dan bayaran hari ini',
-    stats: [['24 jam', 'target setup awal untuk flow ringkas'], ['20', 'sistem bisnes tersedia'], ['RM149+', 'mula build sekali bayar'], ['Admin PRO', 'produk, order, customer dan report']],
-    valueLabel: 'Apa yang client dapat',
-    valueTitle: 'Sistem yang bantu operasi, bukan sekadar nampak cantik.',
-    valueText: 'Setiap modul jawab masalah kerja harian: order masuk, payment jelas, admin tersusun dan owner tahu apa yang berlaku.',
-    promises: [
-      ['Bukan landing page kosong', 'Setiap pakej fokus pada flow sebenar: pelanggan submit, owner terima data, status boleh diurus dan laporan boleh dibaca.'],
-      ['WhatsApp masih pusat jualan', 'Kami susun WhatsApp supaya order, booking atau lead masuk dengan format lengkap.'],
-      ['Payment boleh mula simple', 'Mula dengan QR atau bank transfer. Upgrade ke Billplz, ToyyibPay atau Stripe bila volume sudah justify.'],
-      ['Struktur boleh grow', 'Database, dashboard dan modul dibuat supaya produk, order, client, invoice dan staff boleh berkembang kemudian.'],
+    badge: 'Website dan sistem premium untuk SME Malaysia',
+    title: 'Website & sistem premium untuk bisnes yang nak nampak lebih professional.',
+    highlight: 'Order, booking, payment dan customer - semua lebih tersusun.',
+    subtitle: 'Kami bina website, sistem order, booking, appointment, food order dan dispatch untuk SME yang nak berhenti urus semuanya secara manual di WhatsApp.',
+    explore: 'Lihat Sistem',
+    setup: 'Mula Setup',
+    demo: 'Cuba Demo',
+    scroll: 'Lihat cara sistem berfungsi',
+    stats: [
+      ['Order lebih kemas', 'Tidak lagi tenggelam dalam chat'],
+      ['Booking lebih mudah', 'Slot dan deposit dalam satu flow'],
+      ['Status payment jelas', 'Nampak paid dan pending'],
+      ['Bisnes nampak premium', 'Customer lebih cepat percaya'],
     ],
+    problemLabel: 'Sebelum / Selepas',
+    problemTitle: 'Bisnes nampak berselerak sekarang. Kami jadikan pengalaman membeli lebih kemas.',
+    problemSub: 'Customer boleh order, booking dan bayar dengan lebih mudah. Owner pula boleh pantau produk, booking, customer dan status payment dari satu tempat.',
+    beforeTitle: 'Sebelum',
+    afterTitle: 'Selepas',
+    before: ['Order terselit dalam chat WhatsApp panjang', 'Customer ulang soalan yang sama', 'Status payment kena semak manual', 'Bisnes nampak lebih kecil daripada realiti'],
+    after: ['Customer order atau booking dari website yang kemas', 'Produk, slot dan detail dipaparkan dengan jelas', 'Payment dan rekod customer lebih mudah dijejak', 'Bisnes nampak trusted, sharp dan sedia berkembang'],
+    showcaseLabel: 'Apa customer nampak',
+    showcaseTitle: 'Website moden di depan, dashboard jelas di belakang.',
+    showcaseSub: 'Customer dapat pengalaman mobile yang smooth. Owner pula ada tempat praktikal untuk semak order, booking, customer dan payment.',
     systemsLabel: 'Sistem popular',
-    systemsTitle: 'Pilih ikut masalah bisnes.',
-    allSystems: 'Lihat semua sistem',
-    howLabel: 'Macam mana ia berfungsi',
-    howTitle: 'Dari idea sampai sistem boleh digunakan.',
-    howText: 'Untuk payment, kami tidak pura-pura semua automatik hari pertama. Kita mula ikut stage bisnes, kemudian upgrade bila perlu.',
-    setup: 'Mula setup',
-    ctaTitle: 'Cuba demo dulu. Kalau ngam, terus proceed.',
-    ctaText: 'Demo ada flow pelanggan, owner dashboard, order summary, status bayaran dan contoh data yang lebih realistik.',
-    checkSystems: 'Semak sistem',
+    systemsTitle: 'Pilih sistem yang sesuai dengan cara bisnes anda menjual.',
+    systemsSub: 'Mula dengan satu sistem atau gabungkan sehingga tiga sistem di setup page untuk bundle saving.',
+    processLabel: 'Cara mudah untuk mula',
+    processTitle: 'Daripada idea kepada sistem professional tanpa proses yang memeningkan.',
+    processSub: 'Pilih sistem, pilih pakej, hantar detail bisnes dan kami confirm cara build yang paling sesuai.',
   },
 };
 
-const promiseIcons = [LayoutDashboard, MessageSquareText, CreditCard, ShieldCheck];
+const statIcons = [ShoppingBag, CalendarDays, CreditCard, Store];
 
-const steps = {
-  en: [
-    ['Brief and scope', 'We collect business type, workflow, products, slots, staff, payment and the main problem.'],
-    ['Build system', 'Customer frontend, owner dashboard, Supabase database and product/order/client structure are prepared by package.'],
-    ['Payment flow', 'Start with manual bank transfer or QR. Connect a gateway when automatic verification is needed.'],
-    ['Launch and training', 'Client receives system link, dashboard access, short guide and operations checklist.'],
-  ],
-  my: [
-    ['Brief dan scope', 'Kami kumpul jenis bisnes, workflow, produk, slot, staff, bayaran dan masalah utama.'],
-    ['Build sistem', 'Frontend pelanggan, dashboard owner, database Supabase dan struktur order/product/client disiapkan ikut pakej.'],
-    ['Payment flow', 'Mula dengan bank transfer atau QR manual. Sambung gateway bila perlu auto verify.'],
-    ['Launch dan training', 'Client dapat link sistem, akses dashboard, panduan ringkas dan checklist operasi.'],
-  ],
-};
+function HeroTrustRow({ stats }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: 0.28 }}
+      className="grid grid-cols-2 gap-3 md:grid-cols-4"
+    >
+      {stats.map(([label, value], index) => {
+        const Icon = statIcons[index] || CheckCircle2;
+        return (
+          <div key={label} className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+            <Icon size={18} className="mb-4" style={{ color: 'var(--c-accent)' }} />
+            <p className="text-sm font-black" style={{ color: 'var(--c-text)' }}>{label}</p>
+            <p className="mt-1 text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>{value}</p>
+          </div>
+        );
+      })}
+    </motion.div>
+  );
+}
 
-export default function Home() {
-  const { lang } = useLanguage();
-  const t = copy[lang] || copy.en;
-  const featured = businessSystems.slice(0, 6);
+function BeforeAfterPanel({ title, items, type }) {
+  const positive = type === 'after';
 
   return (
-    <div style={{ background: 'var(--c-bg)', minHeight: '100vh' }}>
-      <section className="relative overflow-hidden px-6 py-24 md:py-28">
-        <div className="bd-animated-grid absolute inset-0 opacity-70" />
-        <div className="relative max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_0.95fr] gap-10 items-center">
-          <motion.div initial="hidden" animate="show" variants={fadeUp} transition={{ duration: 0.55 }}>
-            <div className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold mb-7" style={{ color: 'var(--c-accent)', background: 'rgba(32,200,117,0.10)', border: '1px solid rgba(32,200,117,0.24)' }}>
-              <Sparkles size={14} /> {t.badge}
-            </div>
-            <h1 className="text-5xl md:text-7xl font-black leading-[1.02] mb-6" style={{ color: 'var(--c-text)' }}>
-              {t.titleA}
-              <span className="block" style={{ color: 'var(--c-accent)' }}>{t.titleB}</span>
-            </h1>
-            <p className="text-base md:text-lg leading-relaxed max-w-2xl mb-9" style={{ color: 'var(--c-muted)' }}>{t.subtitle}</p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/demo" className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-black transition-all hover:brightness-110" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>{t.demo} <ArrowRight size={17} /></Link>
-              <Link to="/pricing" className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-black transition-all hover:bg-white/5" style={{ color: 'var(--c-text)', border: '1px solid var(--c-border)' }}>{t.pricing}</Link>
-            </div>
+    <PremiumCard glow={positive} className="relative overflow-hidden p-5 md:p-7" hover>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h3 className="text-2xl font-black leading-tight" style={{ color: 'var(--c-text)' }}>{title}</h3>
+        <span className="rounded-full px-3 py-1 text-xs font-black" style={{ background: positive ? 'var(--c-accent)' : 'var(--c-input-bg)', color: positive ? 'var(--c-accent-contrast)' : 'var(--c-muted)', border: '1px solid var(--c-border)' }}>
+          {positive ? 'READY' : 'MANUAL'}
+        </span>
+      </div>
+      <div className="space-y-3">
+        {items.map((item, index) => (
+          <motion.div
+            key={item}
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.28, delay: index * 0.045 }}
+            className="flex gap-3 rounded-2xl p-3"
+            style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}
+          >
+            <CheckCircle2 size={16} className="mt-0.5 shrink-0" style={{ color: positive ? 'var(--c-accent)' : 'var(--c-muted)' }} />
+            <span className="text-sm leading-relaxed" style={{ color: positive ? 'var(--c-text)' : 'var(--c-muted)' }}>{item}</span>
           </motion.div>
+        ))}
+      </div>
+    </PremiumCard>
+  );
+}
 
-          <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.65, delay: 0.12 }} className="bd-glass rounded-2xl p-4 md:p-5 bd-float">
-            <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(2,16,10,0.72)', border: '1px solid var(--c-border)' }}>
-              <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid var(--c-border)' }}>
-                <div>
-                  <p className="text-sm font-black text-white">{t.dashboard}</p>
-                  <p className="text-xs" style={{ color: '#A9B9AD' }}>{t.dashSub}</p>
-                </div>
-                <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: 'rgba(32,200,117,0.14)', color: '#20C875' }}>Live</span>
-              </div>
-              <div className="relative p-4 grid gap-3">
-                <div className="bd-scan-line absolute left-0 right-0 top-0 h-16 bg-gradient-to-b from-transparent via-[rgba(32,200,117,0.18)] to-transparent pointer-events-none" />
-                {[
-                  ['Nasi Lemak Ayam x2', 'RM25.80', lang === 'en' ? 'Payment confirmed' : 'Bayaran disahkan'],
-                  ['Premium Shawl x1', 'RM55.00', lang === 'en' ? 'Waiting for packing' : 'Menunggu packing'],
-                  ['Haircut + Wash', '5:30 PM', 'Booking confirmed'],
-                ].map(([title, value, status]) => (
-                  <div key={title} className="rounded-xl p-4 flex items-center justify-between gap-4" style={{ background: 'rgba(255,255,255,0.055)', border: '1px solid rgba(255,255,255,0.09)' }}>
-                    <div>
-                      <p className="text-sm font-bold text-white">{title}</p>
-                      <p className="text-xs" style={{ color: '#A9B9AD' }}>{status}</p>
-                    </div>
-                    <p className="text-sm font-black" style={{ color: '#20C875' }}>{value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+function SystemTeaserCards({ labels, lang }) {
+  const systems = [
+    ['ecommerce', 'eCommerce System', lang === 'my' ? 'Untuk jual produk, checkout dan payment record.' : 'Sell products with checkout and payment records.'],
+    ['booking', 'Booking System', lang === 'my' ? 'Untuk slot booking, deposit dan calendar.' : 'Manage booking slots, deposits and calendars.'],
+    ['food', 'Food Order System', lang === 'my' ? 'Untuk menu, pickup, delivery dan kitchen order.' : 'Run menus, pickup, delivery and kitchen orders.'],
+  ];
 
-      <section className="px-6 py-10" style={{ background: 'var(--c-surface)', borderTop: '1px solid var(--c-border)', borderBottom: '1px solid var(--c-border)' }}>
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-          {t.stats.map(([value, label]) => (
-            <div key={value} className="text-center">
-              <p className="text-2xl md:text-3xl font-black" style={{ color: 'var(--c-accent)' }}>{value}</p>
-              <p className="text-xs mt-1" style={{ color: 'var(--c-muted)' }}>{label}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="px-6 py-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="max-w-2xl mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>{t.valueLabel}</p>
-            <h2 className="text-3xl md:text-5xl font-black mb-4" style={{ color: 'var(--c-text)' }}>{t.valueTitle}</h2>
-            <p className="text-sm md:text-base leading-relaxed" style={{ color: 'var(--c-muted)' }}>{t.valueText}</p>
+  return (
+    <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} transition={{ staggerChildren: 0.08 }} className="grid gap-5 md:grid-cols-3">
+      {systems.map(([type, title, text]) => (
+        <motion.article key={title} variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0 } }} className="overflow-hidden rounded-[28px]" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)', boxShadow: 'var(--c-card-shadow)' }}>
+          <div className="p-3">
+            <SystemShowcaseVisual type={type} label="Business" compact />
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {t.promises.map(([title, text], index) => {
-              const Icon = promiseIcons[index];
-              return (
-                <motion.div key={title} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} variants={fadeUp} transition={{ duration: 0.45, delay: index * 0.05 }} className="rounded-xl p-5" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                  <Icon size={22} className="mb-4" style={{ color: index === 2 ? 'var(--c-gold)' : 'var(--c-accent)' }} />
-                  <h3 className="font-black mb-2" style={{ color: 'var(--c-text)' }}>{title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>{text}</p>
-                </motion.div>
-              );
-            })}
+          <div className="p-5 pt-2">
+            <h3 className="text-xl font-black" style={{ color: 'var(--c-text)' }}>{title}</h3>
+            <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>{text}</p>
+            <PremiumButton to={`/setup?system=${type}&package=business`} variant="ghost" className="mt-5 w-full px-4 py-3 text-xs">
+              {labels.setup} <ArrowRight size={14} />
+            </PremiumButton>
           </div>
-        </div>
-      </section>
+        </motion.article>
+      ))}
+    </motion.div>
+  );
+}
 
-      <section className="px-6 py-20" style={{ background: 'var(--c-surface)' }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-10">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>{t.systemsLabel}</p>
-              <h2 className="text-3xl md:text-4xl font-black" style={{ color: 'var(--c-text)' }}>{t.systemsTitle}</h2>
-            </div>
-            <Link to="/systems" className="inline-flex items-center gap-2 text-sm font-black" style={{ color: 'var(--c-accent)' }}>{t.allSystems} <ArrowRight size={16} /></Link>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {featured.map(system => (
-              <Link key={system.id} to="/systems" className="rounded-xl p-5 transition-all hover:-translate-y-1 block" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div>
-                    <p className="text-xs font-bold mb-1" style={{ color: 'var(--c-accent)' }}>{getText(system.category, lang)}</p>
-                    <h3 className="font-black" style={{ color: 'var(--c-text)' }}>{system.emoji} {getText(system.name, lang)}</h3>
-                  </div>
-                  <span className="rounded-full px-3 py-1 text-xs font-black" style={{ background: 'rgba(32,200,117,0.12)', color: 'var(--c-accent)' }}>RM{system.priceFrom}+</span>
-                </div>
-                <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--c-muted)' }}>{getText(system.tagline, lang)}</p>
-                <div className="flex items-center gap-2 text-xs font-bold" style={{ color: 'var(--c-text)' }}>
-                  <CheckCircle2 size={14} style={{ color: 'var(--c-accent)' }} />
-                  {getText(system.bestFor, lang)}
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+export default function Home() {
+  const { lang } = useLang();
+  const t = copy[lang] || copy.en;
 
-      <section className="px-6 py-20">
-        <div className="max-w-6xl mx-auto grid lg:grid-cols-[0.9fr_1.1fr] gap-8">
+  return (
+    <GradientBackground className="page-shell">
+      <section className="relative px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl items-center gap-8 py-10 md:py-12 lg:grid-cols-[0.96fr_1.04fr] lg:gap-10">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>{t.howLabel}</p>
-            <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: 'var(--c-text)' }}>{t.howTitle}</h2>
-            <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--c-muted)' }}>{t.howText}</p>
-            <Link to="/setup" className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-black" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>{t.setup} <ArrowRight size={16} /></Link>
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.42 }}
+              className="premium-eyebrow mb-4 inline-flex rounded-full px-4 py-2"
+              style={{ background: 'var(--c-primary-soft)', border: '1px solid rgba(24,217,138,.24)' }}
+            >
+              <Sparkles size={14} className="mr-2" /> {t.badge}
+            </motion.p>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.52, delay: 0.06 }}
+              className="hero-title mb-5 max-w-[760px]"
+            >
+              {t.title}
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.46, delay: 0.13 }}
+              className="mb-4 max-w-2xl text-lg font-black leading-relaxed md:text-xl"
+              style={{ color: 'var(--c-text)' }}
+            >
+              <span className="gradient-text">{t.highlight}</span>
+            </motion.p>
+
+            <motion.p
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.46, delay: 0.18 }}
+              className="mb-7 max-w-2xl text-base leading-relaxed md:text-lg"
+              style={{ color: 'var(--c-muted)' }}
+            >
+              {t.subtitle}
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.44, delay: 0.24 }}
+              className="mb-7 flex flex-col gap-3 sm:flex-row"
+            >
+              <PremiumButton to="/systems" className="px-6 py-3.5 text-sm">{t.explore} <ArrowRight size={17} /></PremiumButton>
+              <PremiumButton to="/setup" variant="secondary" className="px-6 py-3.5 text-sm">{t.setup}</PremiumButton>
+              <PremiumButton to="/demo" variant="ghost" className="px-6 py-3.5 text-sm">{t.demo}</PremiumButton>
+            </motion.div>
+
+            <HeroTrustRow stats={t.stats} />
           </div>
-          <div className="grid gap-3">
-            {steps[lang].map(([title, text], index) => (
-              <div key={title} className="rounded-xl p-5 flex gap-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-black shrink-0" style={{ background: index === 2 ? 'var(--c-gold)' : 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>{index + 1}</div>
-                <div>
-                  <h3 className="font-black mb-1" style={{ color: 'var(--c-text)' }}>{title}</h3>
-                  <p className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>{text}</p>
-                </div>
-              </div>
-            ))}
+
+          <div className="relative mx-auto w-full max-w-[680px] lg:max-w-none">
+            <RealDashboardPreview />
           </div>
         </div>
+
+        <motion.a
+          href="#story"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="absolute bottom-5 left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-xs font-black md:inline-flex"
+          style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)', color: 'var(--c-muted)' }}
+        >
+          {t.scroll} <ArrowDown size={14} />
+        </motion.a>
       </section>
 
-      <section className="px-6 py-20" style={{ background: 'var(--c-surface)' }}>
-        <div className="max-w-4xl mx-auto text-center">
-          <Zap size={28} className="mx-auto mb-5" style={{ color: 'var(--c-accent)' }} />
-          <h2 className="text-3xl md:text-5xl font-black mb-5" style={{ color: 'var(--c-text)' }}>{t.ctaTitle}</h2>
-          <p className="text-sm md:text-base leading-relaxed mb-8" style={{ color: 'var(--c-muted)' }}>{t.ctaText}</p>
-          <div className="flex flex-col sm:flex-row justify-center gap-3">
-            <Link to="/demo" className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-black" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>{t.demo} <BarChart3 size={17} /></Link>
-            <Link to="/systems" className="inline-flex items-center justify-center gap-2 rounded-xl px-7 py-4 text-sm font-black" style={{ color: 'var(--c-text)', border: '1px solid var(--c-border)' }}>{t.checkSystems}</Link>
-          </div>
+      <div className="section-divider-glow" />
+
+      <SectionShell id="story" eyebrow={t.problemLabel} title={t.problemTitle} subtitle={t.problemSub}>
+        <div className="mb-6">
+          <WhatsAppToSystemVisual />
         </div>
-      </section>
-    </div>
+        <div className="grid gap-5 lg:grid-cols-2">
+          <BeforeAfterPanel title={t.beforeTitle} items={t.before} type="before" />
+          <BeforeAfterPanel title={t.afterTitle} items={t.after} type="after" />
+        </div>
+      </SectionShell>
+
+      <SectionShell eyebrow={t.showcaseLabel} title={t.showcaseTitle} subtitle={t.showcaseSub}>
+        <div className="grid items-center gap-6 lg:grid-cols-[1fr_0.58fr]">
+          <RealDashboardPreview compact />
+          <PhoneOrderPreview />
+        </div>
+      </SectionShell>
+
+      <SectionShell eyebrow={t.systemsLabel} title={t.systemsTitle} subtitle={t.systemsSub}>
+        <SystemTeaserCards labels={t} lang={lang} />
+      </SectionShell>
+
+      <SectionShell eyebrow={t.processLabel} title={t.processTitle} subtitle={t.processSub}>
+        <BusinessProcessTimeline />
+      </SectionShell>
+    </GradientBackground>
   );
 }

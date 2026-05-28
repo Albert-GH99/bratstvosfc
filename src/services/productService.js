@@ -23,11 +23,16 @@ export function getStarterProducts(systemName) {
   ];
 }
 
-export async function createStarterProducts(clientId, systemName) {
+function assertTenantId(tenantId) {
+  if (!tenantId) throw new Error('tenant_id is required.');
+}
+
+export async function createStarterProducts(clientId, systemName, tenantId) {
   const db = requireSupabase();
   const rows = getStarterProducts(systemName).map(product => ({
     ...product,
     client_id: clientId,
+    tenant_id: tenantId || null,
   }));
 
   const { data, error } = await db.from('products').insert(rows).select();
@@ -35,12 +40,13 @@ export async function createStarterProducts(clientId, systemName) {
   return data;
 }
 
-export async function listProducts(clientId) {
+export async function listProducts(tenantId) {
+  assertTenantId(tenantId);
   const db = requireSupabase();
   const { data, error } = await db
     .from('products')
     .select('*')
-    .eq('client_id', clientId)
+    .eq('tenant_id', tenantId)
     .order('created_at', { ascending: false });
 
   if (error) throw error;

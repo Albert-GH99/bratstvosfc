@@ -6,15 +6,15 @@ const en = {
   nav: { home: 'Home', services: 'Services', demo: 'Demo', pricing: 'Pricing', cta: 'Get Started' },
   hero: {
     badge: 'Digital Agency - Malaysia',
-    title: 'We Build Digital\nSystems That Work',
-    subtitle: 'From professional websites to full business automation, we build digital infrastructure that grows with your business.',
+    title: 'Websites & Systems\nThat Make Business Look Professional',
+    subtitle: 'Professional websites, order systems, booking pages and owner dashboards that help customers buy or book with more confidence.',
     cta1: 'Try Demo',
     cta2: 'View Pricing',
   },
   about: {
     label: 'About Us',
     title: 'Built for Businesses Ready to Scale',
-    body: 'Bratstvo Digital is a full-service digital agency based in Malaysia. We build websites, automation systems, CRMs, and e-commerce solutions that deliver real business results, not just good looks.',
+    body: 'Bratstvo Digital is a Malaysia-based digital agency building websites, order systems, booking pages and owner dashboards for growing businesses.',
     stats: [
       { value: '50+', label: 'Projects Delivered' },
       { value: '98%', label: 'Client Satisfaction' },
@@ -27,10 +27,10 @@ const en = {
     subtitle: 'Professional digital systems tailored to your business goals.',
     items: [
       { title: 'Website Development', desc: 'Fast, modern, conversion-optimised websites.' },
-      { title: 'WhatsApp Automation', desc: 'Automated customer conversations, 24/7.' },
-      { title: 'CRM Systems', desc: 'Pipeline and lead management tools.' },
-      { title: 'E-Commerce', desc: 'Online stores with full payment integration.' },
-      { title: 'Business Automation', desc: 'Eliminate repetitive tasks. Scale smarter.' },
+      { title: 'WhatsApp Flow', desc: 'Clear automated WhatsApp summaries for customers and teams.' },
+      { title: 'Customer Records', desc: 'Keep leads, customers and follow-ups organised.' },
+      { title: 'eCommerce Systems', desc: 'Product catalog, cart, checkout and order status.' },
+      { title: 'Business Process', desc: 'Reduce repeated manual work and keep daily tasks easier to follow.' },
       { title: 'Digital Strategy', desc: 'Roadmap and consulting for your digital future.' },
     ],
   },
@@ -55,8 +55,8 @@ const en = {
   shop: {
     label: 'Pricing',
     title: 'Simple Packages',
-    subtitle: 'Start small. Upgrade anytime.',
-    popular: 'Most Popular',
+    subtitle: 'Start simple and scale when your business is ready.',
+    popular: 'Recommended',
     cta: 'Start Setup',
     ctaCustom: 'Request Quote',
     packages: [
@@ -69,20 +69,20 @@ const en = {
       {
         name: 'Business',
         price: 'RM1,499',
-        desc: 'Most Popular setup for serious businesses.',
-        features: ['Admin PRO', 'Realtime updates', 'Workflow or order records', 'Fast support'],
+        desc: 'A strong setup for businesses that need clearer daily order, booking or customer handling.',
+        features: ['Business dashboard', 'Live status updates', 'Order or customer records', 'Priority support'],
         popular: true,
       },
       {
         name: 'Elite Custom',
-        price: 'Custom quotation',
-        desc: 'For teams that need a tailored platform or advanced integrations.',
-        features: ['Custom feature planning', 'Advanced integrations', 'Dashboard options', 'Long-term support options'],
+        price: 'Custom quote',
+        desc: 'For teams that need a tailored system and long-term support.',
+        features: ['Custom feature planning', 'Advanced business process options', 'Owner dashboard options', 'Long-term support options'],
       },
     ],
   },
   footer: {
-    tagline: 'Building digital systems that work.',
+    tagline: 'Websites and systems that make your business look more trusted, organised and ready to grow.',
     quickLinks: 'Quick Links',
     contact: 'Get In Touch',
     rights: 'Copyright 2026 Bratstvo Digital. All rights reserved.',
@@ -90,49 +90,49 @@ const en = {
 };
 
 const my = {
-  nav: { home: 'Utama', services: 'Perkhidmatan', demo: 'Demo', pricing: 'Harga', cta: 'Mula Sekarang' },
+  nav: { home: 'Utama', services: 'Servis', demo: 'Demo', pricing: 'Harga', cta: 'Mula Setup' },
   hero: {
     badge: 'Agensi Digital - Malaysia',
-    title: 'Kami Bina Sistem Digital\nYang Benar-Benar Berkesan',
-    subtitle: 'Daripada laman web profesional sehinggalah automasi perniagaan sepenuhnya, kami bina sistem digital yang membantu perniagaan anda berkembang.',
+    title: 'Website & Sistem\nYang Buat Bisnes Nampak Professional',
+    subtitle: 'Website profesional, sistem order, halaman booking dan dashboard owner yang bantu customer beli atau booking dengan lebih yakin.',
     cta1: 'Cuba Demo',
-    cta2: 'Tengok Harga',
+    cta2: 'Lihat Harga',
   },
   about: {
     label: 'Tentang Kami',
-    title: 'Dibina Khas untuk Perniagaan Malaysia',
-    body: 'Bratstvo Digital ialah agensi digital sepenuh masa yang berpusat di Malaysia. Kami bina laman web, sistem automasi, CRM, dan penyelesaian e-dagang yang memberi hasil nyata kepada perniagaan anda.',
+    title: 'Dibina untuk Bisnes Malaysia yang Mahu Nampak Lebih Premium',
+    body: 'Bratstvo Digital ialah agensi digital Malaysia yang membina website, sistem order, halaman booking dan dashboard owner untuk bisnes yang sedang berkembang.',
     stats: [
       { value: '50+', label: 'Projek Siap' },
-      { value: '98%', label: 'Kepuasan Pelanggan' },
+      { value: '98%', label: 'Kepuasan Customer' },
       { value: '3x', label: 'Purata ROI' },
     ],
   },
   services: {
-    label: 'Perkhidmatan',
-    title: 'Apa Yang Kami Bina',
-    subtitle: 'Sistem digital profesional yang disesuaikan mengikut keperluan perniagaan anda.',
+    label: 'Servis',
+    title: 'Apa Kami Bina',
+    subtitle: 'Sistem digital professional yang disusun ikut cara bisnes anda beroperasi.',
     items: [
-      { title: 'Pembangunan Laman Web', desc: 'Laman web moden, laju dan direka untuk menarik pelanggan.' },
-      { title: 'Automasi WhatsApp', desc: 'Layani pelanggan secara automatik, 24 jam sehari.' },
-      { title: 'Sistem CRM', desc: 'Urus prospek dan pelanggan dengan lebih sistematik.' },
-      { title: 'E-Dagang', desc: 'Kedai dalam talian lengkap dengan sistem pembayaran.' },
-      { title: 'Automasi Perniagaan', desc: 'Kurangkan kerja manual. Kembangkan perniagaan dengan lebih bijak.' },
-      { title: 'Strategi Digital', desc: 'Pelan hala tuju dan panduan untuk masa depan digital perniagaan anda.' },
+      { title: 'Website Development', desc: 'Website moden, laju dan direka untuk bantu customer yakin.' },
+      { title: 'WhatsApp Flow', desc: 'WhatsApp summary automatik yang jelas untuk customer dan team anda.' },
+      { title: 'Rekod Customer', desc: 'Urus prospek, customer dan follow-up dengan lebih tersusun.' },
+      { title: 'Sistem eCommerce', desc: 'Katalog produk, cart, checkout dan status order.' },
+      { title: 'Proses Bisnes', desc: 'Kurangkan kerja manual berulang dan jadikan tugasan harian lebih mudah diikuti.' },
+      { title: 'Strategi Digital', desc: 'Roadmap dan panduan untuk fasa digital bisnes anda yang seterusnya.' },
     ],
   },
   demo: {
     label: 'Demo',
-    title: 'Cuba Aliran Sistem Sebenar',
-    subtitle: 'Pilih servis, isi butiran, dan lihat bagaimana perjalanan pelanggan anda boleh berfungsi.',
+    title: 'Cuba Flow Sistem Sebenar',
+    subtitle: 'Pilih servis, isi detail dan lihat cara customer anda bergerak dalam sistem.',
     step1Title: 'Pilih sistem',
-    step2Title: 'Masukkan maklumat pelanggan',
+    step2Title: 'Masukkan detail customer',
     step3Title: 'Sedia untuk dibina',
     step3Subtitle: 'Mesej WhatsApp anda sudah disediakan.',
-    services: ['Pra-Pesanan Makanan', 'Sistem Tempahan', 'Pesanan Produk', 'Sistem CRM'],
-    industries: ['Runcit', 'F&B', 'Perkhidmatan', 'Kesihatan', 'Pendidikan', 'Lain-lain'],
+    services: ['Food Preorder', 'Booking System', 'Product Order', 'CRM System'],
+    industries: ['Retail', 'F&B', 'Servis', 'Healthcare', 'Education', 'Lain-lain'],
     industryLabel: 'Industri',
-    namePlaceholder: 'Nama perniagaan',
+    namePlaceholder: 'Nama bisnes',
     phonePlaceholder: 'Nombor WhatsApp',
     next: 'Seterusnya',
     back: 'Kembali',
@@ -142,46 +142,56 @@ const my = {
   shop: {
     label: 'Harga',
     title: 'Pakej Mudah',
-    subtitle: 'Mula kecil. Upgrade bila-bila masa.',
-    popular: 'Most Popular',
+    subtitle: 'Mula dengan mudah. Naik taraf apabila bisnes anda bersedia.',
+    popular: 'Disyorkan',
     cta: 'Mula Setup',
     ctaCustom: 'Minta Quote',
     packages: [
       {
         name: 'Starter',
         price: 'RM149',
-        desc: 'Untuk bisnes kecil yang mahu satu automasi fokus.',
-        features: ['1 sistem utama', 'Aliran siap WhatsApp', 'Branding asas', 'Sokongan 14 hari'],
+        desc: 'Untuk bisnes kecil yang mahu satu sistem fokus.',
+        features: ['1 sistem utama', 'WhatsApp flow ready', 'Branding asas', 'Support 14 hari'],
       },
       {
         name: 'Business',
         price: 'RM1,499',
-        desc: 'Setup Most Popular untuk bisnes serius.',
-        features: ['Admin PRO', 'Realtime updates', 'Rekod workflow atau order', 'Fast support'],
+        desc: 'Setup yang sesuai untuk bisnes yang perlukan urusan order, booking atau customer lebih jelas.',
+        features: ['Dashboard bisnes', 'Status update jelas', 'Rekod order atau customer', 'Priority support'],
         popular: true,
       },
       {
         name: 'Elite Custom',
-        price: 'Custom quotation',
-        desc: 'Untuk pasukan yang perlukan platform khas atau integrasi lanjutan.',
-        features: ['Perancangan ciri khas', 'Integrasi lanjutan', 'Pilihan dashboard', 'Pilihan sokongan jangka panjang'],
+        price: 'Custom quote',
+        desc: 'Untuk team yang perlukan system khas dan support jangka panjang.',
+        features: ['Feature planning custom', 'Pilihan proses bisnes lanjutan', 'Pilihan dashboard owner', 'Pilihan support jangka panjang'],
       },
     ],
   },
   footer: {
-    tagline: 'Kami bina sistem digital yang benar-benar berkesan.',
-    quickLinks: 'Pautan Pantas',
+    tagline: 'Website dan sistem yang buat bisnes anda nampak lebih trusted, tersusun dan sedia berkembang.',
+    quickLinks: 'Link Pantas',
     contact: 'Hubungi Kami',
     rights: 'Hak cipta 2026 Bratstvo Digital. Semua hak cipta terpelihara.',
   },
 };
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState("en");
+  const [lang, setLang] = useState(() => {
+    if (typeof window === 'undefined') return 'en';
+    const storedLang = window.localStorage.getItem('bd-lang');
+    return storedLang === 'my' || storedLang === 'en' ? storedLang : 'en';
+  });
   const [theme, setTheme] = useState(() => {
     if (typeof window === 'undefined') return 'dark';
-    return window.localStorage.getItem('bd-theme') || 'dark';
+    const storedTheme = window.localStorage.getItem('bd-theme');
+    return storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : 'dark';
   });
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    window.localStorage.setItem('bd-lang', lang);
+  }, [lang]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('light', theme === 'light');
@@ -203,8 +213,6 @@ export function LanguageProvider({ children }) {
   );
 }
 
-export function useLanguage() {
+export function useLang() {
   return useContext(LanguageContext);
 }
-
-export const useLang = useLanguage;

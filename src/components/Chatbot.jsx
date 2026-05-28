@@ -1,88 +1,148 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Bot, Loader2, MessageCircle, Send, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const quickReplies = [
-  { label: 'Saya nak sistem order', text: 'Saya nak sistem order untuk bisnes saya.' },
-  { label: 'Tanya harga', text: 'Boleh explain harga dan plan yang sesuai?' },
-  { label: 'Saya serious', text: 'Saya serious dan nak tahu next step.' },
+  { label: 'Cadang sistem', text: 'Saya nak tahu sistem apa yang sesuai untuk bisnes saya.' },
+  { label: 'Tanya harga', text: 'Macam mana harga pakej dan bundle discount?' },
+  { label: 'Mula setup', text: 'Saya nak tahu cara mula setup.' },
 ];
 
-const systemSuggestions = [
-  ['makan', 'preorder', 'food', 'kuih', 'bakery', 'catering', 'restaurant'],
-  ['booking', 'salon', 'clinic', 'appointment', 'temujanji'],
-  ['produk', 'product', 'shop', 'catalog', 'dropship'],
-  ['crm', 'lead', 'sales', 'follow up', 'prospek'],
-  ['invoice', 'quotation', 'sebut harga', 'invois'],
-  ['member', 'membership', 'gym', 'kelas', 'subscription'],
-];
+const systemsKnowledge = {
+  ecommerce: {
+    name: 'eCommerce System',
+    aliases: ['produk', 'product', 'shop', 'kedai', 'retail', 'butik', 'catalog', 'katalog', 'checkout', 'dropship', 'cookies', 'frozen'],
+    suitable: 'retail, butik, reseller, produk fizikal, launch produk dan online store kecil',
+    recommendation:
+      'eCommerce System sesuai kalau anda jual produk. Customer boleh browse katalog, pilih item, checkout, hantar order dan rekod customer/payment jadi lebih kemas.',
+  },
+  booking: {
+    name: 'Booking System',
+    aliases: ['booking', 'trip', 'hiking', 'travel', 'event', 'kelas', 'workshop', 'tour', 'aktiviti', 'session', 'sesi', 'slot peserta'],
+    suitable: 'hiking group, travel group, event organizer, kelas/workshop, tours/activities dan sports session',
+    recommendation:
+      'Booking System sesuai untuk trip, event, kelas atau aktiviti. Customer boleh lihat lokasi, tarikh, harga, itinerary, slot peserta dan pilihan deposit/full payment.',
+  },
+  appointment: {
+    name: 'Appointment System',
+    aliases: ['appointment', 'clinic', 'klinik', 'salon', 'beauty', 'repair', 'service', 'servis', 'consultation', 'consultant', 'staff schedule'],
+    suitable: 'klinik, beauty/salon, repair/service, consultation, personal service dan workshop/service center',
+    recommendation:
+      'Appointment System sesuai untuk servis berjadual. Customer pilih servis, staff/branch jika ada, tarikh, masa, isi detail dan terima reminder.',
+  },
+  food: {
+    name: 'Food Order System',
+    aliases: ['makan', 'food', 'kuih', 'bakery', 'home baker', 'catering', 'katering', 'restaurant', 'restoran', 'cafe', 'qr', 'dine', 'pickup', 'delivery', 'preorder', 'menu'],
+    suitable: 'restoran, cafe, home baker, catering, kuih seller, small food business dan preorder food seller',
+    recommendation:
+      'Untuk bisnes kuih, home baker, cafe atau makanan, Food Order System biasanya paling sesuai. Ia boleh jadi QR dine-in untuk meja atau online order untuk pickup, delivery dan preorder.',
+  },
+  dispatch: {
+    name: 'Delivery Dispatch System',
+    aliases: ['runner', 'rider', 'dispatch', 'delivery team', 'pickup', 'laundry', 'pharmacy', 'farmasi', 'hardware', 'internal runner', 'penghantaran', 'driver'],
+    suitable: 'HR, admin, operations manager dan company dengan runner/staff sendiri yang buat job harian',
+    recommendation:
+      'Delivery Dispatch System sesuai kalau syarikat anda ada runner atau staff sendiri. HR/admin boleh create job, assign runner, monitor lokasi semasa, status kerja, proof/note dan rekod pergerakan harian. Sistem ini untuk internal team, bukan courier besar.',
+  },
+  custom: {
+    name: 'Custom Website/System',
+    aliases: ['custom', 'website', 'sistem khas', 'khas', 'workflow sendiri', 'combine 4', 'gabung 4', 'lebih 3', 'tak pasti', 'not sure'],
+    suitable: 'bisnes yang perlukan website atau sistem khas ikut cara kerja sendiri',
+    recommendation:
+      'Custom Website/System sesuai kalau flow bisnes anda unik atau mahu gabung lebih daripada 3 sistem. Kami akan review keperluan anda dan set appointment sebelum harga akhir diberi.',
+  },
+};
 
-function isMalay(text) {
-  return /\b(saya|nak|boleh|harga|sistem|bisnes|perniagaan|setup|demo|serious|temujanji|invois|kedai)\b/i.test(text);
+const pricingText =
+  'Ada 5 pakej setup: Starter RM149, Growth RM499, Business RM1,499, Pro RM2,999 dan Elite Custom secara custom quote. Bundle discount: 2 sistem dapat 25% off, 3 sistem dapat 50% off. Kalau lebih 3 sistem, kami cadangkan Custom System supaya flow lebih kemas. Custom domain bermula RM125/tahun: .com, .net dan .com.my RM125/tahun, .my RM179/tahun, .co RM229/tahun. Care plan bulanan boleh dipilih selepas setup. Harga akhir disahkan selepas review.';
+
+const setupText =
+  'Cara mula mudah: pilih industri, pilih sistem yang dicadangkan, pilih pakej, isi detail bisnes, kemudian hantar setup request. Team Bratstvo akan review, confirm harga dan hantar next step secara rasmi.';
+
+function normalize(text) {
+  return text.toLowerCase();
+}
+
+function detectSystems(text) {
+  const lower = normalize(text);
+  return Object.entries(systemsKnowledge)
+    .filter(([, system]) => system.aliases.some(alias => lower.includes(alias)))
+    .map(([key]) => key);
+}
+
+function mentionsMoreThanThree(text) {
+  const lower = normalize(text);
+  return (
+    lower.includes('combine 4') ||
+    lower.includes('gabung 4') ||
+    lower.includes('lebih 3') ||
+    lower.includes('lebih daripada 3') ||
+    lower.includes('4 system') ||
+    lower.includes('4 sistem')
+  );
 }
 
 function detectIntent(text) {
-  const lower = text.toLowerCase();
-  if (lower.includes('harga') || lower.includes('price') || lower.includes('pricing') || lower.includes('plan') || lower.includes('pakej')) return 'pricing';
-  if (lower.includes('demo') || lower.includes('test') || lower.includes('cuba')) return 'demo';
-  if (lower.includes('serious') || lower.includes('ready') || lower.includes('setup') || lower.includes('mula')) return 'setup';
-  if (systemSuggestions.some(group => group.some(word => lower.includes(word)))) return 'system';
+  const lower = normalize(text);
+  if (mentionsMoreThanThree(lower)) return 'overLimit';
+  if (lower.includes('harga') || lower.includes('price') || lower.includes('pricing') || lower.includes('pakej') || lower.includes('package') || lower.includes('discount') || lower.includes('diskaun') || lower.includes('bundle')) return 'pricing';
+  if (lower.includes('demo') || lower.includes('cuba') || lower.includes('preview') || lower.includes('contoh')) return 'demo';
+  if (lower.includes('setup') || lower.includes('mula') || lower.includes('start') || lower.includes('request')) return 'setup';
+  if (lower.includes('apa yang sesuai') || lower.includes('cadang') || lower.includes('recommend') || lower.includes('tak pasti') || lower.includes('not sure')) return 'recommend';
+  if (detectSystems(lower).length) return 'system';
   return 'qualify';
 }
 
-function getSystemHint(text, my) {
-  const lower = text.toLowerCase();
-  if (['makan', 'preorder', 'food', 'kuih', 'bakery', 'catering', 'restaurant'].some(w => lower.includes(w))) {
-    return my ? 'Untuk bisnes makanan, biasanya Pra-Pesanan Makanan atau QR Ordering paling sesuai.' : 'For food businesses, Food Preorder or QR Ordering usually fits best.';
+function systemReply(keys) {
+  if (!keys.length) return null;
+  const unique = [...new Set(keys)];
+
+  if (unique.includes('food') && (unique.includes('ecommerce') || unique.length === 1)) {
+    return 'Untuk bisnes makanan, Food Order System paling sesuai untuk menu, cart, pickup/delivery, QR dine-in atau preorder. Kalau anda juga jual produk tetap seperti cookies, frozen food atau merchandise, tambah eCommerce System. Gabung 2 sistem boleh dapat 25% bundle discount.';
   }
-  if (['booking', 'salon', 'clinic', 'appointment', 'temujanji'].some(w => lower.includes(w))) {
-    return my ? 'Untuk servis berjadual, Booking System lebih sesuai sebab boleh kawal slot, masa dan reminder.' : 'For scheduled services, a Booking System fits best because it controls slots, time and reminders.';
+
+  if (unique.includes('dispatch')) {
+    return systemsKnowledge.dispatch.recommendation;
   }
-  if (['produk', 'product', 'shop', 'catalog', 'dropship'].some(w => lower.includes(w))) {
-    return my ? 'Untuk jual produk, Product Order System sesuai untuk catalog, variasi, kuantiti dan ringkasan order.' : 'For product selling, Product Order System fits catalogs, variations, quantities and structured order summaries.';
+
+  if (unique.includes('custom')) {
+    return systemsKnowledge.custom.recommendation;
   }
-  if (['crm', 'lead', 'sales', 'follow up', 'prospek'].some(w => lower.includes(w))) {
-    return my ? 'Untuk sales team, CRM sesuai untuk track lead, follow-up dan nilai deal.' : 'For sales teams, CRM fits lead tracking, follow-ups and deal value.';
-  }
-  if (['invoice', 'quotation', 'sebut harga', 'invois'].some(w => lower.includes(w))) {
-    return my ? 'Untuk servis/freelancer, Invoice & Quotation System akan jimat masa billing dan follow-up bayaran.' : 'For service providers, Invoice & Quotation System saves billing and payment follow-up time.';
-  }
-  if (['member', 'membership', 'gym', 'kelas', 'subscription'].some(w => lower.includes(w))) {
-    return my ? 'Untuk bayaran berulang atau ahli, Membership System lebih sesuai.' : 'For recurring payments or members, Membership System fits better.';
-  }
-  return null;
+
+  return unique
+    .slice(0, 2)
+    .map(key => systemsKnowledge[key].recommendation)
+    .join(' ');
 }
 
 function buildReply(text) {
-  const my = isMalay(text);
   const intent = detectIntent(text);
-  const hint = getSystemHint(text, my);
+  const systems = detectSystems(text);
+
+  if (intent === 'overLimit') {
+    return 'Untuk lebih 3 sistem, kami cadangkan Custom System supaya flow tak serabut dan harga boleh disusun ikut keperluan sebenar. Anda boleh pilih Custom Website/System di Setup dan tulis ringkas apa yang bisnes anda perlukan.';
+  }
 
   if (intent === 'pricing') {
-    return my
-      ? 'Boleh. Build sekali bayar: Starter RM149, Growth RM499, Business RM1,499, Pro RM2,999, Elite Custom ikut sebutharga. Monthly care: Basic RM99, Business RM299, Pro RM599, Elite custom. Yearly: Basic RM1,099, Business RM3,299, Pro RM6,599, Elite custom. Business ialah Most Popular.'
-      : 'Sure. One-time setup: Starter RM149, Growth RM499, Business RM1,499, Pro RM2,999, Elite Custom by quotation. Monthly care: Basic RM99, Business RM299, Pro RM599, Elite custom. Yearly: Basic RM1,099, Business RM3,299, Pro RM6,599, Elite custom. Business is Most Popular.';
+    return pricingText;
   }
 
   if (intent === 'demo') {
-    return my
-      ? 'Cuba Demo dulu. Pilih sistem yang paling dekat dengan bisnes anda dan tekan flow dia sampai habis. Kalau rasa flow tu ngam, baru sambung Setup supaya detail yang masuk WhatsApp sudah lengkap.'
-      : 'Try the Demo first. Pick the system closest to your business and click through the flow. If it feels right, continue to Setup so the WhatsApp message is already complete.';
+    return 'Demo di website dipisahkan kepada 2 view: Owner Dashboard dan Customer View. Anda boleh nampak cara customer order, booking atau bayar, dan cara owner urus order, booking, customer, status payment dan report.';
   }
 
   if (intent === 'setup') {
-    return my
-      ? 'Nice. Next step: isi Setup dengan nama bisnes, jenis sistem, pakej dan nombor. WhatsApp button hanya keluar di hujung supaya conversation terus ada konteks dan tak buang masa.'
-      : 'Nice. Next step: fill Setup with business name, system type, package and phone number. WhatsApp only opens at the end so the conversation has context.';
+    return setupText;
   }
 
-  if (intent === 'system' && hint) {
-    return `${hint} ${my ? 'Kalau nak, saya boleh guide: berapa produk/slot sehari, siapa urus admin, dan nak plan tahunan atau build sekali bayar?' : 'I can guide the fit: how many products/slots per day, who manages admin, and whether yearly plan or one-time build makes more sense?'}`;
+  if (intent === 'recommend' || intent === 'system') {
+    const reply = systemReply(systems);
+    if (reply) return `${reply} Kalau nak lebih tepat, beritahu jenis bisnes, cara customer order/booking sekarang, dan anggaran order atau booking sebulan.`;
+
+    return 'Boleh. Bratstvo Digital bina website, sistem order, booking, appointment, food ordering, delivery dispatch, dashboard dan automation untuk SME. Bisnes anda dalam bidang apa, dan sekarang paling pening bahagian order, booking, payment, customer record atau runner?';
   }
 
-  return my
-    ? 'Boleh aku fahamkan dulu. Bisnes anda jenis apa, masalah utama sekarang order/booking/lead/invoice, dan anggaran berapa transaksi sebulan? Dari situ baru aku suggest sistem dan pakej.'
-    : 'Let me understand first. What business are you running, is the main issue order/booking/lead/invoice, and roughly how many transactions per month? From there I can suggest the system and plan.';
+  return 'Boleh saya bantu cadangkan sistem yang sesuai. Ceritakan jenis bisnes anda, customer biasanya order atau booking melalui apa sekarang, dan anggaran transaksi sebulan. Dari situ saya boleh cadangkan sistem, pakej dan sama ada bundle discount sesuai.';
 }
 
 export default function Chatbot() {
@@ -90,13 +150,15 @@ export default function Chatbot() {
   const [msgs, setMsgs] = useState([
     {
       role: 'assistant',
-      text: 'Hi, saya Bratstvo AI. Saya akan tanya sikit dulu macam sales consultant, bukan terus paksa WhatsApp. Cerita bisnes anda buat apa?',
+      text: 'Hi, saya Bratstvo Assistant. Ceritakan bisnes anda, nanti saya bantu cadangkan sistem, pakej dan langkah setup yang sesuai.',
     },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [qualified, setQualified] = useState(false);
   const bottomRef = useRef(null);
+
+  const assistantSubcopy = useMemo(() => 'Website, system & automation guidance', []);
 
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -111,10 +173,10 @@ export default function Chatbot() {
 
     window.setTimeout(() => {
       const intent = detectIntent(userMsg);
-      if (intent === 'setup' || userMsg.length > 70) setQualified(true);
+      if (['setup', 'pricing', 'system', 'recommend', 'overLimit'].includes(intent) || userMsg.length > 70) setQualified(true);
       setMsgs(prev => [...prev, { role: 'assistant', text: buildReply(userMsg) }]);
       setLoading(false);
-    }, 520);
+    }, 480);
   };
 
   return (
@@ -130,22 +192,22 @@ export default function Chatbot() {
 
       {open && (
         <div
-          className="fixed bottom-44 right-5 md:bottom-28 md:right-8 z-50 w-80 rounded-xl overflow-hidden shadow-2xl flex flex-col"
-          style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)', height: '460px' }}
+          className="fixed bottom-44 right-5 md:bottom-28 md:right-8 z-50 flex h-[460px] w-[calc(100vw-2.5rem)] max-w-[22rem] flex-col overflow-hidden rounded-2xl shadow-2xl"
+          style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}
         >
           <div className="px-4 py-3 flex items-center gap-3" style={{ background: 'var(--c-accent)' }}>
             <Bot size={18} style={{ color: 'var(--c-accent-contrast)' }} />
             <div>
-              <div className="text-sm font-bold" style={{ color: 'var(--c-accent-contrast)' }}>Bratstvo AI</div>
-              <div className="text-xs" style={{ color: 'rgba(5,9,13,0.65)' }}>Consultative lead guide</div>
+              <div className="text-sm font-bold" style={{ color: 'var(--c-accent-contrast)' }}>Bratstvo Assistant</div>
+              <div className="text-xs" style={{ color: 'rgba(5,9,13,0.66)' }}>{assistantSubcopy}</div>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {msgs.map((m, i) => (
-              <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div key={`${m.role}-${i}`} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className="max-w-[86%] px-3 py-2 rounded-xl text-xs leading-relaxed"
+                  className="max-w-[88%] px-3 py-2 rounded-xl text-xs leading-relaxed"
                   style={{
                     background: m.role === 'user' ? 'var(--c-accent)' : 'var(--c-bg)',
                     color: m.role === 'user' ? 'var(--c-accent-contrast)' : 'var(--c-text)',
@@ -162,8 +224,8 @@ export default function Chatbot() {
                   <button
                     key={item.label}
                     onClick={() => sendMessage(item.text)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold"
-                    style={{ border: '1px solid var(--c-border)', color: 'var(--c-muted)' }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:-translate-y-0.5"
+                    style={{ border: '1px solid var(--c-border)', color: 'var(--c-muted)', background: 'var(--c-input-bg)' }}
                   >
                     {item.label}
                   </button>
@@ -172,10 +234,12 @@ export default function Chatbot() {
             )}
 
             {qualified && (
-              <div className="rounded-lg p-3" style={{ background: 'rgba(194,168,107,0.10)', border: '1px solid rgba(194,168,107,0.28)' }}>
-                <p className="text-xs mb-2" style={{ color: 'var(--c-muted)' }}>Nampak macam anda sudah ada konteks. Isi setup supaya WhatsApp nanti terus lengkap.</p>
-                <Link to="/setup" className="block text-center py-2 rounded-md text-xs font-bold" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
-                  Buka Setup
+              <div className="rounded-xl p-3" style={{ background: 'var(--c-primary-soft)', border: '1px solid rgba(22,196,127,0.24)' }}>
+                <p className="text-xs mb-2" style={{ color: 'var(--c-muted)' }}>
+                  Ready untuk langkah seterusnya? Isi configurator supaya kami boleh cadangkan flow dan pakej dengan lebih tepat.
+                </p>
+                <Link to="/setup" className="block text-center py-2 rounded-lg text-xs font-bold" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+                  Mula Setup
                 </Link>
               </div>
             )}

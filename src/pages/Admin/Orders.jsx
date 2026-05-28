@@ -1,7 +1,7 @@
 import { ShoppingBag } from 'lucide-react';
 
 const orders = [
-  { id: 'BD-1126', customer: 'Aina Rahman', status: 'Baru', total: 'RM25.80' },
+  { id: 'BD-1126', customer: 'Nadia Rahman', status: 'Baru', total: 'RM25.80' },
   { id: 'BD-1127', customer: 'Farid Amin', status: 'Packing', total: 'RM54.00' },
   { id: 'BD-1128', customer: 'Nadia Saleh', status: 'Siap', total: 'RM18.00' },
 ];

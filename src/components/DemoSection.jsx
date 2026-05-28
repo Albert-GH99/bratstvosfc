@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../context/LanguageContext';
+import { useLang } from '@/context/LanguageContext';
 
 export default function DemoSection() {
-  const { t } = useLanguage();
+  const { t } = useLang();
   const d = t.demo;
   const [step, setStep] = useState(1);
   const [selected, setSelected] = useState(null);
@@ -17,12 +17,12 @@ export default function DemoSection() {
   const serviceName = selected !== null ? d.services[selected] : '';
 
   return (
-    <section id="demo" className="py-24 px-6" style={{ background: '#05090D' }}>
+    <section id="demo" className="py-24 px-6" style={{ background: 'var(--c-bg)' }}>
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>{d.label}</p>
-          <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: '#E6EDF3' }}>{d.title}</h2>
-          <p className="text-base max-w-md mx-auto" style={{ color: '#9BA6B2' }}>{d.subtitle}</p>
+          <h2 className="text-3xl md:text-4xl font-black mb-4" style={{ color: 'var(--c-text)' }}>{d.title}</h2>
+          <p className="text-base max-w-md mx-auto" style={{ color: 'var(--c-muted)' }}>{d.subtitle}</p>
         </div>
 
         <div className="flex items-center justify-center gap-3 mb-10">
@@ -31,25 +31,25 @@ export default function DemoSection() {
               <div
                 className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all"
                 style={{
-                  background: step >= n ? 'var(--c-accent)' : 'rgba(255,255,255,0.05)',
-                  color: step >= n ? 'var(--c-accent-contrast)' : '#9BA6B2',
-                  border: step >= n ? 'none' : '1px solid rgba(255,255,255,0.1)',
+                  background: step >= n ? 'var(--c-accent)' : 'var(--c-input-bg)',
+                  color: step >= n ? 'var(--c-accent-contrast)' : 'var(--c-muted)',
+                  border: step >= n ? 'none' : '1px solid var(--c-border)',
                 }}
               >
                 {n}
               </div>
-              {n < 3 && <div className="w-12 h-px" style={{ background: step > n ? 'var(--c-accent)' : 'rgba(255,255,255,0.1)' }} />}
+              {n < 3 && <div className="w-12 h-px" style={{ background: step > n ? 'var(--c-accent)' : 'var(--c-border)' }} />}
             </div>
           ))}
         </div>
 
         <div
           className="max-w-2xl mx-auto rounded-2xl p-8 md:p-10"
-          style={{ background: '#0B1118', border: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}
         >
           {step === 1 && (
             <div>
-              <h3 className="text-xl font-bold mb-6" style={{ color: '#E6EDF3' }}>{d.step1Title}</h3>
+              <h3 className="text-xl font-bold mb-6" style={{ color: 'var(--c-text)' }}>{d.step1Title}</h3>
               <div className="grid gap-3">
                 {d.services.map((s, i) => (
                   <button
@@ -57,9 +57,9 @@ export default function DemoSection() {
                     onClick={() => setSelected(i)}
                     className="flex items-center justify-between p-4 rounded-xl text-left transition-all duration-200"
                     style={{
-                      background: selected === i ? 'rgba(194,168,107,0.1)' : 'rgba(255,255,255,0.03)',
-                      border: selected === i ? '1px solid rgba(194,168,107,0.42)' : '1px solid rgba(255,255,255,0.07)',
-                      color: selected === i ? 'var(--c-accent)' : '#E6EDF3',
+                      background: selected === i ? 'var(--c-accent-muted)' : 'var(--c-input-bg)',
+                      border: selected === i ? '1px solid var(--c-accent)' : '1px solid var(--c-border)',
+                      color: selected === i ? 'var(--c-accent)' : 'var(--c-text)',
                     }}
                   >
                     <span className="font-medium text-sm">{s}</span>
@@ -80,27 +80,27 @@ export default function DemoSection() {
 
           {step === 2 && (
             <div>
-              <h3 className="text-xl font-bold mb-6" style={{ color: '#E6EDF3' }}>{d.step2Title}</h3>
+              <h3 className="text-xl font-bold mb-6" style={{ color: 'var(--c-text)' }}>{d.step2Title}</h3>
               <div className="space-y-4">
                 <input
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder={d.namePlaceholder}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#E6EDF3' }}
+                  style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-input-border)', color: 'var(--c-text)' }}
                 />
                 <input
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   placeholder={d.phonePlaceholder}
                   className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-all"
-                  style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#E6EDF3' }}
+                  style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-input-border)', color: 'var(--c-text)' }}
                 />
                 <select
                   value={industry}
                   onChange={e => setIndustry(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: '#0B1118', border: '1px solid rgba(255,255,255,0.08)', color: industry ? '#E6EDF3' : '#9BA6B2' }}
+                  className="bd-select w-full px-4 py-3 rounded-xl text-sm outline-none"
+                  style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-input-border)', color: industry ? 'var(--c-text)' : 'var(--c-muted)' }}
                 >
                   <option value="">{d.industryLabel}</option>
                   {d.industries.map(ind => <option key={ind} value={ind}>{ind}</option>)}
@@ -109,8 +109,8 @@ export default function DemoSection() {
               <div className="flex gap-3 mt-8">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex items-center gap-1 px-5 py-3 rounded-lg text-sm font-medium transition-all hover:bg-white/10"
-                  style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#9BA6B2' }}
+                  className="flex items-center gap-1 px-5 py-3 rounded-lg text-sm font-medium transition-all"
+                  style={{ border: '1px solid var(--c-border)', color: 'var(--c-muted)' }}
                 >
                   <ChevronLeft size={16} /> {d.back}
                 </button>
@@ -129,12 +129,12 @@ export default function DemoSection() {
           {step === 3 && (
             <div>
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(194,168,107,0.15)' }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'var(--c-primary-soft)' }}>
                   <CheckCircle size={20} style={{ color: 'var(--c-accent)' }} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold" style={{ color: '#E6EDF3' }}>{d.step3Title}</h3>
-                  <p className="text-xs" style={{ color: '#9BA6B2' }}>{d.step3Subtitle}</p>
+                  <h3 className="text-lg font-bold" style={{ color: 'var(--c-text)' }}>{d.step3Title}</h3>
+                  <p className="text-xs" style={{ color: 'var(--c-muted)' }}>{d.step3Subtitle}</p>
                 </div>
               </div>
 

@@ -36,7 +36,7 @@ export async function signupClientAccount(payload) {
   }
 
   try {
-    const existing = await getClientByUser(authData.user.id);
+    const existing = await getClientByUser(authData.user);
     return {
       user: authData.user,
       session: authData.session,

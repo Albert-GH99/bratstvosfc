@@ -1,8 +1,8 @@
-import { getDemoItems, getSystemName, getText, systemsData } from './systemsData';
+import { getDemoItems, getFeatureList, getSystemName, getText, systemsData } from './systemsData';
 
-export const premiumGreen = '#0F5132';
-export const brightGreen = '#20C875';
-export const premiumGold = '#C6A15B';
+export const premiumGreen = 'var(--c-bg)';
+export const brightGreen = '#16C47F';
+export const premiumEmerald = '#16C47F';
 
 export const salesEmail = 'sales@bratstvosfc.com';
 
@@ -25,12 +25,12 @@ export const oneTimePackages = [
     name: 'Starter',
     price: 149,
     bestFor: {
-      en: 'Testing, side income or one basic flow',
-      my: 'Testing, side income atau satu flow asas',
+      en: 'Testing a new idea, side income or one simple flow',
+      my: 'Trial idea baru, side income atau satu flow asas',
     },
     includes: {
-      en: ['1 basic system', 'Simple template UI', 'WhatsApp-ready flow', 'Start small. Upgrade anytime.'],
-      my: ['1 sistem asas', 'UI simple template', 'Flow siap WhatsApp', 'Mula kecil. Upgrade bila-bila masa.'],
+      en: ['1 basic system', 'Clean customer flow', 'Automated WhatsApp summary', 'Scale later'],
+      my: ['1 sistem asas', 'Customer flow yang kemas', 'WhatsApp summary automatik', 'Boleh scale kemudian'],
     },
   },
   {
@@ -38,12 +38,12 @@ export const oneTimePackages = [
     name: 'Growth',
     price: 499,
     bestFor: {
-      en: 'Small businesses that need basic admin',
-      my: 'Small business yang perlukan admin asas',
+      en: 'Small businesses that need simple owner management',
+      my: 'Bisnes kecil yang perlukan pengurusan owner yang ringkas',
     },
     includes: {
-      en: ['1 system', 'Basic admin panel', 'Basic automation', 'Mobile optimised'],
-      my: ['1 sistem', 'Admin panel asas', 'Automasi asas', 'Mobile optimised'],
+      en: ['1 system', 'Basic business dashboard', 'Customer records', 'Mobile optimised'],
+      my: ['1 sistem', 'Dashboard bisnes asas', 'Rekod customer', 'Mobile-friendly'],
     },
   },
   {
@@ -52,12 +52,12 @@ export const oneTimePackages = [
     price: 1499,
     popular: true,
     bestFor: {
-      en: 'Default choice for serious businesses',
-      my: 'Pilihan utama untuk bisnes serius',
+      en: 'Best fit for growing businesses',
+      my: 'Pilihan utama untuk bisnes yang sedang berkembang',
     },
     includes: {
-      en: ['Admin PRO', 'Products, orders or workflow records', 'Realtime updates', 'Basic analytics', 'Most Popular'],
-      my: ['Admin PRO', 'Produk, order atau rekod workflow', 'Realtime updates', 'Analitik asas', 'Most Popular'],
+      en: ['Business dashboard', 'Products, orders or customer records', 'Live status updates', 'Basic insights', 'Recommended'],
+      my: ['Dashboard bisnes', 'Produk, order atau rekod customer', 'Status update jelas', 'Analytics asas', 'Paling disyorkan'],
     },
   },
   {
@@ -65,26 +65,26 @@ export const oneTimePackages = [
     name: 'Pro',
     price: 2999,
     bestFor: {
-      en: 'Growing companies with advanced workflow',
-      my: 'Growing company dengan workflow advanced',
+      en: 'Growing companies with more moving parts',
+      my: 'Syarikat berkembang dengan proses bisnes yang lebih banyak',
     },
     includes: {
-      en: ['Everything in Business', 'Advanced automation', 'Multi-user access', 'Performance optimised'],
-      my: ['Semua dalam Business', 'Automasi advanced', 'Multi-user access', 'Performance optimised'],
+      en: ['Everything in Business', 'Advanced business process support', 'Team access', 'Priority optimisation'],
+      my: ['Semua dalam Business', 'Support proses bisnes lanjutan', 'Akses team', 'Priority optimisation'],
     },
   },
   {
     id: 'elite',
     name: 'Elite Custom',
     price: 7999,
-    priceLabel: 'Custom quotation',
+    priceLabel: 'Custom quote',
     bestFor: {
-      en: 'Custom quotation for larger builds',
-      my: 'Sebutharga custom untuk build besar',
+      en: 'Custom quote for larger builds',
+      my: 'Custom quote untuk build yang lebih besar',
     },
     includes: {
-      en: ['Custom quotation', 'Custom feature development', 'Scalable architecture', 'Priority planning'],
-      my: ['Sebutharga custom', 'Pembangunan feature custom', 'Architecture boleh scale', 'Priority planning'],
+      en: ['Custom quote', 'Tailored feature planning', 'Growth-ready setup', 'Priority planning'],
+      my: ['Custom quote', 'Feature planning mengikut keperluan', 'Setup sedia berkembang', 'Priority planning'],
     },
   },
 ];
@@ -96,8 +96,8 @@ export const subscriptionPlans = {
       name: 'Basic',
       price: 99,
       includes: {
-        en: ['Hosting', 'Basic maintenance', 'Bug fix'],
-        my: ['Hosting', 'Maintenance asas', 'Bug fix'],
+        en: ['Hosting', 'Basic maintenance', 'Issue support'],
+        my: ['Hosting', 'Maintenance asas', 'Issue support'],
       },
     },
     {
@@ -106,8 +106,8 @@ export const subscriptionPlans = {
       price: 299,
       popular: true,
       includes: {
-        en: ['Hosting + maintenance', 'Minor updates', 'Normal support', 'Most Popular'],
-        my: ['Hosting + maintenance', 'Update kecil', 'Support biasa', 'Most Popular'],
+        en: ['Hosting and maintenance', 'Minor updates', 'Standard support', 'Recommended'],
+        my: ['Hosting dan maintenance', 'Update kecil', 'Standard support', 'Paling disyorkan'],
       },
     },
     {
@@ -115,18 +115,18 @@ export const subscriptionPlans = {
       name: 'Pro',
       price: 599,
       includes: {
-        en: ['Update + improvement', 'Automation support', 'Performance monitoring', 'Fast support'],
-        my: ['Update + improvement', 'Support automasi', 'Performance monitoring', 'Support fast'],
+        en: ['Updates and improvements', 'Business process support', 'Performance monitoring', 'Priority support'],
+        my: ['Update dan improvement', 'Support proses bisnes', 'Performance monitoring', 'Priority support'],
       },
     },
     {
       id: 'elite-monthly',
       name: 'Elite',
       price: 999,
-      priceLabel: 'Custom quotation',
+      priceLabel: 'Custom quote',
       includes: {
-        en: ['Custom quotation', 'Priority support', 'Scaling support', 'Custom small feature request'],
-        my: ['Sebutharga custom', 'Priority support', 'Scaling support', 'Request feature kecil custom'],
+        en: ['Custom quote', 'Priority support', 'Growth support', 'Small custom requests'],
+        my: ['Custom quote', 'Priority support', 'Growth support', 'Request custom kecil'],
       },
     },
   ],
@@ -137,7 +137,7 @@ export const subscriptionPlans = {
       price: 1099,
       includes: {
         en: ['Hosting + domain', 'Basic maintenance', 'Normal support'],
-        my: ['Hosting + domain', 'Maintenance asas', 'Support biasa'],
+        my: ['Hosting + domain', 'Maintenance asas', 'Standard support'],
       },
     },
     {
@@ -146,8 +146,8 @@ export const subscriptionPlans = {
       price: 3299,
       popular: true,
       includes: {
-        en: ['Hosting + domain', 'Admin PRO support', 'Realtime system care', 'Most Popular'],
-        my: ['Hosting + domain', 'Support Admin PRO', 'Penjagaan sistem realtime', 'Most Popular'],
+        en: ['Hosting and domain', 'Business dashboard support', 'Live system care', 'Recommended'],
+        my: ['Hosting dan domain', 'Support dashboard bisnes', 'Care sistem live', 'Paling disyorkan'],
       },
     },
     {
@@ -155,21 +155,21 @@ export const subscriptionPlans = {
       name: 'Pro',
       price: 6599,
       includes: {
-        en: ['Everything in Business', 'Advanced automation care', 'Analytics support', 'Higher priority support'],
-        my: ['Semua dalam Business', 'Penjagaan automasi advanced', 'Support analytics', 'Priority support lebih tinggi'],
+        en: ['Everything in Business', 'Advanced business process care', 'Insights support', 'Higher priority support'],
+        my: ['Semua dalam Business', 'Care proses bisnes lanjutan', 'Support analytics', 'Priority support lebih tinggi'],
       },
     },
     {
       id: 'elite-yearly',
       name: 'Elite',
       price: 9999,
-      priceLabel: 'Custom quotation',
+      priceLabel: 'Custom quote',
       includes: {
-        en: ['Custom quotation', 'Dedicated support', 'Scaling + architecture support', 'Custom planning'],
-        my: ['Sebutharga custom', 'Dedicated support', 'Scaling + architecture support', 'Custom planning'],
+        en: ['Custom quote', 'Dedicated support', 'Growth planning support', 'Custom planning'],
+        my: ['Custom quote', 'Dedicated support', 'Growth planning support', 'Custom planning'],
       },
     },
   ],
 };
 
-export { getDemoItems, getSystemName, getText };
+export { getDemoItems, getFeatureList, getSystemName, getText };
