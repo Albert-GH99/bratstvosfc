@@ -7,6 +7,39 @@ const TenantContext = createContext(null);
 const BASE_TENANT_COLUMNS = 'id,business_name,subdomain,custom_domain,status,plan,system_type,branding,settings,created_at';
 const TENANT_COLUMNS = 'id,business_name,subdomain,custom_domain,status,plan,system_type,branding,settings,logo_url,logo_path,banner_url,banner_path,created_at';
 
+export function normalizeTenant(row) {
+  if (!row) return null;
+
+  const branding = {
+    ...(row.branding || {}),
+    logo_url: row.branding?.logo_url || row.logo_url || '',
+    logo_path: row.branding?.logo_path || row.logo_path || '',
+    banner_url: row.branding?.banner_url || row.banner_url || '',
+    banner_path: row.branding?.banner_path || row.banner_path || '',
+  };
+
+  const settings = {
+    ...(row.settings || {}),
+    logo_url: row.settings?.logo_url || row.logo_url || '',
+    logo_path: row.settings?.logo_path || row.logo_path || '',
+    banner_url: row.settings?.banner_url || row.banner_url || '',
+    banner_path: row.settings?.banner_path || row.banner_path || '',
+  };
+
+  return {
+    id: row.id,
+    businessName: row.business_name,
+    subdomain: row.subdomain,
+    customDomain: row.custom_domain,
+    status: row.status,
+    plan: row.plan,
+    systemType: row.system_type,
+    branding,
+    settings,
+    createdAt: row.created_at,
+  };
+}
+
 function detectTenantHost() {
   if (typeof window === 'undefined') {
     return {
@@ -86,7 +119,7 @@ export function TenantProvider({ children }) {
       if (!isSupabaseConfigured || !supabase) {
         setTenant(null);
         setLoading(false);
-        setError('Supabase is not configured.');
+        setError('Unable to prepare this page.');
         return;
       }
 
@@ -122,11 +155,11 @@ export function TenantProvider({ children }) {
         if (queryError) throw queryError;
         if (!active) return;
 
-        setTenant(data || null);
+        setTenant(normalizeTenant(data));
       } catch (err) {
         if (!active) return;
         setTenant(null);
-        setError(err.message || 'Unable to load tenant.');
+        setError(err.message || 'Unable to prepare this page.');
       } finally {
         if (active) setLoading(false);
       }
@@ -143,7 +176,7 @@ export function TenantProvider({ children }) {
     ...host,
     tenant,
     tenantId: tenant?.id || null,
-    tenantType: tenant?.system_type || null,
+    tenantType: tenant?.systemType || null,
     loading,
     error,
     tenantNotFound: host.isTenantDomain && !loading && !tenant,

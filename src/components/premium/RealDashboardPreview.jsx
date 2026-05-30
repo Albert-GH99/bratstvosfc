@@ -72,7 +72,7 @@ export default function RealDashboardPreview({ className = '', compact = false }
       <motion.div
         animate={floatAnimation}
         transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative overflow-hidden rounded-[30px] p-3"
+        className="real-dashboard-preview relative overflow-hidden rounded-[24px] p-2.5 md:rounded-[30px] md:p-3"
         style={{
           background: 'linear-gradient(145deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04))',
           border: '1px solid var(--c-border)',
@@ -80,8 +80,8 @@ export default function RealDashboardPreview({ className = '', compact = false }
           backdropFilter: 'blur(22px)',
         }}
       >
-        <div className="overflow-hidden rounded-[24px]" style={{ background: 'var(--c-bg-soft)', border: '1px solid var(--c-border)' }}>
-          <div className="flex items-center justify-between gap-3 px-4 py-3" style={{ background: 'var(--c-surface)', borderBottom: '1px solid var(--c-border)' }}>
+        <div className="overflow-hidden rounded-[20px] md:rounded-[24px]" style={{ background: 'var(--c-bg-soft)', border: '1px solid var(--c-border)' }}>
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 md:px-4 md:py-3" style={{ background: 'var(--c-surface)', borderBottom: '1px solid var(--c-border)' }}>
             <div className="flex gap-1.5">
               <span className="h-3 w-3 rounded-full bg-[#ff6b6b]" />
               <span className="h-3 w-3 rounded-full bg-[#ffd166]" />
@@ -94,7 +94,7 @@ export default function RealDashboardPreview({ className = '', compact = false }
             <span className="rounded-full px-3 py-1 text-[11px] font-black" style={{ background: 'var(--c-primary-soft)', color: 'var(--c-accent)' }}>Live</span>
           </div>
 
-          <div className={`grid gap-4 p-4 ${compact ? '' : 'md:grid-cols-[0.72fr_1.28fr]'}`}>
+          <div className={`grid gap-3 p-3 md:gap-4 md:p-4 ${compact ? '' : 'md:grid-cols-[0.72fr_1.28fr]'}`}>
             <aside className="hidden rounded-2xl p-4 md:block" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
               <div className="mb-6 flex items-center gap-3">
                 <span className="grid h-10 w-10 place-items-center rounded-xl" style={{ background: 'linear-gradient(135deg, var(--c-primary), var(--c-primary-2))', color: 'var(--c-accent-contrast)' }}>
@@ -121,18 +121,18 @@ export default function RealDashboardPreview({ className = '', compact = false }
             </aside>
 
             <main className="space-y-4">
-              <div className="grid gap-3 sm:grid-cols-3">
-                {metrics.map(({ label, value, icon: Icon }) => (
-                  <div key={label} className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-3 md:gap-3">
+                {metrics.map(({ label, value, icon: Icon }, index) => (
+                  <div key={label} className={`${index === 2 ? 'hidden md:block' : ''} rounded-2xl p-3 md:p-4`} style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
                     <Icon size={17} style={{ color: 'var(--c-accent)' }} />
-                    <p className="mt-3 text-xl font-black" style={{ color: 'var(--c-text)' }}>{value}</p>
+                    <p className="mt-2 text-lg font-black md:mt-3 md:text-xl" style={{ color: 'var(--c-text)' }}>{value}</p>
                     <p className="mt-1 text-[11px]" style={{ color: 'var(--c-muted)' }}>{label}</p>
                   </div>
                 ))}
               </div>
 
               <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-                <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+                <div className="rounded-2xl p-3 md:p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
                   <div className="mb-4 flex items-center justify-between">
                     <div>
                       <p className="text-sm font-black" style={{ color: 'var(--c-text)' }}>Incoming orders</p>
@@ -148,7 +148,7 @@ export default function RealDashboardPreview({ className = '', compact = false }
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.3, delay: index * 0.06 }}
-                        className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl p-3"
+                        className={`${index === 2 ? 'hidden md:grid' : 'grid'} grid-cols-[auto_1fr_auto] items-center gap-3 rounded-xl p-3`}
                         style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}
                       >
                         <span className="grid h-9 w-9 place-items-center rounded-xl text-xs font-black" style={{ background: 'var(--c-primary-soft)', color: 'var(--c-accent)' }}>
@@ -163,7 +163,9 @@ export default function RealDashboardPreview({ className = '', compact = false }
                     ))}
                   </div>
                 </div>
-                <MiniChart />
+                <div className="hidden md:block">
+                  <MiniChart />
+                </div>
               </div>
             </main>
           </div>

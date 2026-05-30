@@ -121,7 +121,7 @@ function ProductTile({ label, active, accent }) {
 
 function EcommerceVisual({ theme }) {
   return (
-    <div className="relative grid gap-3 sm:grid-cols-[1.05fr_0.95fr]">
+    <div className="relative grid grid-cols-[1.05fr_0.95fr] gap-3">
       <LiveBadge label="Added to cart" accent={theme.accent} className="absolute -right-1 -top-3 z-10" />
       <div className="grid grid-cols-2 gap-3">
         {theme.rows.slice(0, 2).map((row, index) => <ProductTile key={row} label={row} active={index === 0} accent={theme.accent} />)}
@@ -150,7 +150,7 @@ function BookingVisual({ theme }) {
   };
 
   return (
-    <div className="relative grid gap-3 sm:grid-cols-[0.92fr_1.08fr]">
+    <div className="relative grid grid-cols-[0.92fr_1.08fr] gap-3">
       <LiveBadge label="Participant added" accent={theme.accent} className="absolute -right-1 -top-3 z-10" />
       <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
         <div className="mb-3 flex items-center justify-between">
@@ -196,7 +196,7 @@ function BookingVisual({ theme }) {
 
 function AppointmentVisual({ theme }) {
   return (
-    <div className="relative grid gap-3 sm:grid-cols-[0.9fr_1.1fr]">
+    <div className="relative grid grid-cols-[0.9fr_1.1fr] gap-3">
       <LiveBadge label="2:30 PM selected" accent={theme.accent} className="absolute -right-1 -top-3 z-10" />
       <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
         <div className="grid h-16 w-16 place-items-center rounded-2xl text-lg font-black" style={{ background: `${theme.accent}30`, color: 'var(--c-text)' }}>LR</div>
@@ -217,7 +217,7 @@ function AppointmentVisual({ theme }) {
 
 function FoodVisual({ theme }) {
   return (
-    <div className="relative grid gap-3 sm:grid-cols-[0.92fr_1.08fr]">
+    <div className="relative grid grid-cols-[0.92fr_1.08fr] gap-3">
       <LiveBadge label="Kitchen updated" accent={theme.accent} className="absolute -right-1 -top-3 z-10" />
       <div className="rounded-2xl p-4" style={{ background: `linear-gradient(135deg, ${theme.accent}33, var(--c-surface))`, border: '1px solid var(--c-border)' }}>
         <Utensils size={22} style={{ color: theme.accent }} />
@@ -240,7 +240,7 @@ function DispatchVisual({ theme }) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <div className="relative grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
+    <div className="relative grid grid-cols-[1.1fr_0.9fr] gap-3">
       <LiveBadge label="Runner assigned" accent={theme.accent} className="absolute -right-1 -top-3 z-10" />
       <div className="relative min-h-[150px] overflow-hidden rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
         <Route size={20} style={{ color: theme.accent }} />
@@ -340,7 +340,7 @@ export default function SystemShowcaseVisual({ type = 'ecommerce', label = 'Busi
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.42 }}
-      className={`relative overflow-hidden rounded-[24px] p-4 ${compact ? 'min-h-[230px]' : 'min-h-[320px]'} ${className}`.trim()}
+      className={`system-showcase-visual relative overflow-hidden rounded-[24px] p-3 md:p-4 ${compact ? 'min-h-[190px] max-h-[220px] md:min-h-[230px] md:max-h-none' : 'min-h-[250px] max-h-[280px] md:min-h-[320px] md:max-h-none'} ${className}`.trim()}
       style={{
         background: `radial-gradient(circle at 18% 0%, ${theme.accent}30, transparent 38%), linear-gradient(145deg, var(--c-bg-soft), var(--c-surface-strong))`,
         border: '1px solid var(--c-border)',
@@ -353,7 +353,7 @@ export default function SystemShowcaseVisual({ type = 'ecommerce', label = 'Busi
         className="absolute right-0 top-0 h-28 w-28 rounded-full blur-3xl"
         style={{ background: theme.accent, opacity: 0.2 }}
       />
-      <div className="relative mb-4 flex items-center justify-between gap-3">
+      <div className="relative mb-3 flex items-center justify-between gap-3 md:mb-4">
         <div className="flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-2xl" style={{ background: `${theme.accent}24`, color: theme.accent, border: '1px solid var(--c-border)' }}>
             <Icon size={20} />
@@ -370,7 +370,7 @@ export default function SystemShowcaseVisual({ type = 'ecommerce', label = 'Busi
 
       <VisualBody type={type} theme={theme} />
 
-      <div className="relative mt-4 flex flex-wrap gap-2">
+      <div className="relative mt-4 hidden flex-wrap gap-2 sm:flex">
         {theme.chips.map(chip => (
           <span key={chip} className="rounded-full px-3 py-1 text-[11px] font-black" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)', color: 'var(--c-muted)' }}>
             {chip}

@@ -9,7 +9,7 @@ import Unauthorized from '@/pages/Unauthorized';
 
 export default function TenantRoute() {
   const location = useLocation();
-  const { tenant, tenantId, loading: tenantLoading, tenantNotFound, hostname, error: tenantError } = useTenant();
+  const { tenant, tenantId, loading: tenantLoading, tenantNotFound } = useTenant();
   const { user, isAuthenticated, isLoadingAuth, authChecked, mustChangePassword } = useAuth();
   const [checkingMembership, setCheckingMembership] = useState(true);
   const [hasTenantAccess, setHasTenantAccess] = useState(false);
@@ -30,7 +30,7 @@ export default function TenantRoute() {
       setMembershipError('');
 
       try {
-        if (!supabase) throw new Error('Supabase is not configured.');
+        if (!supabase) throw new Error('Unable to verify access.');
 
         const email = String(user.email || '').trim().toLowerCase();
         const filters = [
@@ -55,7 +55,7 @@ export default function TenantRoute() {
       } catch (err) {
         if (active) {
           setHasTenantAccess(false);
-          setMembershipError(err.message || 'Unable to verify tenant access.');
+          setMembershipError(err.message || 'Unable to verify access.');
         }
       } finally {
         if (active) setCheckingMembership(false);
@@ -70,7 +70,7 @@ export default function TenantRoute() {
   }, [isAuthenticated, tenantId, tenantLoading, user?.email, user?.id]);
 
   if (tenantLoading || isLoadingAuth || !authChecked || checkingMembership) return <TenantLoading />;
-  if (tenantNotFound || !tenant) return <TenantNotFound hostname={hostname} error={tenantError} />;
+  if (tenantNotFound || !tenant) return <TenantNotFound />;
 
   if (!isAuthenticated) {
     const next = encodeURIComponent(`${location.pathname}${location.search}`);
@@ -84,8 +84,8 @@ export default function TenantRoute() {
   if (!hasTenantAccess) {
     return (
       <Unauthorized
-        title="Tenant access required"
-        message={membershipError || `This account is not assigned to ${tenant.business_name}.`}
+        title="Access required"
+        message={membershipError || `This account is not assigned to ${tenant.businessName}.`}
         loginTo="/login"
       />
     );

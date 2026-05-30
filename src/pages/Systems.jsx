@@ -153,20 +153,20 @@ export default function Systems() {
 
   return (
     <GradientBackground className="page-shell">
-      <SectionShell className="pt-10 md:pt-12" eyebrow={labels.badge} title={labels.title} subtitle={labels.subtitle}>
+      <SectionShell className="pt-8 md:pt-12" eyebrow={labels.badge} title={labels.title} subtitle={labels.subtitle}>
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-stretch">
-          <PremiumCard className="flex flex-col justify-between p-6 md:p-8" glow>
+          <PremiumCard className="flex flex-col justify-between p-5 md:p-8" glow>
             <div>
               <p className="premium-eyebrow mb-4">Featured preview</p>
-              <h2 className="text-3xl font-black leading-tight md:text-5xl" style={{ color: 'var(--c-text)' }}>{labels.featuredTitle}</h2>
-              <p className="mt-5 text-sm leading-relaxed md:text-base" style={{ color: 'var(--c-muted)' }}>{labels.featuredSub}</p>
+              <h2 className="text-[28px] font-black leading-tight md:text-5xl" style={{ color: 'var(--c-text)' }}>{labels.featuredTitle}</h2>
+              <p className="mt-4 text-sm leading-relaxed md:mt-5 md:text-base" style={{ color: 'var(--c-muted)' }}>{labels.featuredSub}</p>
             </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <PremiumButton to="/setup" className="px-5 py-3 text-sm">{labels.setup}</PremiumButton>
               <PremiumButton to="/demo" variant="secondary" className="px-5 py-3 text-sm">{labels.demo}</PremiumButton>
             </div>
           </PremiumCard>
-          <SystemShowcaseVisual type={featured.demoType} label={selectedPackage} />
+          <SystemShowcaseVisual type={featured.demoType} label={selectedPackage} className="mobile-visual-preview" />
         </div>
       </SectionShell>
 
@@ -212,7 +212,7 @@ export default function Systems() {
           <p className="rounded-2xl p-4 text-sm" style={{ color: 'var(--c-muted)', background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>{labels.noMatch}</p>
         )}
 
-        <motion.div initial="hidden" animate="show" transition={{ staggerChildren: 0.055 }} className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <motion.div initial="hidden" animate="show" transition={{ staggerChildren: 0.055 }} className="grid gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
           {filteredSystems.map(system => {
             const benefits = getFeatureList(system.featuresByPackage[selectedPackage], lang);
             const isCustom = system.priceMode === 'custom';
@@ -224,7 +224,7 @@ export default function Systems() {
                 variants={cardVariants}
                 transition={{ duration: 0.36 }}
                 whileHover={{ y: -9, rotateX: 1.2, rotateY: -1.2 }}
-                className="group flex min-h-full flex-col overflow-hidden rounded-[28px]"
+                className="group flex min-h-full flex-col overflow-hidden rounded-3xl md:rounded-[28px]"
                 style={{
                   background: active ? 'linear-gradient(145deg, var(--c-primary-soft), var(--c-surface))' : 'var(--c-surface)',
                   border: active ? '1px solid rgba(24,217,138,.5)' : '1px solid var(--c-border)',
@@ -232,12 +232,12 @@ export default function Systems() {
                   backdropFilter: 'blur(20px)',
                 }}
               >
-                <div className="p-3">
+                <div className="p-2.5 md:p-3">
                   <SystemShowcaseVisual type={system.demoType} label={isCustom ? labels.customQuote : selectedPackage} compact />
                 </div>
-                <div className="flex flex-1 flex-col p-5 pt-2">
+                <div className="flex flex-1 flex-col p-4 pt-2 md:p-5 md:pt-2">
                   <div className="mb-4 flex items-start justify-between gap-3">
-                    <h2 className="text-2xl font-black leading-tight" style={{ color: 'var(--c-text)' }}>{getSystemName(system, lang)}</h2>
+                    <h2 className="text-[22px] font-black leading-tight md:text-2xl" style={{ color: 'var(--c-text)' }}>{getSystemName(system, lang)}</h2>
                     {active && (
                       <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="h-8 w-8 rounded-full flex items-center justify-center" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
                         <CheckCircle2 size={16} />
@@ -263,9 +263,11 @@ export default function Systems() {
                     </p>
                   </div>
 
-                  <div className="mt-auto grid gap-2 pt-6 sm:grid-cols-3">
-                    <PremiumButton variant="ghost" className="px-3 py-3 text-xs" onClick={() => setActiveSystem(system)}><Eye size={14} /> {labels.view}</PremiumButton>
-                    <PremiumButton to={pathFor('/demo', system, selectedPackage)} className="px-3 py-3 text-xs">{labels.demo}</PremiumButton>
+                  <div className="mt-auto grid grid-cols-2 gap-2 pt-6 md:grid-cols-3">
+                    <PremiumButton variant="ghost" className="w-full px-3 py-3 text-xs" onClick={() => setActiveSystem(system)}><Eye size={14} /> {labels.view}</PremiumButton>
+                    <div className="hidden md:block">
+                      <PremiumButton to={pathFor('/demo', system, selectedPackage)} className="px-3 py-3 text-xs">{labels.demo}</PremiumButton>
+                    </div>
                     <PremiumButton to={pathFor('/setup', system, selectedPackage)} variant="secondary" className="px-3 py-3 text-xs" onMouseDown={() => setSelectedSetupId(system.id)}>
                       {labels.setup}
                     </PremiumButton>

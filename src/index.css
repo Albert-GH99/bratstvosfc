@@ -197,10 +197,12 @@
 html {
   background: var(--c-bg);
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--c-bg);
+  overflow-x: hidden;
 }
 
 .page-shell {
@@ -541,6 +543,14 @@ body {
   min-height: 200px;
 }
 
+.chatbot-launcher {
+  bottom: calc(env(safe-area-inset-bottom) + 20px);
+}
+
+.chatbot-panel {
+  bottom: calc(env(safe-area-inset-bottom) + 88px);
+}
+
 .floating-workflow-orb {
   width: 0.7rem;
   height: 0.7rem;
@@ -629,4 +639,57 @@ body {
 
 .bd-scan-line {
   animation: bd-scan 3.8s ease-in-out infinite;
+}
+
+@media (max-width: 767px) {
+  .premium-background-grid,
+  .app-background-grid {
+    opacity: 0.14;
+  }
+
+  .premium-glow-orb {
+    display: none;
+  }
+
+  .premium-section-title {
+    font-size: clamp(1.875rem, 10vw, 2.25rem);
+    line-height: 1.05;
+  }
+
+  .hero-title {
+    font-size: clamp(2.375rem, 11vw, 2.75rem);
+    line-height: 1.05;
+  }
+
+  .premium-card {
+    border-radius: 16px;
+  }
+
+  .premium-button {
+    min-height: 46px;
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .real-dashboard-preview {
+    max-height: 360px;
+  }
+
+  .system-showcase-visual {
+    border-radius: 18px;
+  }
+
+  .system-showcase-visual .rounded-2xl {
+    border-radius: 14px;
+  }
+}
+
+@media (min-width: 768px) {
+  .chatbot-launcher {
+    bottom: 2rem;
+  }
+
+  .chatbot-panel {
+    bottom: 7rem;
+  }
 }

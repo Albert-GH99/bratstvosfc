@@ -70,6 +70,9 @@ function TenantRoutes() {
       <Route path="/" element={<TenantPublicSite />} />
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/tracking/:id" element={<TenantPublicSite />} />
+      <Route path="/order/:id" element={<TenantPublicSite />} />
+      <Route path="/booking/:id" element={<TenantPublicSite />} />
       {PasswordChangeRoute({ next: '/dashboard' })}
       <Route element={<TenantRoute />}>
         <Route path="/dashboard" element={<TenantWorkspacePage page="dashboard" />} />
@@ -84,7 +87,7 @@ function TenantRoutes() {
         <Route path="/branding" element={<TenantWorkspacePage page="branding" />} />
         <Route path="/payments" element={<TenantWorkspacePage page="payments" />} />
       </Route>
-      <Route path="*" element={<PageNotFound />} />
+      <Route path="*" element={<TenantNotFound />} />
     </Routes>
   );
 }
@@ -128,7 +131,7 @@ function AuthenticatedApp() {
   if (tenantState.loading) return <TenantLoading />;
 
   if (tenantState.tenantNotFound) {
-    return <TenantNotFound hostname={tenantState.hostname} error={tenantState.error} />;
+    return <TenantNotFound />;
   }
 
   if (tenantState.routeMode === 'admin') return <AdminRoutes />;

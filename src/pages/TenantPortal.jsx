@@ -72,6 +72,8 @@ function normalizeSystemType(value = '') {
 
 function shouldShowPoweredBy(tenant) {
   const settings = tenant?.settings || {};
+  const branding = tenant?.branding || {};
+  if (branding.hideBratstvoBranding === true || branding.hide_bratstvo_branding === true) return false;
   if (settings.show_powered_by === true) return true;
   if (settings.show_powered_by === false || settings.hide_powered_by === true) return false;
   const plan = String(tenant?.plan || '').toLowerCase();
@@ -139,9 +141,9 @@ function getTenantPublicPreset(systemType, businessName) {
     },
     delivery_dispatch: {
       eyebrow: 'Tracking page',
-      title: `${name} job tracking`,
-      subtitle: 'Track assigned jobs, runner status, estimated arrival, and completed delivery updates.',
-      primary: 'Track job',
+      title: name,
+      subtitle: 'Track delivery progress and job updates in one place.',
+      primary: 'Track Status',
       Icon: Truck,
       stats: [['Runner', 'On the way'], ['ETA', '18 min'], ['Status', 'Live']],
       rows: [
@@ -198,11 +200,11 @@ function TenantShell({ children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link to="/dashboard" className="flex items-center gap-3 min-w-0">
             <span className="h-10 w-10 rounded-xl flex items-center justify-center text-sm font-black shrink-0" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
-              {tenantInitials(tenant?.business_name)}
+              {tenantInitials(tenant?.businessName)}
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-black truncate" style={{ color: 'var(--c-text)' }}>{tenant?.business_name}</span>
-              <span className="block text-xs truncate" style={{ color: 'var(--c-muted)' }}>{tenant?.system_type || 'Client workspace'}</span>
+              <span className="block text-sm font-black truncate" style={{ color: 'var(--c-text)' }}>{tenant?.businessName}</span>
+              <span className="block text-xs truncate" style={{ color: 'var(--c-muted)' }}>{tenant?.plan || 'Business account'}</span>
             </span>
           </Link>
           <button onClick={logout} className="h-10 w-10 rounded-xl inline-flex items-center justify-center" style={{ color: 'var(--c-muted)', border: '1px solid var(--c-border)' }} aria-label="Sign out">
@@ -256,15 +258,23 @@ export function TenantPublicSite() {
   const { tenant, tenantId } = useTenant();
   const branding = tenant?.branding || {};
   const settings = tenant?.settings || {};
-  const preset = getTenantPublicPreset(tenant?.system_type, tenant?.business_name);
+  const systemType = normalizeSystemType(tenant?.systemType);
+  const businessName = tenant?.businessName || 'Your business';
+  const preset = getTenantPublicPreset(tenant?.systemType, businessName);
   const Icon = preset.Icon;
   const primaryColor = branding.primary_color || '#16c47f';
-  const heroTitle = settings.hero_title || preset.title;
-  const heroSubtitle = settings.hero_subtitle || preset.subtitle;
   const hasCustomContent = Boolean(settings.public_site_ready || settings.website_ready || settings.products?.length || settings.services?.length || settings.menu?.length || settings.trips?.length);
   const showPoweredBy = shouldShowPoweredBy(tenant);
-  const logoUrl = branding.logo_url || tenant?.logo_url || settings.logo_url || '';
-  const bannerUrl = branding.banner_url || tenant?.banner_url || settings.banner_url || '';
+  const heroTitle = settings.hero_title || (hasCustomContent ? preset.title : businessName);
+  const heroSubtitle = settings.hero_subtitle || (systemType === 'delivery_dispatch'
+    ? 'Track delivery progress and job updates in one place.'
+    : hasCustomContent
+      ? preset.subtitle
+      : 'Our website is being prepared.');
+  const primaryLabel = settings.primary_action_label || (systemType === 'delivery_dispatch' ? 'Track Status' : hasCustomContent ? preset.primary : 'Contact');
+  const secondaryLabel = systemType === 'delivery_dispatch' ? 'Staff Login' : 'Login';
+  const logoUrl = branding.logo_url || settings.logo_url || '';
+  const bannerUrl = branding.banner_url || settings.banner_url || '';
   const [publicProducts, setPublicProducts] = useState([]);
 
   useEffect(() => {
@@ -309,18 +319,18 @@ export function TenantPublicSite() {
                   }}
                 />
                 <span className="absolute inset-0 hidden items-center justify-center text-sm font-black" style={{ color: '#04130d' }}>
-                  {branding.logo_text || tenantInitials(tenant?.business_name)}
+                  {branding.logo_text || tenantInitials(businessName)}
                 </span>
               </span>
             ) : (
               <span className="h-11 w-11 rounded-xl flex items-center justify-center text-sm font-black shrink-0" style={{ background: primaryColor, color: '#04130d' }}>
-                {branding.logo_text || tenantInitials(tenant?.business_name)}
+                {branding.logo_text || tenantInitials(businessName)}
               </span>
             )}
-            <span className="font-black truncate" style={{ color: 'var(--c-text)' }}>{tenant?.business_name}</span>
+            <span className="font-black truncate" style={{ color: 'var(--c-text)' }}>{businessName}</span>
           </div>
           <Link to="/login" className="rounded-xl px-4 py-2 text-sm font-black" style={{ border: '1px solid var(--c-border)', color: 'var(--c-text)', background: 'var(--c-surface)' }}>
-            Owner login
+            {secondaryLabel}
           </Link>
         </div>
       </header>
@@ -339,15 +349,22 @@ export function TenantPublicSite() {
             </p>
             <div className="flex flex-wrap gap-3">
               <a href={settings.primary_action_url || '#start'} className="rounded-xl px-5 py-3 text-sm font-black" style={{ background: primaryColor, color: '#04130d' }}>
-                {settings.primary_action_label || preset.primary}
+                {primaryLabel}
               </a>
-              <a href="#status" className="rounded-xl px-5 py-3 text-sm font-black" style={{ border: '1px solid var(--c-border)', color: 'var(--c-text)', background: 'var(--c-surface)' }}>
-                Check status
-              </a>
+              {systemType === 'delivery_dispatch' ? (
+                <Link to="/login" className="rounded-xl px-5 py-3 text-sm font-black" style={{ border: '1px solid var(--c-border)', color: 'var(--c-text)', background: 'var(--c-surface)' }}>
+                  Staff Login
+                </Link>
+              ) : (
+                <Link to="/login" className="rounded-xl px-5 py-3 text-sm font-black" style={{ border: '1px solid var(--c-border)', color: 'var(--c-text)', background: 'var(--c-surface)' }}>
+                  Login
+                </Link>
+              )}
             </div>
             {!hasCustomContent && (
               <div className="mt-8 rounded-2xl p-4 text-sm leading-relaxed" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)', color: 'var(--c-muted)' }}>
-                <strong style={{ color: 'var(--c-text)' }}>{tenant?.business_name} website is being prepared.</strong> Product, service, menu, or booking details will appear here once the owner completes setup.
+                <strong style={{ color: 'var(--c-text)' }}>{businessName}</strong>
+                <span> Please check back soon or contact us directly for assistance.</span>
               </div>
             )}
           </div>
@@ -361,7 +378,7 @@ export function TenantPublicSite() {
                 <span className="h-3 w-3 rounded-full bg-green-400" />
                 <div className="ml-3 flex min-w-0 flex-1 items-center gap-2 rounded-full px-3 py-1.5 text-xs" style={{ background: 'var(--c-input-bg)', color: 'var(--c-muted)' }}>
                   <Search size={13} />
-                  <span className="truncate">{tenant?.custom_domain || `${tenant?.subdomain || 'client'}.bratstvosfc.com`}</span>
+                  <span className="truncate">{tenant?.customDomain || `${tenant?.subdomain || 'client'}.bratstvosfc.com`}</span>
                 </div>
               </div>
 
@@ -395,7 +412,7 @@ export function TenantPublicSite() {
                       <div key={`${title}-${meta}`} className="flex items-center justify-between gap-3 rounded-xl p-3" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
                         <div className="flex min-w-0 items-center gap-3">
                           <span className="h-12 w-12 shrink-0 overflow-hidden rounded-xl" style={{ border: '1px solid var(--c-border)' }}>
-                            <SafeImage src={image} fallbackType={normalizeSystemType(tenant?.system_type) === 'food_order' ? 'food' : normalizeSystemType(tenant?.system_type) === 'booking' ? 'trip' : normalizeSystemType(tenant?.system_type) === 'appointment' ? 'service' : 'product'} fallbackLabel={preset.eyebrow} className="h-full w-full object-cover" />
+                            <SafeImage src={image} fallbackType={systemType === 'food_order' ? 'food' : systemType === 'booking' ? 'trip' : systemType === 'appointment' ? 'service' : 'product'} fallbackLabel={preset.eyebrow} className="h-full w-full object-cover" />
                           </span>
                           <span className="min-w-0">
                             <p className="truncate text-sm font-black" style={{ color: 'var(--c-text)' }}>{title}</p>
@@ -417,6 +434,22 @@ export function TenantPublicSite() {
                   </div>
                   <p className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>{preset.side[0]}</p>
                   <p className="mt-2 text-3xl font-black" style={{ color: 'var(--c-text)' }}>{preset.side[1]}</p>
+                  {systemType === 'delivery_dispatch' && (
+                    <label className="mt-5 block">
+                      <span className="mb-2 block text-xs font-bold" style={{ color: 'var(--c-muted)' }}>Track delivery/job</span>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Enter tracking ID"
+                          className="min-w-0 flex-1 rounded-xl px-3 py-2 text-xs outline-none"
+                          style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)', color: 'var(--c-text)' }}
+                        />
+                        <button type="button" className="rounded-xl px-3 py-2 text-xs font-black" style={{ background: primaryColor, color: '#04130d' }}>
+                          Track
+                        </button>
+                      </div>
+                    </label>
+                  )}
                   <div className="mt-5 space-y-3">
                     {[CheckCircle2, MapPin, Clock3].map((StatusIcon, index) => (
                       <div key={index} className="flex items-center gap-3">
@@ -438,7 +471,7 @@ export function TenantPublicSite() {
 
       <footer className="px-5 pb-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 border-t pt-5 text-xs sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: 'var(--c-border-subtle)', color: 'var(--c-muted)' }}>
-          <span>{tenant?.business_name} official site</span>
+          <span>{businessName} official site</span>
           {showPoweredBy && <span>Powered by Bratstvo Digital</span>}
         </div>
       </footer>
@@ -494,8 +527,8 @@ function ProductImagePanel({ tenantId, products, onProductUpdated }) {
 
 function BrandingMediaPanel({ tenant, tenantId }) {
   const branding = tenant?.branding || {};
-  const [logo, setLogo] = useState(assetObject(branding.logo_url || tenant?.logo_url, branding.logo_path || tenant?.logo_path, 'Business logo'));
-  const [banner, setBanner] = useState(assetObject(branding.banner_url || tenant?.banner_url, branding.banner_path || tenant?.banner_path, 'Banner website'));
+  const [logo, setLogo] = useState(assetObject(branding.logo_url, branding.logo_path, 'Business logo'));
+  const [banner, setBanner] = useState(assetObject(branding.banner_url, branding.banner_path, 'Banner website'));
   const [message, setMessage] = useState('');
 
   const saveBrandingImage = async (image, type) => {
@@ -512,7 +545,7 @@ function BrandingMediaPanel({ tenant, tenantId }) {
         <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--c-accent)' }}>Branding</p>
         <h2 className="mt-2 text-2xl font-black" style={{ color: 'var(--c-text)' }}>Logo and website banner.</h2>
         <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
-          The logo appears on the tenant website, checkout/customer view and dashboard preview. The banner appears in the hero/customer page.
+          The logo appears on the website, checkout/customer view and dashboard preview. The banner appears in the hero/customer page.
         </p>
       </div>
       {message && <p className="mb-4 rounded-xl px-3 py-2 text-xs" style={{ background: 'var(--c-primary-soft)', color: 'var(--c-text)', border: '1px solid rgba(24,217,138,.24)' }}>{message}</p>}
@@ -587,9 +620,9 @@ function MediaLibraryPanel({ tenantId }) {
     <section className="mb-8 rounded-2xl p-5" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
       <div className="mb-5">
         <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--c-accent)' }}>Media library</p>
-        <h2 className="mt-2 text-2xl font-black" style={{ color: 'var(--c-text)' }}>All tenant images.</h2>
+        <h2 className="mt-2 text-2xl font-black" style={{ color: 'var(--c-text)' }}>All images.</h2>
         <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
-          Store menu, trip, service, staff, delivery proof, QR and gallery images inside the tenant folder.
+          Store menu, trip, service, staff, delivery proof, QR and gallery images in one place.
         </p>
       </div>
       <div className="mb-5 flex flex-wrap gap-2">
@@ -606,7 +639,7 @@ function MediaLibraryPanel({ tenantId }) {
           value={null}
           onChange={addMedia}
           label={`Upload ${uploadCategory} image`}
-          helperText="Images are stored in tenant-assets by tenant folder and category."
+          helperText="Images are stored by category for easier management."
           aspectRatio="16 / 8"
         />
       </div>
@@ -670,7 +703,7 @@ export function TenantWorkspacePage({ page = 'dashboard' }) {
         setOrders(orderRows);
         setCustomers(customerRows);
       } catch (err) {
-        if (active) setError(err.message || 'Unable to load tenant data.');
+        if (active) setError(err.message || 'Unable to load records.');
       } finally {
         if (active) setLoading(false);
       }
@@ -710,10 +743,10 @@ export function TenantWorkspacePage({ page = 'dashboard' }) {
     <TenantShell>
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-7">
         <div>
-          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>{tenant?.plan || 'Active tenant'}</p>
+          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>{tenant?.plan || 'Active'}</p>
           <h1 className="text-4xl md:text-5xl font-black mb-3" style={{ color: 'var(--c-text)' }}>{pageTitle}</h1>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
-            Signed in as {user?.email}. All records shown here are scoped to tenant_id {tenantId}.
+            Signed in as {user?.email}. Your records are ready to manage here.
           </p>
         </div>
       </div>
@@ -749,7 +782,7 @@ export function TenantWorkspacePage({ page = 'dashboard' }) {
         <section className="rounded-xl overflow-hidden" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
           <div className="p-5" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
             <h2 className="font-black" style={{ color: 'var(--c-text)' }}>{pageTitle} records</h2>
-            <p className="text-xs mt-1" style={{ color: 'var(--c-muted)' }}>Loaded with tenant_id filtering.</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--c-muted)' }}>Recent records for this business.</p>
           </div>
           <div className="p-5 space-y-3">
             {(page === 'orders' || page === 'dashboard' || page === 'payments' ? orders : page === 'customers' ? customers : products).slice(0, 8).map(item => (
@@ -770,19 +803,18 @@ export function TenantWorkspacePage({ page = 'dashboard' }) {
               </div>
             ))}
             {!loading && !error && orders.length + products.length + customers.length === 0 && (
-              <p className="text-sm" style={{ color: 'var(--c-muted)' }}>No tenant records yet.</p>
+              <p className="text-sm" style={{ color: 'var(--c-muted)' }}>No records yet.</p>
             )}
-            {loading && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>Loading tenant records...</p>}
+            {loading && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>Loading records...</p>}
           </div>
         </section>
 
         <aside className="rounded-xl p-5" style={{ background: 'var(--c-surface-strong)', border: '1px solid var(--c-border)', boxShadow: 'var(--c-shadow)' }}>
-          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Tenant profile</p>
+          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Business profile</p>
           {[
-            ['Business', tenant?.business_name],
-            ['Subdomain', tenant?.subdomain],
-            ['Custom domain', tenant?.custom_domain || '-'],
-            ['System type', tenant?.system_type || '-'],
+            ['Business', tenant?.businessName],
+            ['Website', tenant?.customDomain || tenant?.subdomain || '-'],
+            ['System', tenant?.systemType || '-'],
             ['Plan', tenant?.plan || '-'],
           ].map(([label, value]) => (
             <div key={label} className="flex justify-between gap-4 py-3" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>

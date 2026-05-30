@@ -175,14 +175,14 @@ export default function Home() {
 
   return (
     <GradientBackground className="page-shell">
-      <section className="relative px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl items-center gap-8 py-10 md:py-12 lg:grid-cols-[0.96fr_1.04fr] lg:gap-10">
+      <section className="relative px-5 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 py-9 md:min-h-[calc(100vh-76px)] md:py-12 lg:grid-cols-[0.96fr_1.04fr] lg:gap-10">
           <div>
             <motion.p
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.42 }}
-              className="premium-eyebrow mb-4 inline-flex rounded-full px-4 py-2"
+              className="premium-eyebrow mb-4 inline-flex rounded-full px-3 py-2 md:px-4"
               style={{ background: 'var(--c-primary-soft)', border: '1px solid rgba(24,217,138,.24)' }}
             >
               <Sparkles size={14} className="mr-2" /> {t.badge}
@@ -201,7 +201,7 @@ export default function Home() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.46, delay: 0.13 }}
-              className="mb-4 max-w-2xl text-lg font-black leading-relaxed md:text-xl"
+              className="mb-4 max-w-2xl text-base font-black leading-relaxed md:text-xl"
               style={{ color: 'var(--c-text)' }}
             >
               <span className="gradient-text">{t.highlight}</span>
@@ -221,17 +221,21 @@ export default function Home() {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.44, delay: 0.24 }}
-              className="mb-7 flex flex-col gap-3 sm:flex-row"
+              className="mb-7 grid grid-cols-2 gap-3 sm:flex sm:flex-row"
             >
-              <PremiumButton to="/systems" className="px-6 py-3.5 text-sm">{t.explore} <ArrowRight size={17} /></PremiumButton>
-              <PremiumButton to="/setup" variant="secondary" className="px-6 py-3.5 text-sm">{t.setup}</PremiumButton>
-              <PremiumButton to="/demo" variant="ghost" className="px-6 py-3.5 text-sm">{t.demo}</PremiumButton>
+              <PremiumButton to="/systems" className="w-full px-4 py-3.5 text-sm sm:w-auto sm:px-6">{t.explore} <ArrowRight size={17} /></PremiumButton>
+              <PremiumButton to="/setup" variant="secondary" className="w-full px-4 py-3.5 text-sm sm:w-auto sm:px-6">{t.setup}</PremiumButton>
+              <div className="hidden md:block">
+                <PremiumButton to="/demo" variant="ghost" className="px-6 py-3.5 text-sm">{t.demo}</PremiumButton>
+              </div>
             </motion.div>
 
-            <HeroTrustRow stats={t.stats} />
+            <div className="hidden md:block">
+              <HeroTrustRow stats={t.stats} />
+            </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-[680px] lg:max-w-none">
+          <div className="relative mx-auto w-full max-w-[560px] md:max-w-[680px] lg:max-w-none">
             <RealDashboardPreview />
           </div>
         </div>

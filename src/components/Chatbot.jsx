@@ -147,6 +147,7 @@ function buildReply(text) {
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
+  const [showLauncher, setShowLauncher] = useState(false);
   const [msgs, setMsgs] = useState([
     {
       role: 'assistant',
@@ -159,6 +160,21 @@ export default function Chatbot() {
   const bottomRef = useRef(null);
 
   const assistantSubcopy = useMemo(() => 'Website, system & automation guidance', []);
+
+  useEffect(() => {
+    const reveal = () => {
+      const mobile = window.matchMedia('(max-width: 767px)').matches;
+      setShowLauncher(!mobile || window.scrollY > 360);
+    };
+
+    reveal();
+    window.addEventListener('scroll', reveal, { passive: true });
+    window.addEventListener('resize', reveal);
+    return () => {
+      window.removeEventListener('scroll', reveal);
+      window.removeEventListener('resize', reveal);
+    };
+  }, []);
 
   useEffect(() => {
     if (open) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -181,18 +197,20 @@ export default function Chatbot() {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="fixed bottom-24 right-5 md:bottom-8 md:right-8 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all hover:scale-110 active:scale-95"
-        style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}
-        aria-label="Open chat"
-      >
-        {open ? <X size={22} /> : <MessageCircle size={22} />}
-      </button>
+      {showLauncher && (
+        <button
+          onClick={() => setOpen(o => !o)}
+          className="chatbot-launcher fixed right-5 z-50 flex h-[52px] w-[52px] items-center justify-center rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95 md:right-8 md:h-14 md:w-14"
+          style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}
+          aria-label="Open chat"
+        >
+          {open ? <X size={21} /> : <MessageCircle size={21} />}
+        </button>
+      )}
 
-      {open && (
+      {open && showLauncher && (
         <div
-          className="fixed bottom-44 right-5 md:bottom-28 md:right-8 z-50 flex h-[460px] w-[calc(100vw-2.5rem)] max-w-[22rem] flex-col overflow-hidden rounded-2xl shadow-2xl"
+          className="chatbot-panel fixed right-5 z-50 flex h-[min(460px,calc(100vh-7rem))] w-[calc(100vw-2.5rem)] max-w-[22rem] flex-col overflow-hidden rounded-2xl shadow-2xl md:right-8"
           style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}
         >
           <div className="px-4 py-3 flex items-center gap-3" style={{ background: 'var(--c-accent)' }}>
