@@ -2,7 +2,7 @@ import { requireSupabase } from '@/lib/supabase';
 
 function requireTenantId(tenantId) {
   if (!tenantId) {
-    throw new Error('tenant_id is required for tenant data access.');
+    throw new Error('Business id is required for client data access.');
   }
 }
 

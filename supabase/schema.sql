@@ -13,6 +13,17 @@ create table if not exists public.tenants (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.tenant_users (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references public.tenants(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'owner',
+  must_change_password boolean not null default true,
+  status text not null default 'approved',
+  created_at timestamptz not null default now(),
+  unique (tenant_id, user_id)
+);
+
 create table if not exists public.clients (
   id uuid primary key default gen_random_uuid(),
   request_id text unique,
@@ -497,12 +508,9 @@ with check (
   bucket_id = 'tenant-assets'
   and exists (
     select 1 from public.client_users cu
-    where cu.tenant_id::text = split_part(storage.objects.name, '/', 1)
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id::text = split_part(storage.objects.name, '/', 1)
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 
@@ -514,24 +522,18 @@ using (
   bucket_id = 'tenant-assets'
   and exists (
     select 1 from public.client_users cu
-    where cu.tenant_id::text = split_part(storage.objects.name, '/', 1)
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id::text = split_part(storage.objects.name, '/', 1)
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 )
 with check (
   bucket_id = 'tenant-assets'
   and exists (
     select 1 from public.client_users cu
-    where cu.tenant_id::text = split_part(storage.objects.name, '/', 1)
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id::text = split_part(storage.objects.name, '/', 1)
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 
@@ -543,12 +545,9 @@ using (
   bucket_id = 'tenant-assets'
   and exists (
     select 1 from public.client_users cu
-    where cu.tenant_id::text = split_part(storage.objects.name, '/', 1)
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id::text = split_part(storage.objects.name, '/', 1)
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 
@@ -627,8 +626,8 @@ alter table public.setup_requests add column if not exists receipt_url text;
 alter table public.setup_requests add column if not exists payment_notes text;
 alter table public.client_users alter column user_id drop not null;
 alter table public.client_users alter column client_id drop not null;
-alter table public.client_users alter column status set default 'approved';
-alter table public.client_users alter column role set default 'client';
+alter table public.client_users alter column status set default 'active';
+alter table public.client_users alter column role set default 'owner';
 alter table public.client_users add column if not exists auth_user_id uuid;
 alter table public.client_users add column if not exists tenant_id uuid references public.tenants(id) on delete cascade;
 alter table public.client_users add column if not exists business_name text;
@@ -651,8 +650,17 @@ on public.client_projects (setup_request_id);
 create index if not exists setup_requests_tenant_id_idx
 on public.setup_requests (tenant_id);
 
+create index if not exists tenant_users_tenant_id_idx
+on public.tenant_users (tenant_id);
+
+create index if not exists tenant_users_user_id_idx
+on public.tenant_users (user_id);
+
 create index if not exists client_users_tenant_id_idx
 on public.client_users (tenant_id);
+
+create index if not exists client_users_client_id_idx
+on public.client_users (client_id);
 
 alter table public.client_projects add column if not exists tenant_id uuid references public.tenants(id) on delete cascade;
 
@@ -663,8 +671,22 @@ drop trigger if exists on_auth_user_created_provision_client on auth.users;
 drop function if exists public.provision_client_from_auth();
 
 alter table public.admin_users enable row level security;
+alter table public.tenant_users enable row level security;
 alter table public.client_users enable row level security;
 alter table public.client_projects enable row level security;
+
+drop policy if exists "tenant users can read own membership" on public.tenant_users;
+create policy "tenant users can read own membership"
+on public.tenant_users for select
+to authenticated
+using (user_id = auth.uid());
+
+drop policy if exists "tenant users can update own password flag" on public.tenant_users;
+create policy "tenant users can update own password flag"
+on public.tenant_users for update
+to authenticated
+using (user_id = auth.uid())
+with check (user_id = auth.uid());
 
 drop policy if exists "tenant users can read own tenant" on public.tenants;
 create policy "tenant users can read own tenant"
@@ -673,12 +695,9 @@ to authenticated
 using (
   exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = tenants.id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = tenants.id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 
@@ -689,23 +708,17 @@ to authenticated
 using (
   exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = tenants.id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = tenants.id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 )
 with check (
   exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = tenants.id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = tenants.id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 
@@ -716,24 +729,18 @@ using (
   tenant_id is not null
   and exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = products.tenant_id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = products.tenant_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 )
 with check (
   tenant_id is not null
   and exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = products.tenant_id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = products.tenant_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 
@@ -744,24 +751,18 @@ using (
   tenant_id is not null
   and exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = orders.tenant_id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = orders.tenant_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 )
 with check (
   tenant_id is not null
   and exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = orders.tenant_id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = orders.tenant_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 
@@ -771,23 +772,17 @@ on public.customers for all
 using (
   exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = customers.tenant_id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = customers.tenant_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 )
 with check (
   exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = customers.tenant_id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = customers.tenant_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 
@@ -797,23 +792,17 @@ on public.tenant_media for all
 using (
   exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = tenant_media.tenant_id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = tenant_media.tenant_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 )
 with check (
   exists (
     select 1 from public.client_users cu
-    where cu.tenant_id = tenant_media.tenant_id
-      and (
-        cu.user_id = auth.uid()
-        or cu.auth_user_id = auth.uid()
-        or lower(cu.email) = lower(auth.jwt() ->> 'email')
-      )
+    where cu.client_id = tenant_media.tenant_id
+      and cu.user_id = auth.uid()
+      and cu.status = 'active'
   )
 );
 

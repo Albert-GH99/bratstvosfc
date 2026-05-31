@@ -270,7 +270,7 @@ export function TenantPublicSite() {
     ? 'Track delivery progress and job updates in one place.'
     : hasCustomContent
       ? preset.subtitle
-      : 'Our website is being prepared.');
+      : 'Website coming soon.');
   const primaryLabel = settings.primary_action_label || (systemType === 'delivery_dispatch' ? 'Track Status' : hasCustomContent ? preset.primary : 'Contact');
   const secondaryLabel = systemType === 'delivery_dispatch' ? 'Staff Login' : 'Login';
   const logoUrl = branding.logo_url || settings.logo_url || '';
@@ -364,7 +364,7 @@ export function TenantPublicSite() {
             {!hasCustomContent && (
               <div className="mt-8 rounded-2xl p-4 text-sm leading-relaxed" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)', color: 'var(--c-muted)' }}>
                 <strong style={{ color: 'var(--c-text)' }}>{businessName}</strong>
-                <span> Please check back soon or contact us directly for assistance.</span>
+                <span> We're preparing this website right now.</span>
               </div>
             )}
           </div>

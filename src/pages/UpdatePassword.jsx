@@ -3,18 +3,20 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LockKeyhole } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { useTenant } from '@/contexts/TenantContext';
+
+function safeNextPath(value = '') {
+  if (!value || typeof value !== 'string') return '';
+  if (!value.startsWith('/') || value.startsWith('//')) return '';
+  if (value.startsWith('/admin')) return value.replace(/^\/admin/, '/master') || '/master';
+  return value;
+}
 
 export default function UpdatePassword() {
   const navigate = useNavigate();
   const location = useLocation();
   const { checkUserAuth, setMustChangePassword } = useAuth();
-  const { routeMode } = useTenant();
   const params = new URLSearchParams(location.search);
-  const isTenantMode = routeMode === 'tenant' || routeMode === 'custom_domain';
-  const isAdminSignInPath = routeMode === 'admin' || location.pathname.toLowerCase().startsWith('/admin');
-  const defaultNextPath = isTenantMode ? '/dashboard' : isAdminSignInPath ? '/admin' : '/';
-  const nextPath = params.get('next') || defaultNextPath;
+  const nextPath = safeNextPath(params.get('next')) || '/';
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,9 +56,12 @@ export default function UpdatePassword() {
         const { error: clientUserError } = await supabase
           .from('client_users')
           .update({ must_change_password: false })
-          .or(`auth_user_id.eq.${user.id},user_id.eq.${user.id},email.eq.${email}`);
+          .eq('user_id', user.id)
+          .eq('status', 'active');
 
-        if (clientUserError) throw clientUserError;
+        if (clientUserError) {
+          console.warn('Password-change flag update failed:', clientUserError.message);
+        }
 
         try {
           await supabase
@@ -64,7 +69,7 @@ export default function UpdatePassword() {
             .update({ must_change_password: false })
             .eq('email', email);
         } catch {
-          // Optional column for projects that keep the flag only in auth/client_users.
+          // Optional column for projects that keep the flag in profiles too.
         }
 
         const { error: requestUpdateError } = await supabase
@@ -79,7 +84,7 @@ export default function UpdatePassword() {
       await checkUserAuth();
       setPassword('');
       setConfirmPassword('');
-      setMessage('Password updated. You can now access your workspace.');
+      setMessage('Password updated. You can now access your dashboard.');
       navigate(nextPath, { replace: true });
     } catch (err) {
       setError(err.message || 'Unable to update password.');
@@ -97,7 +102,7 @@ export default function UpdatePassword() {
           </div>
           <h1 className="text-3xl font-black mb-3" style={{ color: 'var(--c-text)' }}>Change password</h1>
           <p className="text-sm leading-relaxed mb-6" style={{ color: 'var(--c-muted)' }}>
-            Set a new password for your Bratstvo Digital workspace.
+            Set a new password for your dashboard.
           </p>
 
           <form onSubmit={submit} className="space-y-4">

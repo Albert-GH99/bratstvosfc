@@ -11,7 +11,7 @@ const adminSteps = [
   'Confirm final amount.',
   'Send official payment instruction.',
   'After payment, approve and start build.',
-  'Tenant/client account is created.',
+  'Client account is created.',
   'Client receives login email.',
   'If client uses Bratstvo subdomain, activate clientslug.bratstvosfc.com.',
   'If client uses custom domain, configure domain DNS/hosting.',
@@ -97,7 +97,7 @@ export default function AdminActivationGuide() {
             <InfoBlock icon={Globe2} title="Netlify Free DNS / subdomain flow">
               <div className="space-y-3 text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
                 <p>Custom domain availability is checked through the Supabase Edge Function <strong style={{ color: 'var(--c-text)' }}>check-domain-availability</strong>, which calls Spaceship server-side with protected secrets. .my and .com.my can fall back to manual admin confirmation if the API does not support them.</p>
-                <p>Create the tenant slug first, then manually point the subdomain at Netlify.</p>
+                <p>Create the client slug first, then manually point the subdomain at Netlify.</p>
                 <div className="rounded-2xl p-4 font-mono text-xs" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)', color: 'var(--c-text)' }}>
                   Host: clientslug<br />
                   Value: gregarious-moxie-22f44a.netlify.app<br />
@@ -107,12 +107,12 @@ export default function AdminActivationGuide() {
               </div>
             </InfoBlock>
 
-            <InfoBlock icon={ServerCog} title="Supabase tenant activation">
+            <InfoBlock icon={ServerCog} title="Supabase client activation">
               <div className="grid gap-3">
                 {[
-                  'Tenant row must include business_name, subdomain/custom_domain, status, plan, system_type, branding and settings.',
-                  'Only active tenants should load on wildcard subdomains.',
-                  'All tenant product/order/customer/settings queries must filter by tenant_id.',
+                  'Client row must include business_name, subdomain/custom_domain, status, plan, system_type, branding and settings.',
+                  'Only active clients should load on wildcard subdomains.',
+                  'All client product/order/customer/settings queries must filter by the client business id.',
                   'Onboarding email should point to custom domain login if available, otherwise https://{subdomain}.bratstvosfc.com/login.',
                 ].map(item => (
                   <div key={item} className="flex gap-3 rounded-2xl p-3" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>

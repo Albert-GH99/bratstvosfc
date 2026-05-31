@@ -203,6 +203,21 @@ Deno.serve(async (req) => {
       return json({ success: false, approved: false, error: tenantError?.message || "Tenant could not be created." }, 500);
     }
 
+    const { data: client, error: clientError } = await supabase
+      .from("clients")
+      .upsert({
+        id: tenant.id,
+        business_name: request.business_name,
+        status: "active",
+      }, { onConflict: "id" })
+      .select("id,business_name,status")
+      .single();
+
+    if (clientError || !client) {
+      console.error("Client row upsert failed:", clientError?.message);
+      return json({ success: false, approved: false, error: "Client record could not be created." }, 500);
+    }
+
     let authUser = await findAuthUserByEmail(supabase, email);
     if (authUser) {
       const { data, error } = await supabase.auth.admin.updateUserById(authUser.id, {
@@ -239,29 +254,27 @@ Deno.serve(async (req) => {
     }
 
     const clientUserPayload = {
-      auth_user_id: authUser.id,
       user_id: authUser.id,
-      tenant_id: tenant.id,
-      business_name: request.business_name,
-      owner_name: request.owner_name,
-      email,
-      full_name: request.owner_name,
-      role: "client",
-      status: "approved",
-      client_website: clientWebsite,
+      client_id: client.id,
+      role: "owner",
+      status: "active",
       must_change_password: true,
     };
 
     const { error: clientUserError } = await supabase
       .from("client_users")
-      .upsert(clientUserPayload, { onConflict: "email" });
+      .upsert(clientUserPayload, { onConflict: "user_id" });
 
-    if (clientUserError) return json({ success: false, approved: false, error: clientUserError.message }, 500);
+    if (clientUserError) {
+      console.error("Client membership upsert failed:", clientUserError.message);
+      return json({ success: false, approved: false, error: "Client membership could not be created." }, 500);
+    }
 
     const approvedUpdate = {
       status: "approved",
       approved_at: approvedAt,
       tenant_id: tenant.id,
+      client_id: client.id,
       client_user_id: authUser.id,
       temp_password: tempPassword,
       client_website: clientWebsite,

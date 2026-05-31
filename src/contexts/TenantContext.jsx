@@ -1,13 +1,31 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import { cleanTenantSlug, getTenantFromHostname } from '@/lib/tenant';
+import { cleanTenantSlug } from '@/lib/tenant';
 
 const TenantContext = createContext(null);
 
 const BASE_TENANT_COLUMNS = 'id,business_name,subdomain,custom_domain,status,plan,system_type,branding,settings,created_at';
 const TENANT_COLUMNS = 'id,business_name,subdomain,custom_domain,status,plan,system_type,branding,settings,logo_url,logo_path,banner_url,banner_path,created_at';
 
-export function normalizeTenant(row) {
+export const RESERVED_CLIENT_SLUGS = new Set([
+  'systems',
+  'demo',
+  'pricing',
+  'about',
+  'setup',
+  'payment',
+  'login',
+  'signup',
+  'reset-password',
+  'update-password',
+  'change-password',
+  'master',
+  'core',
+  'admin',
+]);
+
+export function normalizeClient(row) {
   if (!row) return null;
 
   const branding = {
@@ -40,8 +58,18 @@ export function normalizeTenant(row) {
   };
 }
 
-function detectTenantHost() {
-  if (typeof window === 'undefined') {
+export const normalizeTenant = normalizeClient;
+
+function detectClientRoute(pathname = '', routeSlug = '') {
+  const segments = String(pathname || '')
+    .split('/')
+    .map(segment => segment.trim())
+    .filter(Boolean);
+  const firstSegment = cleanTenantSlug(segments[0] || '');
+  const secondSegment = cleanTenantSlug(segments[1] || '');
+  const slugFromParams = cleanTenantSlug(routeSlug || '');
+
+  if (!segments.length) {
     return {
       hostname: '',
       subdomain: null,
@@ -56,51 +84,70 @@ function detectTenantHost() {
     };
   }
 
-  const parsed = getTenantFromHostname(window.location.hostname);
-  const hostname = parsed.hostname;
-  const params = new URLSearchParams(window.location.search);
-  const devTenant = cleanTenantSlug(params.get('tenant') || import.meta.env.VITE_DEV_TENANT_SUBDOMAIN || '');
-  const isLocalhost = parsed.isLocalhost;
-
-  if (isLocalhost) {
-    const routeMode = window.location.pathname.toLowerCase().startsWith('/admin')
-      ? 'admin'
-      : devTenant
-        ? 'tenant'
-        : 'main';
-
+  if (firstSegment === 'master') {
     return {
-      hostname,
-      subdomain: devTenant || null,
-      mode: routeMode,
-      routeMode,
-      isMainDomain: routeMode === 'main',
-      isAdminDomain: routeMode === 'admin',
-      isTenantDomain: routeMode === 'tenant',
-      isLocalhost: true,
-      lookupType: devTenant ? 'subdomain' : null,
-      lookupValue: devTenant || null,
+      hostname: '',
+      subdomain: null,
+      mode: 'admin',
+      routeMode: 'admin',
+      isMainDomain: false,
+      isAdminDomain: true,
+      isTenantDomain: false,
+      isLocalhost: false,
+      lookupType: null,
+      lookupValue: null,
     };
   }
 
-  const isTenantDomain = parsed.mode === 'tenant' || parsed.mode === 'custom_domain';
+  if (firstSegment === 'core' && (slugFromParams || secondSegment)) {
+    const slug = slugFromParams || secondSegment;
+    return {
+      hostname: '',
+      subdomain: slug,
+      mode: 'client_core',
+      routeMode: 'client_core',
+      isMainDomain: false,
+      isAdminDomain: false,
+      isTenantDomain: true,
+      isLocalhost: false,
+      lookupType: 'subdomain',
+      lookupValue: slug,
+    };
+  }
+
+  if (segments.length === 1 && firstSegment && !RESERVED_CLIENT_SLUGS.has(firstSegment)) {
+    return {
+      hostname: '',
+      subdomain: firstSegment,
+      mode: 'client_public',
+      routeMode: 'client_public',
+      isMainDomain: false,
+      isAdminDomain: false,
+      isTenantDomain: true,
+      isLocalhost: false,
+      lookupType: 'subdomain',
+      lookupValue: firstSegment,
+    };
+  }
 
   return {
-    hostname,
-    subdomain: parsed.subdomain,
-    mode: parsed.mode,
-    routeMode: parsed.mode,
-    isMainDomain: parsed.mode === 'main',
-    isAdminDomain: parsed.mode === 'admin',
-    isTenantDomain,
-    isLocalhost: parsed.isLocalhost,
-    lookupType: parsed.mode === 'custom_domain' ? 'custom_domain' : parsed.mode === 'tenant' ? 'subdomain' : null,
-    lookupValue: parsed.mode === 'custom_domain' ? parsed.domain : parsed.mode === 'tenant' ? parsed.subdomain : null,
+    hostname: '',
+    subdomain: null,
+    mode: 'main',
+    routeMode: 'main',
+    isMainDomain: true,
+    isAdminDomain: false,
+    isTenantDomain: false,
+    isLocalhost: false,
+    lookupType: null,
+    lookupValue: null,
   };
 }
 
 export function TenantProvider({ children }) {
-  const host = useMemo(() => detectTenantHost(), []);
+  const location = useLocation();
+  const params = useParams();
+  const host = useMemo(() => detectClientRoute(location.pathname, params.slug), [location.pathname, params.slug]);
   const [tenant, setTenant] = useState(null);
   const [loading, setLoading] = useState(host.isTenantDomain);
   const [error, setError] = useState('');
@@ -155,7 +202,8 @@ export function TenantProvider({ children }) {
         if (queryError) throw queryError;
         if (!active) return;
 
-        setTenant(normalizeTenant(data));
+        const normalizedTenant = normalizeClient(data);
+        setTenant(normalizedTenant);
       } catch (err) {
         if (!active) return;
         setTenant(null);
@@ -177,6 +225,10 @@ export function TenantProvider({ children }) {
     tenant,
     tenantId: tenant?.id || null,
     tenantType: tenant?.systemType || null,
+    client: tenant,
+    clientId: tenant?.id || null,
+    clientSlug: host.subdomain,
+    businessSlug: host.subdomain,
     loading,
     error,
     tenantNotFound: host.isTenantDomain && !loading && !tenant,

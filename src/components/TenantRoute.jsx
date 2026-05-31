@@ -1,94 +1,71 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { useAuth } from '@/context/AuthContext';
-import { useTenant } from '@/contexts/TenantContext';
 import TenantLoading from '@/pages/TenantLoading';
-import TenantNotFound from '@/pages/TenantNotFound';
-import Unauthorized from '@/pages/Unauthorized';
 
 export default function TenantRoute() {
   const location = useLocation();
-  const { tenant, tenantId, loading: tenantLoading, tenantNotFound } = useTenant();
-  const { user, isAuthenticated, isLoadingAuth, authChecked, mustChangePassword } = useAuth();
-  const [checkingMembership, setCheckingMembership] = useState(true);
-  const [hasTenantAccess, setHasTenantAccess] = useState(false);
-  const [membershipError, setMembershipError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
     let active = true;
 
-    async function checkMembership() {
-      if (tenantLoading || !tenantId || !isAuthenticated || !user?.id) {
-        setCheckingMembership(false);
-        setHasTenantAccess(false);
-        setMembershipError('');
-        return;
-      }
-
-      setCheckingMembership(true);
-      setMembershipError('');
+    async function checkSession() {
+      setLoading(true);
 
       try {
-        if (!supabase) throw new Error('Unable to verify access.');
+        if (!supabase) {
+          setSession(null);
+          return;
+        }
 
-        const email = String(user.email || '').trim().toLowerCase();
-        const filters = [
-          `auth_user_id.eq.${user.id}`,
-          `user_id.eq.${user.id}`,
-          email ? `email.eq.${email}` : '',
-        ].filter(Boolean).join(',');
-
-        const { data, error } = await supabase
-          .from('client_users')
-          .select('id,tenant_id,status,role')
-          .eq('tenant_id', tenantId)
-          .or(filters)
-          .limit(1)
-          .maybeSingle();
-
+        const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
 
         if (active) {
-          setHasTenantAccess(Boolean(data && ['approved', 'active'].includes(String(data.status || '').toLowerCase())));
+          setSession(data?.session || null);
         }
       } catch (err) {
+        console.warn('Dashboard session check failed:', err?.message || err);
         if (active) {
-          setHasTenantAccess(false);
-          setMembershipError(err.message || 'Unable to verify access.');
+          setSession(null);
         }
       } finally {
-        if (active) setCheckingMembership(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
-    checkMembership();
+    checkSession();
+
+    if (!supabase) {
+      return () => {
+        active = false;
+      };
+    }
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (active) {
+        setSession(nextSession || null);
+        setLoading(false);
+      }
+    });
 
     return () => {
       active = false;
+      listener?.subscription?.unsubscribe();
     };
-  }, [isAuthenticated, tenantId, tenantLoading, user?.email, user?.id]);
+  }, []);
 
-  if (tenantLoading || isLoadingAuth || !authChecked || checkingMembership) return <TenantLoading />;
-  if (tenantNotFound || !tenant) return <TenantNotFound />;
+  if (loading) {
+    return <TenantLoading title="Preparing your dashboard..." />;
+  }
 
-  if (!isAuthenticated) {
+  if (!session) {
     const next = encodeURIComponent(`${location.pathname}${location.search}`);
     return <Navigate to={`/login?next=${next}`} replace />;
-  }
-
-  if (mustChangePassword && location.pathname !== '/change-password') {
-    return <Navigate to={`/change-password?next=${encodeURIComponent(location.pathname)}`} replace />;
-  }
-
-  if (!hasTenantAccess) {
-    return (
-      <Unauthorized
-        title="Access required"
-        message={membershipError || `This account is not assigned to ${tenant.businessName}.`}
-        loginTo="/login"
-      />
-    );
   }
 
   return <Outlet />;

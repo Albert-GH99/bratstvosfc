@@ -2,59 +2,37 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, LockKeyhole } from 'lucide-react';
 import { signInClient } from '../services/authService';
-import { useAuth } from '../context/AuthContext';
-import { hasAdminAccess } from '../lib/authProfiles';
 import { supabase } from '../lib/supabase';
 import { useTenant } from '@/contexts/TenantContext';
 
-async function userMustChangePassword(user, fallbackEmail) {
-  if (user?.user_metadata?.must_change_password || user?.app_metadata?.must_change_password) return true;
-  if (!supabase || !user?.id) return false;
+function cleanClientSlug(value = '') {
+  return String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//i, '')
+    .replace(/\/.*$/, '')
+    .replace(/\..*$/, '')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-{2,}/g, '-')
+    .replace(/^-|-$/g, '');
+}
 
-  const email = String(user.email || fallbackEmail || '').trim().toLowerCase();
-  const filters = [
-    `auth_user_id.eq.${user.id}`,
-    `user_id.eq.${user.id}`,
-    email ? `email.eq.${email}` : '',
-  ].filter(Boolean).join(',');
-
-  const { data: clientUser, error: clientUserError } = await supabase
-    .from('client_users')
-    .select('must_change_password')
-    .or(filters)
-    .limit(1)
-    .maybeSingle();
-
-  if (clientUserError) throw clientUserError;
-  if (clientUser?.must_change_password) return true;
-
-  try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('must_change_password')
-      .eq('email', email)
-      .maybeSingle();
-
-    return Boolean(profile?.must_change_password);
-  } catch {
-    return false;
-  }
+function safeNextPath(value = '') {
+  if (!value || typeof value !== 'string') return '';
+  if (!value.startsWith('/') || value.startsWith('//')) return '';
+  return value;
 }
 
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { checkUserAuth } = useAuth();
-  const { routeMode } = useTenant();
-  const params = new URLSearchParams(location.search);
-  const isTenantMode = routeMode === 'tenant' || routeMode === 'custom_domain';
-  const isAdminSignInPath = routeMode === 'admin' || location.pathname.toLowerCase().startsWith('/admin');
-  const defaultNextPath = isTenantMode ? '/dashboard' : isAdminSignInPath ? '/admin' : '/';
-  const nextPath = params.get('next') || defaultNextPath;
+  const { clientSlug } = useTenant();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const params = new URLSearchParams(location.search);
+  const nextPath = safeNextPath(params.get('next') || params.get('redirect') || '');
   const canSubmit = form.email && form.password;
   const set = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
 
@@ -66,18 +44,26 @@ export default function Login() {
     setError('');
 
     try {
-      const result = await signInClient(form.email, form.password);
-      await checkUserAuth();
-      const user = result?.user || { email: form.email };
-      const requiresPasswordChange = await userMustChangePassword(user, form.email);
+      await signInClient(form.email, form.password);
+      const { data, error: sessionError } = await supabase.auth.getSession();
 
-      if (requiresPasswordChange) {
-        navigate(`/change-password?next=${encodeURIComponent(nextPath)}`, { replace: true });
-        return;
+      if (sessionError || !data?.session) {
+        console.warn('Login session check failed:', sessionError);
+        throw new Error('Unable to start session. Please try again.');
       }
 
-      const canOpenAdmin = !isTenantMode && isAdminSignInPath && await hasAdminAccess(user);
-      navigate(canOpenAdmin ? '/admin' : nextPath, { replace: true });
+      const metadata = data.session.user?.user_metadata || {};
+      const fallbackSlug = cleanClientSlug(
+        clientSlug ||
+        metadata.client_slug ||
+        metadata.tenant_subdomain ||
+        metadata.business_slug ||
+        metadata.client_website ||
+        metadata.business_name ||
+        ''
+      );
+
+      navigate(nextPath || (fallbackSlug ? `/core/${fallbackSlug}` : '/'), { replace: true });
     } catch (err) {
       setError(err.message || 'Unable to sign in.');
     } finally {

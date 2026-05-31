@@ -12,41 +12,7 @@ function hasMustChangeFlag(user) {
 
 async function loadMustChangePassword(user) {
   if (!user || !supabase) return false;
-  if (hasMustChangeFlag(user)) return true;
-
-  const email = String(user.email || '').trim().toLowerCase();
-  const filters = [
-    `auth_user_id.eq.${user.id}`,
-    `user_id.eq.${user.id}`,
-    email ? `email.eq.${email}` : '',
-  ].filter(Boolean).join(',');
-
-  try {
-    const { data, error } = await supabase
-      .from('client_users')
-      .select('must_change_password')
-      .or(filters)
-      .limit(1)
-      .maybeSingle();
-
-    if (!error && data?.must_change_password) return true;
-  } catch {
-    // Projects without the latest client_users shape can still rely on auth metadata.
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('must_change_password')
-      .eq('email', email)
-      .maybeSingle();
-
-    if (!error && data?.must_change_password) return true;
-  } catch {
-    // The profile flag is optional for older databases.
-  }
-
-  return false;
+  return hasMustChangeFlag(user);
 }
 
 export function AuthProvider({ children }) {

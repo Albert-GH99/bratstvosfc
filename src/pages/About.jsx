@@ -18,7 +18,7 @@ const copy = {
     valuesTitle: 'The goal is not just a nicer website. The goal is a business that feels more organised.',
     values: [
       ['Customer clarity', 'Customers can see products, slots, prices, payment notes and next steps without asking repeatedly.'],
-      ['Owner control', 'Orders, bookings, customers and payment status become easier to review from one practical workspace.'],
+      ['Owner control', 'Orders, bookings, customers and payment status become easier to review from one practical dashboard.'],
       ['Premium trust', 'Your online presence should feel confident enough for customers to buy, book or enquire.'],
       ['Local SME fit', 'We design for Malaysian retail, food, service, appointment and delivery businesses.'],
     ],
@@ -36,7 +36,7 @@ const copy = {
     valuesTitle: 'Matlamatnya bukan sekadar website cantik. Matlamatnya ialah bisnes yang nampak lebih teratur.',
     values: [
       ['Customer lebih jelas', 'Customer boleh nampak produk, slot, harga, nota payment dan langkah seterusnya tanpa tanya benda sama berulang kali.'],
-      ['Owner lebih terkawal', 'Order, booking, customer dan status payment lebih mudah disemak dari satu workspace praktikal.'],
+      ['Owner lebih terkawal', 'Order, booking, customer dan status payment lebih mudah disemak dari satu dashboard praktikal.'],
       ['Nampak lebih premium', 'Online presence anda perlu cukup meyakinkan untuk customer beli, booking atau hantar enquiry.'],
       ['Sesuai untuk SME lokal', 'Kami reka untuk bisnes retail, makanan, servis, appointment dan delivery di Malaysia.'],
     ],

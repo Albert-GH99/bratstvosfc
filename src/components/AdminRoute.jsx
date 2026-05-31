@@ -89,6 +89,8 @@ export default function AdminRoute({ fallback = <DefaultFallback />, unauthentic
   }
 
   if (!isAuthenticated) {
+    if (unauthenticatedElement) return unauthenticatedElement;
+
     return (
       <div className="page-shell">
         <section className="px-6 py-20">
@@ -96,10 +98,10 @@ export default function AdminRoute({ fallback = <DefaultFallback />, unauthentic
             <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Admin access</p>
             <h1 className="text-3xl font-black mb-3" style={{ color: 'var(--c-text)' }}>Admin Access Required</h1>
             <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--c-muted)' }}>
-              Please sign in with an approved admin account to open the admin dashboard.
+              Please sign in with an approved HQ account to open the admin dashboard.
             </p>
-            <Link to="/login?next=/admin" className="inline-flex rounded-xl px-5 py-3 text-sm font-black" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
-              Login to Admin
+            <Link to={`/login?next=${encodeURIComponent('/master')}`} className="inline-flex rounded-xl px-5 py-3 text-sm font-black" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+              Login to HQ
             </Link>
           </div>
         </section>
