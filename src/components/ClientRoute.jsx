@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import TenantLoading from '@/pages/TenantLoading';
+import ClientLoading from '@/pages/ClientLoading';
 
-export default function TenantRoute() {
+export default function ClientRoute() {
   const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState(null);
@@ -60,7 +60,7 @@ export default function TenantRoute() {
   }, []);
 
   if (loading) {
-    return <TenantLoading title="Preparing your dashboard..." />;
+    return <ClientLoading title="Preparing your dashboard..." />;
   }
 
   if (!session) {

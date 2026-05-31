@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 
-export default function TenantLoading({ title = 'Preparing your page...', message = 'Please wait a moment.' }) {
+export default function ClientLoading({ title = 'Preparing your page...', message = 'Please wait a moment.' }) {
   return (
     <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--c-page-bg)', color: 'var(--c-text)' }}>
       <div className="max-w-sm w-full text-center">

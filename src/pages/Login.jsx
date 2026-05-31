@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowRight, LockKeyhole } from 'lucide-react';
 import { signInClient } from '../services/authService';
 import { supabase } from '../lib/supabase';
-import { useTenant } from '@/contexts/TenantContext';
+import { useClient } from '@/contexts/ClientContext';
 
 function cleanClientSlug(value = '') {
   return String(value)
@@ -26,7 +26,7 @@ function safeNextPath(value = '') {
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { clientSlug } = useTenant();
+  const { clientSlug } = useClient();
   const [form, setForm] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

@@ -24,21 +24,21 @@ import {
   Users,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useTenant } from '@/contexts/TenantContext';
+import { useClient } from '@/contexts/ClientContext';
 import { signOutClient } from '@/services/authService';
 import SafeImage from '@/components/common/SafeImage';
 import ImageUploader from '@/components/uploads/ImageUploader';
-import { deleteTenantImage } from '@/services/storageService';
+import { deleteClientImage } from '@/services/storageService';
 import {
-  createTenantMediaRecord,
-  deleteTenantMediaRecord,
-  listTenantCustomers,
-  listTenantMedia,
-  listTenantOrders,
-  listTenantProducts,
-  updateTenantBrandingAsset,
-  updateTenantProductImage,
-} from '@/services/tenantDataService';
+  createClientMediaRecord,
+  deleteClientMediaRecord,
+  listClientCustomers,
+  listClientMedia,
+  listClientOrders,
+  listClientProducts,
+  updateClientBrandingAsset,
+  updateClientProductImage,
+} from '@/services/clientDataService';
 
 function formatMoney(value) {
   const amount = Number(value || 0);
@@ -80,7 +80,7 @@ function shouldShowPoweredBy(tenant) {
   return !['business', 'pro', 'elite', 'elite custom'].some(name => plan.includes(name));
 }
 
-function getTenantPublicPreset(systemType, businessName) {
+function getClientPublicPreset(systemType, businessName) {
   const name = businessName || 'Your business';
   const presets = {
     ecommerce: {
@@ -172,22 +172,111 @@ function getTenantPublicPreset(systemType, businessName) {
   return presets[normalizeSystemType(systemType)] || presets.custom;
 }
 
-function TenantShell({ children }) {
-  const { tenant } = useTenant();
+const dashboardMenuBySystem = {
+  ecommerce: [
+    ['Dashboard', '', LayoutDashboard],
+    ['Orders', 'orders', ShoppingBag],
+    ['Products', 'products', Package],
+    ['Customers', 'customers', Users],
+    ['Payments', 'payments', CreditCard],
+    ['Vouchers', 'vouchers', Star],
+    ['Shipping', 'shipping', Truck],
+    ['Media', 'media', ImageIcon],
+    ['Analytics', 'analytics', BarChart3],
+    ['Branding', 'branding', Palette],
+    ['Billing', 'billing', CreditCard],
+    ['Settings', 'settings', Settings],
+  ],
+  booking: [
+    ['Dashboard', '', LayoutDashboard],
+    ['Trips / Events', 'trips-events', MapPin],
+    ['Bookings', 'bookings', CalendarDays],
+    ['Participants', 'participants', Users],
+    ['Calendar', 'calendar', CalendarDays],
+    ['Payments', 'payments', CreditCard],
+    ['Gallery', 'gallery', ImageIcon],
+    ['Reminders', 'reminders', Clock3],
+    ['Media', 'media', ImageIcon],
+    ['Analytics', 'analytics', BarChart3],
+    ['Branding', 'branding', Palette],
+    ['Billing', 'billing', CreditCard],
+    ['Settings', 'settings', Settings],
+  ],
+  appointment: [
+    ['Dashboard', '', LayoutDashboard],
+    ['Calendar', 'calendar', CalendarDays],
+    ['Appointments', 'appointments', Clock3],
+    ['Services', 'services', Star],
+    ['Staff', 'staff', Users],
+    ['Customers', 'customers', Users],
+    ['Reminders', 'reminders', Clock3],
+    ['Payments', 'payments', CreditCard],
+    ['Media', 'media', ImageIcon],
+    ['Analytics', 'analytics', BarChart3],
+    ['Branding', 'branding', Palette],
+    ['Billing', 'billing', CreditCard],
+    ['Settings', 'settings', Settings],
+  ],
+  food_order: [
+    ['Dashboard', '', LayoutDashboard],
+    ['Orders', 'orders', ShoppingBag],
+    ['Kitchen Queue', 'kitchen-queue', Utensils],
+    ['Menu', 'menu', Receipt],
+    ['Categories', 'categories', Package],
+    ['Tables / QR', 'tables-qr', Receipt],
+    ['Pickup / Delivery', 'pickup-delivery', Truck],
+    ['Customers', 'customers', Users],
+    ['Payments', 'payments', CreditCard],
+    ['Media', 'media', ImageIcon],
+    ['Analytics', 'analytics', BarChart3],
+    ['Branding', 'branding', Palette],
+    ['Billing', 'billing', CreditCard],
+    ['Settings', 'settings', Settings],
+  ],
+  delivery_dispatch: [
+    ['Dashboard', '', LayoutDashboard],
+    ['Jobs', 'jobs', Truck],
+    ['Assign Runner', 'assign-runner', Users],
+    ['Live Map', 'live-map', MapPin],
+    ['Runners / Staff', 'runners', Users],
+    ['Job Status', 'job-status', Clock3],
+    ['Proof Uploads', 'proof-uploads', ImageIcon],
+    ['Reports', 'reports', BarChart3],
+    ['Media', 'media', ImageIcon],
+    ['Analytics', 'analytics', BarChart3],
+    ['Branding', 'branding', Palette],
+    ['Billing', 'billing', CreditCard],
+    ['Settings', 'settings', Settings],
+  ],
+  custom: [
+    ['Dashboard', '', LayoutDashboard],
+    ['Project Brief', 'project-brief', Receipt],
+    ['Requests', 'requests', ShoppingBag],
+    ['Files', 'files', ImageIcon],
+    ['Appointment', 'appointment', CalendarDays],
+    ['Quote', 'quote', Receipt],
+    ['Media', 'media', ImageIcon],
+    ['Branding', 'branding', Palette],
+    ['Billing', 'billing', CreditCard],
+    ['Settings', 'settings', Settings],
+  ],
+};
+
+function getDashboardMenu(systemType) {
+  return dashboardMenuBySystem[normalizeSystemType(systemType)] || dashboardMenuBySystem.custom;
+}
+
+function ClientShell({ children }) {
+  const { tenant, clientSlug, businessSlug } = useClient();
   const { setUser } = useAuth();
   const location = useLocation();
-
-  const nav = [
-    ['Dashboard', '/dashboard', LayoutDashboard],
-    ['Orders', '/orders', ShoppingBag],
-    ['Products', '/products', Package],
-    ['Customers', '/customers', Users],
-    ['Media', '/media', ImageIcon],
-    ['Analytics', '/analytics', BarChart3],
-    ['Billing', '/billing', CreditCard],
-    ['Branding', '/branding', Palette],
-    ['Settings', '/settings', Settings],
-  ];
+  const slug = clientSlug || businessSlug || tenant?.subdomain || location.pathname.split('/').filter(Boolean)[1] || '';
+  const base = `/core/${slug}`;
+  const nav = getDashboardMenu(tenant?.systemType).map(([label, path, Icon]) => [
+    label,
+    path ? `${base}/${path}` : base,
+    Icon,
+  ]);
 
   const logout = async () => {
     await signOutClient();
@@ -198,7 +287,7 @@ function TenantShell({ children }) {
     <div className="min-h-screen" style={{ background: 'var(--c-page-bg)', color: 'var(--c-text)' }}>
       <header className="sticky top-0 z-40" style={{ background: 'var(--c-nav)', borderBottom: '1px solid var(--c-border)', backdropFilter: 'blur(14px)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <Link to="/dashboard" className="flex items-center gap-3 min-w-0">
+          <Link to={base} className="flex items-center gap-3 min-w-0">
             <span className="h-10 w-10 rounded-xl flex items-center justify-center text-sm font-black shrink-0" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
               {tenantInitials(tenant?.businessName)}
             </span>
@@ -254,13 +343,13 @@ function TenantShell({ children }) {
   );
 }
 
-export function TenantPublicSite() {
-  const { tenant, tenantId } = useTenant();
+export function ClientPublicSite() {
+  const { tenant, tenantId } = useClient();
   const branding = tenant?.branding || {};
   const settings = tenant?.settings || {};
   const systemType = normalizeSystemType(tenant?.systemType);
   const businessName = tenant?.businessName || 'Your business';
-  const preset = getTenantPublicPreset(tenant?.systemType, businessName);
+  const preset = getClientPublicPreset(tenant?.systemType, businessName);
   const Icon = preset.Icon;
   const primaryColor = branding.primary_color || '#16c47f';
   const hasCustomContent = Boolean(settings.public_site_ready || settings.website_ready || settings.products?.length || settings.services?.length || settings.menu?.length || settings.trips?.length);
@@ -283,7 +372,7 @@ export function TenantPublicSite() {
     async function loadProducts() {
       if (!tenantId) return;
       try {
-        const rows = await listTenantProducts(tenantId);
+        const rows = await listClientProducts(tenantId);
         if (active) setPublicProducts(rows.filter(item => String(item.status || 'active').toLowerCase() !== 'inactive').slice(0, 6));
       } catch {
         if (active) setPublicProducts([]);
@@ -484,7 +573,7 @@ function ProductImagePanel({ tenantId, products, onProductUpdated }) {
 
   const saveProductImage = async (product, image) => {
     setMessage('');
-    const updated = await updateTenantProductImage(tenantId, product.id, image);
+    const updated = await updateClientProductImage(tenantId, product.id, image);
     onProductUpdated(updated);
     setMessage(image ? 'Product image saved.' : 'Product image removed.');
   };
@@ -533,7 +622,7 @@ function BrandingMediaPanel({ tenant, tenantId }) {
 
   const saveBrandingImage = async (image, type) => {
     setMessage('');
-    await updateTenantBrandingAsset(tenantId, image, type);
+    await updateClientBrandingAsset(tenantId, image, type);
     if (type === 'banner') setBanner(image);
     else setLogo(image);
     setMessage(type === 'banner' ? 'Website banner saved.' : 'Business logo saved.');
@@ -584,7 +673,7 @@ function MediaLibraryPanel({ tenantId }) {
   const loadMedia = async () => {
     setLoading(true);
     try {
-      setMedia(await listTenantMedia(tenantId, category));
+      setMedia(await listClientMedia(tenantId, category));
     } finally {
       setLoading(false);
     }
@@ -597,15 +686,15 @@ function MediaLibraryPanel({ tenantId }) {
 
   const addMedia = async image => {
     if (!image) return;
-    await createTenantMediaRecord(tenantId, image, uploadCategory);
+    await createClientMediaRecord(tenantId, image, uploadCategory);
     setMessage('Image saved in the media library.');
     await loadMedia();
   };
 
   const removeMedia = async item => {
     setMessage('');
-    if (item.file_path) await deleteTenantImage(item.file_path);
-    await deleteTenantMediaRecord(tenantId, item.id);
+    if (item.file_path) await deleteClientImage(item.file_path);
+    await deleteClientMediaRecord(tenantId, item.id);
     setMessage('Image deleted.');
     await loadMedia();
   };
@@ -674,8 +763,374 @@ function MediaLibraryPanel({ tenantId }) {
   );
 }
 
-export function TenantWorkspacePage({ page = 'dashboard' }) {
-  const { tenant, tenantId } = useTenant();
+function StatGrid({ stats, loading }) {
+  return (
+    <div className="grid grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
+      {stats.map(([label, value, Icon]) => (
+        <div key={label} className="rounded-xl p-5" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+          <Icon size={20} className="mb-4" style={{ color: 'var(--c-accent)' }} />
+          <p className="text-xs font-bold mb-2" style={{ color: 'var(--c-muted)' }}>{label}</p>
+          <p className="text-2xl font-black" style={{ color: 'var(--c-text)' }}>{loading ? '-' : value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DashboardPanel({ title, subtitle, children }) {
+  return (
+    <section className="rounded-xl overflow-hidden" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+      <div className="p-5" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
+        <h2 className="font-black" style={{ color: 'var(--c-text)' }}>{title}</h2>
+        {subtitle && <p className="text-xs mt-1" style={{ color: 'var(--c-muted)' }}>{subtitle}</p>}
+      </div>
+      <div className="p-5">{children}</div>
+    </section>
+  );
+}
+
+function SimpleTable({ columns, rows, emptyText = 'No records yet.' }) {
+  return (
+    <div className="overflow-x-auto">
+      <div className="min-w-[680px]">
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(120px, 1fr))` }}>
+          {columns.map(column => (
+            <p key={column} className="text-[11px] font-black uppercase" style={{ color: 'var(--c-muted)' }}>{column}</p>
+          ))}
+        </div>
+        <div className="mt-3 space-y-2">
+          {rows.map((row, index) => (
+            <div key={index} className="grid gap-2 rounded-xl p-3 text-sm" style={{ gridTemplateColumns: `repeat(${columns.length}, minmax(120px, 1fr))`, background: 'var(--c-input-bg)', border: '1px solid var(--c-border)', color: 'var(--c-text)' }}>
+              {row.map((value, cellIndex) => (
+                <span key={cellIndex} className="truncate">{value || '-'}</span>
+              ))}
+            </div>
+          ))}
+          {!rows.length && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>{emptyText}</p>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PlaceholderCards({ items }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {items.map(([title, text, Icon]) => (
+        <div key={title} className="rounded-xl p-4" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
+          <Icon size={18} className="mb-3" style={{ color: 'var(--c-accent)' }} />
+          <p className="font-black" style={{ color: 'var(--c-text)' }}>{title}</p>
+          <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>{text}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BusinessProfilePanel({ tenant }) {
+  return (
+    <aside className="rounded-xl p-5" style={{ background: 'var(--c-surface-strong)', border: '1px solid var(--c-border)', boxShadow: 'var(--c-shadow)' }}>
+      <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Business profile</p>
+      {[
+        ['Business', tenant?.businessName],
+        ['Website', tenant?.customDomain || tenant?.subdomain || '-'],
+        ['System', tenant?.systemType || '-'],
+        ['Plan', tenant?.plan || '-'],
+      ].map(([label, value]) => (
+        <div key={label} className="flex justify-between gap-4 py-3" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
+          <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{label}</span>
+          <span className="text-xs font-black text-right" style={{ color: 'var(--c-text)' }}>{value}</span>
+        </div>
+      ))}
+    </aside>
+  );
+}
+
+function NotAvailablePanel({ title, message }) {
+  return (
+    <DashboardPanel title={title} subtitle="This page is not part of this business system.">
+      <p className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>{message}</p>
+    </DashboardPanel>
+  );
+}
+
+const dispatchJobs = [
+  ['JOB-1042', 'HQ Store', 'Taman Melati', 'Aiman', 'Assigned', 'High', '2 min ago'],
+  ['JOB-1041', 'Warehouse B', 'Setapak', 'Nora', 'On the way', 'Normal', '8 min ago'],
+  ['JOB-1040', 'Client Office', 'Wangsa Maju', 'Hafiz', 'Completed', 'Normal', '21 min ago'],
+];
+
+const runners = [
+  ['Aiman Rosli', '+60 12-220 1440', 'Motorcycle', 'Online', 'JOB-1042'],
+  ['Nora Halim', '+60 13-410 8821', 'Car', 'Online', 'JOB-1041'],
+  ['Hafiz Manan', '+60 17-331 9012', 'Van', 'Break', '-'],
+];
+
+function getDashboardStats(systemType, { orders, products, customers }) {
+  const revenue = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+  const stats = {
+    delivery_dispatch: [
+      ['Active Jobs', 8, Truck],
+      ['Runners Online', 3, Users],
+      ['Pending Jobs', 5, Clock3],
+      ['Completed Today', 18, CheckCircle2],
+      ['Delayed Jobs', 2, Clock3],
+      ['Proof Pending', 4, ImageIcon],
+    ],
+    ecommerce: [
+      ["Today's Orders", orders.length, ShoppingBag],
+      ['Pending Payment', orders.filter(order => String(order.status || '').toLowerCase().includes('pending')).length, CreditCard],
+      ['Completed Orders', orders.filter(order => String(order.status || '').toLowerCase().includes('complete')).length, CheckCircle2],
+      ['Revenue', formatMoney(revenue), BarChart3],
+      ['Products', products.length, Package],
+      ['Customers', customers.length, Users],
+    ],
+    booking: [
+      ['Upcoming Trips', 4, CalendarDays],
+      ['Participants', customers.length || 32, Users],
+      ['Pending Payment', 6, CreditCard],
+      ['Available Slots', 18, Clock3],
+      ['Next Event', 'Saturday', CalendarDays],
+    ],
+    appointment: [
+      ["Today's Appointments", 9, CalendarDays],
+      ['Pending Confirmation', 3, Clock3],
+      ['Completed', 14, CheckCircle2],
+      ['No-show', 1, Users],
+      ['Available Slots', 7, Clock3],
+    ],
+    food_order: [
+      ['New Orders', orders.length || 12, ShoppingBag],
+      ['Kitchen Queue', 5, Utensils],
+      ['Preparing', 4, Clock3],
+      ['Ready', 3, CheckCircle2],
+      ['Revenue Today', formatMoney(revenue), BarChart3],
+    ],
+    custom: [
+      ['Open Requests', 3, ShoppingBag],
+      ['Files Shared', 8, ImageIcon],
+      ['Pending Quote', 2, Receipt],
+      ['Appointments', 1, CalendarDays],
+    ],
+  };
+
+  return stats[systemType] || stats.custom;
+}
+
+function SharedSystemPage({ page, tenant, tenantId }) {
+  if (page === 'media') return <MediaLibraryPanel tenantId={tenantId} />;
+  if (page === 'branding') {
+    return (
+      <div className="grid gap-5">
+        <BrandingMediaPanel tenant={tenant} tenantId={tenantId} />
+        <DashboardPanel title="Brand settings" subtitle="Prepare the public website identity for this business.">
+          <PlaceholderCards items={[
+            ['Primary color', 'Set the main brand color used on buttons, badges and highlights.', Palette],
+            ['Tagline', 'Add a short line that explains the business clearly.', Star],
+            ['Public website settings', 'Control contact button labels, hero text and display preferences.', Settings],
+          ]} />
+        </DashboardPanel>
+      </div>
+    );
+  }
+  if (page === 'billing') {
+    return (
+      <DashboardPanel title="Billing and plan" subtitle="Plan, limits, domain and watermark rules for this client.">
+        <PlaceholderCards items={[
+          ['Current plan', tenant?.plan || 'Active plan will appear here.', CreditCard],
+          ['Domain status', tenant?.customDomain || tenant?.subdomain || 'Domain status will appear here.', MapPin],
+          ['Watermark rules', 'Starter and Growth show public branding. Business, Pro and Elite can hide it.', Settings],
+        ]} />
+      </DashboardPanel>
+    );
+  }
+  if (page === 'settings') {
+    return (
+      <DashboardPanel title="Business settings" subtitle="Operational settings for this client dashboard.">
+        <PlaceholderCards items={[
+          ['Business profile', 'Business name, contact details and public website preferences.', Settings],
+          ['System settings', 'Configure workflows that match this business system type.', Settings],
+          ['Notifications', 'Customer, staff and owner notification preferences.', Clock3],
+        ]} />
+      </DashboardPanel>
+    );
+  }
+  if (page === 'analytics') {
+    return (
+      <DashboardPanel title="Analytics" subtitle="Performance snapshot for this business.">
+        <PlaceholderCards items={[
+          ['Traffic', 'Customer visits and page activity will appear here.', BarChart3],
+          ['Conversion', 'Orders, bookings or job completion trends will appear here.', CheckCircle2],
+          ['Top activity', 'The most active products, trips, services or jobs will appear here.', Star],
+        ]} />
+      </DashboardPanel>
+    );
+  }
+  if (page === 'payments') {
+    return (
+      <DashboardPanel title="Payments" subtitle="Payment tracking for this business system.">
+        <SimpleTable columns={['Reference', 'Customer', 'Amount', 'Status', 'Updated']} rows={[
+          ['PAY-1008', 'Nadia Rahman', 'RM120.00', 'Pending', 'Today'],
+          ['PAY-1007', 'Farid Amin', 'RM54.00', 'Paid', 'Yesterday'],
+        ]} />
+      </DashboardPanel>
+    );
+  }
+  return null;
+}
+
+function EcommerceContent({ page, products, orders, customers, tenantId, setProducts }) {
+  if (page === 'products') {
+    return (
+      <div className="grid gap-5">
+        <ProductImagePanel
+          tenantId={tenantId}
+          products={products}
+          onProductUpdated={updatedProduct => setProducts(current => current.map(item => (item.id === updatedProduct.id ? updatedProduct : item)))}
+        />
+        <DashboardPanel title="Product table" subtitle="Product list, add product and image upload workflow.">
+          <SimpleTable columns={['Product', 'Price', 'Stock', 'Status']} rows={products.map(item => [item.name, formatMoney(item.price), item.stock, item.status || 'Active'])} />
+        </DashboardPanel>
+      </div>
+    );
+  }
+  if (page === 'orders' || page === 'dashboard') {
+    return (
+      <DashboardPanel title={page === 'dashboard' ? 'Recent orders' : 'Order table'} subtitle="Track ecommerce order status and payment progress.">
+        <SimpleTable columns={['Order', 'Customer', 'Status', 'Amount']} rows={orders.map(item => [item.id, item.customer_name || item.email, item.status || 'New', formatMoney(item.total_amount)])} />
+      </DashboardPanel>
+    );
+  }
+  if (page === 'customers') {
+    return (
+      <DashboardPanel title="Customer list" subtitle="Recent customer records from the store.">
+        <SimpleTable columns={['Name', 'Phone', 'Email', 'Status']} rows={customers.map(item => [item.customer_name || item.name, item.customer_phone || item.phone, item.email, item.status || 'Active'])} />
+      </DashboardPanel>
+    );
+  }
+  if (page === 'vouchers') return <DashboardPanel title="Vouchers" subtitle="Discount and campaign tools for ecommerce."><PlaceholderCards items={[['Voucher setup', 'Create percentage, fixed amount and free shipping vouchers here.', Receipt], ['Usage limits', 'Limit vouchers by date, quantity or customer group.', Settings]]} /></DashboardPanel>;
+  if (page === 'shipping') return <DashboardPanel title="Shipping" subtitle="Delivery options and fulfilment rules."><PlaceholderCards items={[['Shipping zones', 'Set delivery areas, fees and pickup rules.', Truck], ['Fulfilment status', 'Track packing, shipped and completed orders.', CheckCircle2]]} /></DashboardPanel>;
+  return null;
+}
+
+function DeliveryDispatchContent({ page }) {
+  if (page === 'products') {
+    return <NotAvailablePanel title="Products not available" message="Delivery Dispatch uses jobs, runners, live map and proof uploads instead of ecommerce products." />;
+  }
+  if (page === 'dashboard' || page === 'jobs') {
+    return (
+      <DashboardPanel title={page === 'dashboard' ? 'Active job list' : 'Job list'} subtitle="Operational dispatch queue for pickups, drop-offs and runners.">
+        <SimpleTable columns={['Job ID', 'Pickup', 'Drop-off', 'Runner', 'Status', 'Priority', 'Updated']} rows={dispatchJobs} />
+      </DashboardPanel>
+    );
+  }
+  if (page === 'assign-runner') {
+    return (
+      <DashboardPanel title="Assign runner" subtitle="Assign staff or runner to a pending job.">
+        <div className="grid gap-4 md:grid-cols-[1fr_1fr_auto]">
+          {['Select job', 'Select runner'].map(label => (
+            <label key={label} className="block">
+              <span className="mb-2 block text-xs font-bold" style={{ color: 'var(--c-muted)' }}>{label}</span>
+              <select className="w-full rounded-xl px-3 py-3 text-sm outline-none" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)', color: 'var(--c-text)' }}>
+                <option>{label === 'Select job' ? 'JOB-1042' : 'Aiman Rosli'}</option>
+                <option>{label === 'Select job' ? 'JOB-1041' : 'Nora Halim'}</option>
+              </select>
+            </label>
+          ))}
+          <button type="button" className="self-end rounded-xl px-5 py-3 text-sm font-black" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>Assign</button>
+        </div>
+      </DashboardPanel>
+    );
+  }
+  if (page === 'live-map') {
+    return (
+      <div className="grid gap-5">
+        <DashboardPanel title="Live map" subtitle="Location tracking placeholder.">
+          <div className="grid min-h-[260px] place-items-center rounded-xl text-center" style={{ background: 'var(--c-input-bg)', border: '1px dashed var(--c-border)', color: 'var(--c-muted)' }}>
+            Live map will appear here once location tracking is enabled.
+          </div>
+        </DashboardPanel>
+        <PlaceholderCards items={[
+          ['Online runners', '3 runners online', Users],
+          ['Active routes', '8 active routes', Truck],
+          ['Last update', 'Just now', Clock3],
+        ]} />
+      </div>
+    );
+  }
+  if (page === 'runners') return <DashboardPanel title="Runners / Staff" subtitle="Runner list and current job assignment."><SimpleTable columns={['Name', 'Phone', 'Vehicle', 'Status', 'Current Job']} rows={runners} /></DashboardPanel>;
+  if (page === 'job-status') return <DashboardPanel title="Job status board" subtitle="Dispatch kanban by job progress."><PlaceholderCards items={['Assigned', 'On the way', 'Arrived', 'Completed', 'Cancelled'].map(status => [status, 'Jobs in this status will appear here.', Clock3])} /></DashboardPanel>;
+  if (page === 'proof-uploads') return <DashboardPanel title="Proof uploads" subtitle="Delivery proof photos and documents."><PlaceholderCards items={[['JOB-1042', 'Photo placeholder - uploaded by Aiman, 10:42 AM', ImageIcon], ['JOB-1041', 'Signature placeholder - uploaded by Nora, 10:18 AM', ImageIcon]]} /></DashboardPanel>;
+  if (page === 'reports') return <DashboardPanel title="Reports" subtitle="Daily dispatch and runner performance."><PlaceholderCards items={[['Daily jobs', '26 jobs created today.', BarChart3], ['Completed', '18 jobs completed.', CheckCircle2], ['Delayed', '2 jobs delayed.', Clock3], ['Runner performance', 'Completion and response time by runner.', Users]]} /></DashboardPanel>;
+  return null;
+}
+
+function BookingContent({ page }) {
+  if (page === 'products') return <NotAvailablePanel title="Products not available" message="Booking systems use trips, events, bookings and participants instead of product inventory." />;
+  if (page === 'dashboard' || page === 'trips-events') return <DashboardPanel title="Trips / Events" subtitle="Upcoming trips, events and available slots."><SimpleTable columns={['Trip / Event', 'Date', 'Slots', 'Status']} rows={[['Bukit sunrise trip', 'Saturday', '12 slots', 'Open'], ['Workshop session', 'Wednesday', '6 slots', 'Open']]} /></DashboardPanel>;
+  if (page === 'bookings') return <DashboardPanel title="Bookings" subtitle="Booking table and payment status."><SimpleTable columns={['Booking', 'Customer', 'Trip', 'Payment', 'Status']} rows={[['BKG-1021', 'Nadia', 'Bukit sunrise trip', 'Deposit paid', 'Confirmed']]} /></DashboardPanel>;
+  if (page === 'participants') return <DashboardPanel title="Participants" subtitle="Participant details for each trip or event."><SimpleTable columns={['Name', 'Phone', 'Trip', 'Check-in']} rows={[['Alya Rahman', '+60 12-441 2929', 'Bukit sunrise trip', 'Pending']]} /></DashboardPanel>;
+  if (page === 'calendar') return <DashboardPanel title="Calendar" subtitle="Trip and event calendar placeholder."><div className="grid min-h-[240px] place-items-center rounded-xl text-sm" style={{ background: 'var(--c-input-bg)', border: '1px dashed var(--c-border)', color: 'var(--c-muted)' }}>Calendar view will appear here once schedules are connected.</div></DashboardPanel>;
+  if (page === 'gallery') return <DashboardPanel title="Gallery" subtitle="Trip/event image gallery."><PlaceholderCards items={[['Trip photos', 'Upload destination or event images here.', ImageIcon], ['Customer previews', 'Images can be reused on the public booking page.', Star]]} /></DashboardPanel>;
+  if (page === 'reminders') return <DashboardPanel title="Reminders" subtitle="Booking reminders and customer follow-up."><PlaceholderCards items={[['Reminder queue', 'Upcoming reminder messages will appear here.', Clock3]]} /></DashboardPanel>;
+  return null;
+}
+
+function AppointmentContent({ page }) {
+  if (page === 'products') return <NotAvailablePanel title="Products not available" message="Appointment systems use services, staff and appointment schedules instead of product inventory." />;
+  if (page === 'dashboard' || page === 'calendar') return <DashboardPanel title="Calendar view" subtitle="Appointment calendar placeholder."><div className="grid min-h-[240px] place-items-center rounded-xl text-sm" style={{ background: 'var(--c-input-bg)', border: '1px dashed var(--c-border)', color: 'var(--c-muted)' }}>Calendar view will appear here once appointment slots are connected.</div></DashboardPanel>;
+  if (page === 'appointments') return <DashboardPanel title="Appointments" subtitle="Appointment table and customer confirmation status."><SimpleTable columns={['Time', 'Customer', 'Service', 'Staff', 'Status']} rows={[['10:30 AM', 'Farah', 'Consultation', 'Izzat', 'Confirmed'], ['2:00 PM', 'Haziq', 'Repair check', 'Mira', 'Pending']]} /></DashboardPanel>;
+  if (page === 'services') return <DashboardPanel title="Services" subtitle="Service list and duration settings."><SimpleTable columns={['Service', 'Duration', 'Price', 'Status']} rows={[['Consultation', '30 min', 'RM80.00', 'Active'], ['Repair check', '45 min', 'RM120.00', 'Active']]} /></DashboardPanel>;
+  if (page === 'staff') return <DashboardPanel title="Staff schedule" subtitle="Staff list, role and availability."><SimpleTable columns={['Name', 'Role', 'Today', 'Status']} rows={[['Izzat', 'Consultant', '9:00 AM - 5:00 PM', 'Available'], ['Mira', 'Technician', '12:00 PM - 8:00 PM', 'Available']]} /></DashboardPanel>;
+  if (page === 'customers') return <DashboardPanel title="Customers" subtitle="Appointment customer records."><SimpleTable columns={['Name', 'Phone', 'Last Visit', 'Status']} rows={[['Farah', '+60 11-220 1200', 'Today', 'Active']]} /></DashboardPanel>;
+  if (page === 'reminders') return <DashboardPanel title="Reminders" subtitle="Appointment confirmations and follow-up reminders."><PlaceholderCards items={[['Confirmation reminders', 'Pending customer confirmations will appear here.', Clock3]]} /></DashboardPanel>;
+  return null;
+}
+
+function FoodOrderContent({ page, orders }) {
+  if (page === 'products') return <NotAvailablePanel title="Products not available" message="Food Order systems use Menu, Categories, Kitchen Queue and Tables / QR instead of a product dashboard." />;
+  if (page === 'dashboard' || page === 'orders') return <DashboardPanel title={page === 'dashboard' ? 'Recent food orders' : 'Orders'} subtitle="Food order status from order received to ready."><SimpleTable columns={['Order', 'Customer', 'Type', 'Status', 'Total']} rows={(orders.length ? orders : [{ id: 'ORD-1008', customer_name: 'Walk-in customer', status: 'Preparing', total_amount: 35 }]).map(item => [item.id, item.customer_name || 'Customer', item.source || 'Pickup', item.status || 'New', formatMoney(item.total_amount)])} /></DashboardPanel>;
+  if (page === 'kitchen-queue') return <DashboardPanel title="Kitchen Queue" subtitle="Queue board for kitchen preparation."><PlaceholderCards items={[['New', 'Orders waiting for kitchen.', ShoppingBag], ['Preparing', 'Food currently being prepared.', Utensils], ['Ready', 'Orders ready for pickup or delivery.', CheckCircle2]]} /></DashboardPanel>;
+  if (page === 'menu') return <DashboardPanel title="Menu" subtitle="Menu item table with image placeholder."><SimpleTable columns={['Image', 'Item', 'Category', 'Price', 'Status']} rows={[['Image placeholder', 'Nasi box set', 'Meals', 'RM12.00', 'Active'], ['Image placeholder', 'Iced latte', 'Drinks', 'RM8.00', 'Active']]} /></DashboardPanel>;
+  if (page === 'categories') return <DashboardPanel title="Categories" subtitle="Menu categories for customer ordering."><SimpleTable columns={['Category', 'Items', 'Status']} rows={[['Meals', '12', 'Active'], ['Drinks', '8', 'Active']]} /></DashboardPanel>;
+  if (page === 'tables-qr') return <DashboardPanel title="Tables / QR" subtitle="Table list and QR code placeholder."><PlaceholderCards items={[['Table A1', 'QR placeholder for dine-in orders.', Receipt], ['Table A2', 'QR placeholder for dine-in orders.', Receipt]]} /></DashboardPanel>;
+  if (page === 'pickup-delivery') return <DashboardPanel title="Pickup / Delivery" subtitle="Pickup and delivery status board."><PlaceholderCards items={[['Pickup queue', 'Orders waiting for pickup.', ShoppingBag], ['Delivery queue', 'Orders assigned to delivery.', Truck]]} /></DashboardPanel>;
+  return null;
+}
+
+function CustomContent({ page }) {
+  if (page === 'products') return <NotAvailablePanel title="Products not available" message="This custom system is configured around project requests, files, appointments and quotes." />;
+  if (page === 'dashboard' || page === 'project-brief') return <DashboardPanel title="Project brief" subtitle="Summary of the custom workflow and requested features."><PlaceholderCards items={[['Business flow', 'Capture how this business handles customers and operations.', Receipt], ['Required files', 'Documents, references and content will appear here.', ImageIcon]]} /></DashboardPanel>;
+  if (page === 'requests') return <DashboardPanel title="Requests" subtitle="Customer or internal request list."><SimpleTable columns={['Request', 'Customer', 'Status', 'Updated']} rows={[['REQ-101', 'Client enquiry', 'Open', 'Today']]} /></DashboardPanel>;
+  if (page === 'files') return <DashboardPanel title="Files" subtitle="Shared files and references."><PlaceholderCards items={[['File library', 'Documents and uploaded files will appear here.', ImageIcon]]} /></DashboardPanel>;
+  if (page === 'appointment') return <DashboardPanel title="Appointment" subtitle="Appointment placeholder for custom workflows."><PlaceholderCards items={[['Appointment request', 'Booking or consultation requests will appear here.', CalendarDays]]} /></DashboardPanel>;
+  if (page === 'quote') return <DashboardPanel title="Quote" subtitle="Quote and estimate placeholder."><PlaceholderCards items={[['Pending quote', 'Quote drafts and approvals will appear here.', Receipt]]} /></DashboardPanel>;
+  return null;
+}
+
+function SystemPageContent({ systemType, page, tenant, tenantId, products, orders, customers, setProducts }) {
+  const shared = SharedSystemPage({ page, tenant, tenantId });
+  if (shared) return shared;
+
+  const content =
+    systemType === 'delivery_dispatch' ? DeliveryDispatchContent({ page }) :
+      systemType === 'ecommerce' ? EcommerceContent({ page, products, orders, customers, tenantId, setProducts }) :
+        systemType === 'booking' ? BookingContent({ page }) :
+          systemType === 'appointment' ? AppointmentContent({ page }) :
+            systemType === 'food_order' ? FoodOrderContent({ page, orders }) :
+              CustomContent({ page });
+
+  return content || (
+    <DashboardPanel title="Page setup" subtitle="This workspace page is ready for the next setup step.">
+      <p className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
+        Configure this page for the selected business system when the workflow is enabled.
+      </p>
+    </DashboardPanel>
+  );
+}
+
+export function ClientWorkspacePage({ page = 'dashboard' }) {
+  const { tenant, tenantId } = useClient();
   const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -686,16 +1141,16 @@ export function TenantWorkspacePage({ page = 'dashboard' }) {
   useEffect(() => {
     let active = true;
 
-    async function loadTenantData() {
+    async function loadClientDashboardData() {
       if (!tenantId) return;
       setLoading(true);
       setError('');
 
       try {
         const [productRows, orderRows, customerRows] = await Promise.all([
-          listTenantProducts(tenantId),
-          listTenantOrders(tenantId),
-          listTenantCustomers(tenantId),
+          listClientProducts(tenantId),
+          listClientOrders(tenantId),
+          listClientCustomers(tenantId),
         ]);
 
         if (!active) return;
@@ -709,38 +1164,59 @@ export function TenantWorkspacePage({ page = 'dashboard' }) {
       }
     }
 
-    loadTenantData();
+    loadClientDashboardData();
 
     return () => {
       active = false;
     };
   }, [tenantId]);
 
-  const stats = useMemo(() => {
-    const revenue = orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
-    return [
-      ['Orders', orders.length, ShoppingBag],
-      ['Products', products.length, Package],
-      ['Customers', customers.length, Users],
-      ['Revenue', formatMoney(revenue), BarChart3],
-    ];
-  }, [customers.length, orders, products.length]);
+  const systemType = normalizeSystemType(tenant?.systemType);
+  const stats = useMemo(() => getDashboardStats(systemType, { orders, products, customers }), [customers, orders, products, systemType]);
 
   const pageTitle = {
     dashboard: 'Dashboard',
     orders: 'Orders',
     products: 'Products',
     customers: 'Customers',
+    payments: 'Payments',
+    vouchers: 'Vouchers',
+    shipping: 'Shipping',
+    'trips-events': 'Trips / Events',
+    bookings: 'Bookings',
+    participants: 'Participants',
+    calendar: 'Calendar',
+    gallery: 'Gallery',
+    reminders: 'Reminders',
+    appointments: 'Appointments',
+    services: 'Services',
+    staff: 'Staff',
+    'kitchen-queue': 'Kitchen Queue',
+    menu: 'Menu',
+    categories: 'Categories',
+    'tables-qr': 'Tables / QR',
+    'pickup-delivery': 'Pickup / Delivery',
+    jobs: 'Jobs',
+    'assign-runner': 'Assign Runner',
+    'live-map': 'Live Map',
+    runners: 'Runners / Staff',
+    'job-status': 'Job Status',
+    'proof-uploads': 'Proof Uploads',
+    reports: 'Reports',
+    'project-brief': 'Project Brief',
+    requests: 'Requests',
+    files: 'Files',
+    appointment: 'Appointment',
+    quote: 'Quote',
     media: 'Media Library',
     analytics: 'Analytics',
     billing: 'Billing',
     settings: 'Settings',
     branding: 'Branding',
-    payments: 'Payments',
   }[page] || 'Dashboard';
 
   return (
-    <TenantShell>
+    <ClientShell>
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-7">
         <div>
           <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>{tenant?.plan || 'Active'}</p>
@@ -757,74 +1233,21 @@ export function TenantWorkspacePage({ page = 'dashboard' }) {
         </div>
       )}
 
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        {stats.map(([label, value, Icon]) => (
-          <div key={label} className="rounded-xl p-5" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-            <Icon size={20} className="mb-4" style={{ color: 'var(--c-accent)' }} />
-            <p className="text-xs font-bold mb-2" style={{ color: 'var(--c-muted)' }}>{label}</p>
-            <p className="text-2xl font-black" style={{ color: 'var(--c-text)' }}>{loading ? '-' : value}</p>
-          </div>
-        ))}
-      </div>
+      {page === 'dashboard' && <StatGrid stats={stats} loading={loading} />}
 
-      {page === 'branding' && <BrandingMediaPanel tenant={tenant} tenantId={tenantId} />}
-      {page === 'media' && <MediaLibraryPanel tenantId={tenantId} />}
-      {page === 'products' && (
-        <ProductImagePanel
+      <div className="grid xl:grid-cols-[1.1fr_0.9fr] gap-5">
+        <SystemPageContent
+          systemType={systemType}
+          page={page}
+          tenant={tenant}
           tenantId={tenantId}
           products={products}
-          onProductUpdated={updatedProduct => setProducts(current => current.map(item => (item.id === updatedProduct.id ? updatedProduct : item)))}
+          orders={orders}
+          customers={customers}
+          setProducts={setProducts}
         />
-      )}
-
-      {page !== 'media' && page !== 'branding' && (
-      <div className="grid xl:grid-cols-[1.1fr_0.9fr] gap-5">
-        <section className="rounded-xl overflow-hidden" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-          <div className="p-5" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
-            <h2 className="font-black" style={{ color: 'var(--c-text)' }}>{pageTitle} records</h2>
-            <p className="text-xs mt-1" style={{ color: 'var(--c-muted)' }}>Recent records for this business.</p>
-          </div>
-          <div className="p-5 space-y-3">
-            {(page === 'orders' || page === 'dashboard' || page === 'payments' ? orders : page === 'customers' ? customers : products).slice(0, 8).map(item => (
-              <div key={item.id} className="rounded-xl p-4 flex items-center justify-between gap-4" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
-                <div className="flex min-w-0 items-center gap-3">
-                  {page === 'products' && (
-                    <span className="h-12 w-12 shrink-0 overflow-hidden rounded-xl" style={{ border: '1px solid var(--c-border)' }}>
-                      <SafeImage src={item.image_url} fallbackType="product" className="h-full w-full object-cover" />
-                    </span>
-                  )}
-                  <div className="min-w-0">
-                    <p className="font-black truncate" style={{ color: 'var(--c-text)' }}>{item.name || item.customer_name || item.email || item.id}</p>
-                    <p className="text-xs truncate" style={{ color: 'var(--c-muted)' }}>{item.status || item.customer_phone || item.created_at || 'Active'}</p>
-                  </div>
-                </div>
-                {'total_amount' in item && <p className="font-black" style={{ color: 'var(--c-accent)' }}>{formatMoney(item.total_amount)}</p>}
-                {'price' in item && <p className="font-black" style={{ color: 'var(--c-accent)' }}>{formatMoney(item.price)}</p>}
-              </div>
-            ))}
-            {!loading && !error && orders.length + products.length + customers.length === 0 && (
-              <p className="text-sm" style={{ color: 'var(--c-muted)' }}>No records yet.</p>
-            )}
-            {loading && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>Loading records...</p>}
-          </div>
-        </section>
-
-        <aside className="rounded-xl p-5" style={{ background: 'var(--c-surface-strong)', border: '1px solid var(--c-border)', boxShadow: 'var(--c-shadow)' }}>
-          <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Business profile</p>
-          {[
-            ['Business', tenant?.businessName],
-            ['Website', tenant?.customDomain || tenant?.subdomain || '-'],
-            ['System', tenant?.systemType || '-'],
-            ['Plan', tenant?.plan || '-'],
-          ].map(([label, value]) => (
-            <div key={label} className="flex justify-between gap-4 py-3" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
-              <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{label}</span>
-              <span className="text-xs font-black text-right" style={{ color: 'var(--c-text)' }}>{value}</span>
-            </div>
-          ))}
-        </aside>
+        <BusinessProfilePanel tenant={tenant} />
       </div>
-      )}
-    </TenantShell>
+    </ClientShell>
   );
 }

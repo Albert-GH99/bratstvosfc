@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Navigate, Route, Routes, useParams } from 'rea
 
 import PageNotFound from './pages/PagesNotFound';
 import { AuthProvider } from './context/AuthContext';
-import { RESERVED_CLIENT_SLUGS, TenantProvider } from '@/contexts/TenantContext';
+import { ClientProvider, RESERVED_CLIENT_SLUGS } from '@/contexts/ClientContext';
 
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -23,10 +23,10 @@ import About from './pages/About';
 import Admin from './pages/Admin';
 import AdminRoute from './components/AdminRoute';
 import ProtectedRoute from './components/ProtectedRoute';
-import TenantRoute from './components/TenantRoute';
+import ClientRoute from './components/ClientRoute';
 import AppBackground from './components/layout/AppBackground';
-import TenantPublicSite from './pages/TenantPublicSite';
-import { TenantWorkspacePage } from './pages/TenantPortal';
+import ClientPublicSite from './pages/ClientPublicSite';
+import { ClientWorkspacePage } from './pages/ClientPortal';
 import AdminActivationGuide from './pages/AdminActivationGuide';
 
 const masterLoginRedirect = <Navigate to={`/login?next=${encodeURIComponent('/master')}`} replace />;
@@ -46,7 +46,7 @@ function ClientPublicRoute() {
     return <PageNotFound />;
   }
 
-  return <TenantPublicSite />;
+  return <ClientPublicSite />;
 }
 
 function MainRoutes() {
@@ -90,18 +90,46 @@ function MainRoutes() {
         <Route path="/master/activation-guide" element={<AdminActivationGuide />} />
       </Route>
 
-      <Route path="/core/:slug" element={<TenantRoute />}>
-        <Route index element={<TenantWorkspacePage page="dashboard" />} />
+      <Route path="/core/:slug" element={<ClientRoute />}>
+        <Route index element={<ClientWorkspacePage page="dashboard" />} />
         <Route path="dashboard" element={<Navigate to="." replace />} />
-        <Route path="orders" element={<TenantWorkspacePage page="orders" />} />
-        <Route path="products" element={<TenantWorkspacePage page="products" />} />
-        <Route path="customers" element={<TenantWorkspacePage page="customers" />} />
-        <Route path="media" element={<TenantWorkspacePage page="media" />} />
-        <Route path="analytics" element={<TenantWorkspacePage page="analytics" />} />
-        <Route path="billing" element={<TenantWorkspacePage page="billing" />} />
-        <Route path="settings" element={<TenantWorkspacePage page="settings" />} />
-        <Route path="branding" element={<TenantWorkspacePage page="branding" />} />
-        <Route path="payments" element={<TenantWorkspacePage page="payments" />} />
+        <Route path="orders" element={<ClientWorkspacePage page="orders" />} />
+        <Route path="products" element={<ClientWorkspacePage page="products" />} />
+        <Route path="customers" element={<ClientWorkspacePage page="customers" />} />
+        <Route path="payments" element={<ClientWorkspacePage page="payments" />} />
+        <Route path="vouchers" element={<ClientWorkspacePage page="vouchers" />} />
+        <Route path="shipping" element={<ClientWorkspacePage page="shipping" />} />
+        <Route path="trips-events" element={<ClientWorkspacePage page="trips-events" />} />
+        <Route path="bookings" element={<ClientWorkspacePage page="bookings" />} />
+        <Route path="participants" element={<ClientWorkspacePage page="participants" />} />
+        <Route path="calendar" element={<ClientWorkspacePage page="calendar" />} />
+        <Route path="gallery" element={<ClientWorkspacePage page="gallery" />} />
+        <Route path="reminders" element={<ClientWorkspacePage page="reminders" />} />
+        <Route path="appointments" element={<ClientWorkspacePage page="appointments" />} />
+        <Route path="services" element={<ClientWorkspacePage page="services" />} />
+        <Route path="staff" element={<ClientWorkspacePage page="staff" />} />
+        <Route path="kitchen-queue" element={<ClientWorkspacePage page="kitchen-queue" />} />
+        <Route path="menu" element={<ClientWorkspacePage page="menu" />} />
+        <Route path="categories" element={<ClientWorkspacePage page="categories" />} />
+        <Route path="tables-qr" element={<ClientWorkspacePage page="tables-qr" />} />
+        <Route path="pickup-delivery" element={<ClientWorkspacePage page="pickup-delivery" />} />
+        <Route path="jobs" element={<ClientWorkspacePage page="jobs" />} />
+        <Route path="assign-runner" element={<ClientWorkspacePage page="assign-runner" />} />
+        <Route path="live-map" element={<ClientWorkspacePage page="live-map" />} />
+        <Route path="runners" element={<ClientWorkspacePage page="runners" />} />
+        <Route path="job-status" element={<ClientWorkspacePage page="job-status" />} />
+        <Route path="proof-uploads" element={<ClientWorkspacePage page="proof-uploads" />} />
+        <Route path="reports" element={<ClientWorkspacePage page="reports" />} />
+        <Route path="project-brief" element={<ClientWorkspacePage page="project-brief" />} />
+        <Route path="requests" element={<ClientWorkspacePage page="requests" />} />
+        <Route path="files" element={<ClientWorkspacePage page="files" />} />
+        <Route path="appointment" element={<ClientWorkspacePage page="appointment" />} />
+        <Route path="quote" element={<ClientWorkspacePage page="quote" />} />
+        <Route path="media" element={<ClientWorkspacePage page="media" />} />
+        <Route path="analytics" element={<ClientWorkspacePage page="analytics" />} />
+        <Route path="billing" element={<ClientWorkspacePage page="billing" />} />
+        <Route path="settings" element={<ClientWorkspacePage page="settings" />} />
+        <Route path="branding" element={<ClientWorkspacePage page="branding" />} />
       </Route>
 
       <Route path="/:slug" element={<ClientPublicRoute />} />
@@ -115,13 +143,13 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <TenantProvider>
+          <ClientProvider>
             <LanguageProvider>
               <AppBackground>
                 <MainRoutes />
               </AppBackground>
             </LanguageProvider>
-          </TenantProvider>
+          </ClientProvider>
         </Router>
         <Toaster />
       </QueryClientProvider>

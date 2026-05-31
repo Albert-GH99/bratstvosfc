@@ -73,8 +73,9 @@ export function getPublicImageUrl(path) {
   return data?.publicUrl || '';
 }
 
-export async function uploadTenantImage({ file, tenantId, category = 'misc' }) {
-  if (!tenantId) throw new Error('tenantId is required for image upload.');
+export async function uploadClientImage({ file, clientBusinessId, tenantId, category = 'misc' }) {
+  const storageOwnerId = clientBusinessId || tenantId;
+  if (!storageOwnerId) throw new Error('Business id is required for image upload.');
 
   const cleanCategory = normalizeCategory(category);
   const validation = validateImageFile(file, cleanCategory);
@@ -84,7 +85,7 @@ export async function uploadTenantImage({ file, tenantId, category = 'misc' }) {
   const extension = fileExtension(file);
   const safeName = `${sanitizeFilename(file.name)}.${extension}`;
   const uniqueName = `${Date.now()}-${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}-${safeName}`;
-  const path = `${tenantId}/${cleanCategory}/${uniqueName}`;
+  const path = `${storageOwnerId}/${cleanCategory}/${uniqueName}`;
 
   const { error } = await db.storage
     .from(TENANT_ASSETS_BUCKET)
@@ -108,7 +109,7 @@ export async function uploadTenantImage({ file, tenantId, category = 'misc' }) {
   };
 }
 
-export async function deleteTenantImage(pathOrOptions) {
+export async function deleteClientImage(pathOrOptions) {
   const path = typeof pathOrOptions === 'string' ? pathOrOptions : pathOrOptions?.path;
   if (!path) return { success: true };
 

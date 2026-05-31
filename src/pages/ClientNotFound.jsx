@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 
-export default function TenantNotFound() {
+export default function ClientNotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--c-page-bg)', color: 'var(--c-text)' }}>
       <div className="max-w-xl w-full text-center">

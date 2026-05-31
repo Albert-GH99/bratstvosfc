@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { ImagePlus, Loader2, Trash2, UploadCloud } from 'lucide-react';
 import {
-  deleteTenantImage,
-  uploadTenantImage,
+  deleteClientImage,
+  uploadClientImage,
   validateImageFile,
 } from '@/services/storageService';
 import SafeImage from '@/components/common/SafeImage';
@@ -61,7 +61,7 @@ export default function ImageUploader({
       for (const file of files) {
         const validation = validateImageFile(file, category);
         if (!validation.valid) throw new Error(validation.message);
-        uploads.push(await uploadTenantImage({ file, tenantId, category }));
+        uploads.push(await uploadClientImage({ file, clientBusinessId: tenantId, category }));
       }
 
       emitChange(multiple ? [...items, ...uploads].slice(0, maxFiles) : uploads);
@@ -81,7 +81,7 @@ export default function ImageUploader({
     try {
       const target = items[index];
       const path = imagePath(target);
-      if (path) await deleteTenantImage(path);
+      if (path) await deleteClientImage(path);
       emitChange(items.filter((_, itemIndex) => itemIndex !== index));
     } catch (err) {
       setError(err.message || 'Unable to delete image right now.');
