@@ -37,6 +37,7 @@ import {
   listClientOrders,
   listClientProducts,
   updateClientBrandingAsset,
+  updateClientBrandingSettings,
   updateClientProductImage,
 } from '@/services/clientDataService';
 
@@ -60,6 +61,46 @@ function assetObject(url, path, fileName = 'Uploaded image') {
     : null;
 }
 
+function firstValue(...values) {
+  return values.find(value => value !== undefined && value !== null && String(value).trim() !== '') || '';
+}
+
+function colorValue(value, fallback) {
+  const next = String(value || '').trim();
+  return /^#[0-9a-f]{6}$/i.test(next) ? next : fallback;
+}
+
+function whatsappUrl(number = '') {
+  const cleaned = String(number || '').replace(/[^\d]/g, '');
+  return cleaned ? `https://wa.me/${cleaned}` : '';
+}
+
+function normalizeBrandingForm(tenant) {
+  const branding = tenant?.branding || {};
+  const settings = tenant?.settings || {};
+  const socials = branding.socials || settings.social_links || {};
+
+  return {
+    businessName: firstValue(branding.business_name, tenant?.businessName),
+    tagline: firstValue(branding.tagline, settings.tagline, settings.hero_subtitle),
+    description: firstValue(branding.description, settings.business_description, settings.description),
+    primaryColor: colorValue(firstValue(branding.primary_color, branding.primaryColor, settings.primary_color), '#16c47f'),
+    secondaryColor: colorValue(firstValue(branding.secondary_color, branding.secondaryColor, settings.secondary_color), '#7ef6c1'),
+    backgroundColor: colorValue(firstValue(branding.background_color, branding.backgroundColor, settings.background_color), '#030705'),
+    backgroundStyle: firstValue(branding.background_style, settings.background_style) || 'premium',
+    whatsapp: firstValue(branding.whatsapp, settings.whatsapp, settings.whatsapp_number),
+    email: firstValue(branding.email, settings.email),
+    address: firstValue(branding.address, settings.address),
+    socials: {
+      instagram: firstValue(socials.instagram),
+      facebook: firstValue(socials.facebook),
+      tiktok: firstValue(socials.tiktok),
+      website: firstValue(socials.website),
+    },
+    hideWatermark: branding.hideWatermark === true || branding.hide_watermark === true || settings.hideWatermark === true || settings.hide_powered_by === true,
+  };
+}
+
 function normalizeSystemType(value = '') {
   const type = String(value || '').toLowerCase().replace(/[_\s]+/g, '-');
   if (type.includes('ecommerce') || type.includes('shop') || type.includes('store')) return 'ecommerce';
@@ -73,11 +114,15 @@ function normalizeSystemType(value = '') {
 function shouldShowPoweredBy(tenant) {
   const settings = tenant?.settings || {};
   const branding = tenant?.branding || {};
-  if (branding.hideBratstvoBranding === true || branding.hide_bratstvo_branding === true) return false;
   if (settings.show_powered_by === true) return true;
-  if (settings.show_powered_by === false || settings.hide_powered_by === true) return false;
   const plan = String(tenant?.plan || '').toLowerCase();
-  return !['business', 'pro', 'elite', 'elite custom'].some(name => plan.includes(name));
+  const yearly = plan.includes('year') || String(settings.billing_cycle || settings.billingCycle || '').toLowerCase().includes('year');
+  const canHide = ['business', 'pro', 'elite', 'elite custom'].some(name => plan.includes(name));
+
+  if (!canHide) return true;
+  if (yearly) return false;
+  if (branding.hideWatermark === true || branding.hide_watermark === true || branding.hideBratstvoBranding === true || settings.hideWatermark === true || settings.hide_powered_by === true) return false;
+  return true;
 }
 
 function getClientPublicPreset(systemType, businessName) {
@@ -270,6 +315,8 @@ function ClientShell({ children }) {
   const { tenant, clientSlug, businessSlug } = useClient();
   const { setUser } = useAuth();
   const location = useLocation();
+  const brandForm = normalizeBrandingForm(tenant);
+  const logoUrl = tenant?.branding?.logo_url || tenant?.settings?.logo_url || '';
   const slug = clientSlug || businessSlug || tenant?.subdomain || location.pathname.split('/').filter(Boolean)[1] || '';
   const base = `/core/${slug}`;
   const nav = getDashboardMenu(tenant?.systemType).map(([label, path, Icon]) => [
@@ -284,12 +331,12 @@ function ClientShell({ children }) {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--c-page-bg)', color: 'var(--c-text)' }}>
+    <div className="min-h-screen" style={{ '--c-accent': brandForm.primaryColor, '--c-primary': brandForm.primaryColor, background: 'var(--c-page-bg)', color: 'var(--c-text)' }}>
       <header className="sticky top-0 z-40" style={{ background: 'var(--c-nav)', borderBottom: '1px solid var(--c-border)', backdropFilter: 'blur(14px)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <Link to={base} className="flex items-center gap-3 min-w-0">
-            <span className="h-10 w-10 rounded-xl flex items-center justify-center text-sm font-black shrink-0" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
-              {tenantInitials(tenant?.businessName)}
+            <span className="h-10 w-10 rounded-xl flex items-center justify-center overflow-hidden text-sm font-black shrink-0" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+              {logoUrl ? <SafeImage src={logoUrl} fallbackType="logo" className="h-full w-full object-cover" /> : tenantInitials(tenant?.businessName)}
             </span>
             <span className="min-w-0">
               <span className="block text-sm font-black truncate" style={{ color: 'var(--c-text)' }}>{tenant?.businessName}</span>
@@ -347,23 +394,32 @@ export function ClientPublicSite() {
   const { tenant, tenantId } = useClient();
   const branding = tenant?.branding || {};
   const settings = tenant?.settings || {};
+  const brandForm = normalizeBrandingForm(tenant);
   const systemType = normalizeSystemType(tenant?.systemType);
-  const businessName = tenant?.businessName || 'Your business';
+  const businessName = brandForm.businessName || tenant?.businessName || 'Your business';
   const preset = getClientPublicPreset(tenant?.systemType, businessName);
   const Icon = preset.Icon;
-  const primaryColor = branding.primary_color || '#16c47f';
+  const primaryColor = brandForm.primaryColor;
+  const secondaryColor = brandForm.secondaryColor;
+  const backgroundColor = brandForm.backgroundColor;
   const hasCustomContent = Boolean(settings.public_site_ready || settings.website_ready || settings.products?.length || settings.services?.length || settings.menu?.length || settings.trips?.length);
   const showPoweredBy = shouldShowPoweredBy(tenant);
-  const heroTitle = settings.hero_title || (hasCustomContent ? preset.title : businessName);
-  const heroSubtitle = settings.hero_subtitle || (systemType === 'delivery_dispatch'
+  const heroTitle = businessName;
+  const heroSubtitle = brandForm.tagline || settings.hero_subtitle || (systemType === 'delivery_dispatch'
     ? 'Track delivery progress and job updates in one place.'
     : hasCustomContent
       ? preset.subtitle
       : 'Website coming soon.');
-  const primaryLabel = settings.primary_action_label || (systemType === 'delivery_dispatch' ? 'Track Status' : hasCustomContent ? preset.primary : 'Contact');
+  const businessDescription = brandForm.description || settings.business_description || preset.subtitle;
+  const contactHref = whatsappUrl(brandForm.whatsapp) || (brandForm.email ? `mailto:${brandForm.email}` : settings.primary_action_url || '#contact');
+  const contactExternal = /^https?:\/\//i.test(contactHref);
+  const primaryLabel = brandForm.whatsapp ? 'Contact WhatsApp' : settings.primary_action_label || (hasCustomContent ? preset.primary : 'Contact');
   const secondaryLabel = systemType === 'delivery_dispatch' ? 'Staff Login' : 'Login';
   const logoUrl = branding.logo_url || settings.logo_url || '';
   const bannerUrl = branding.banner_url || settings.banner_url || '';
+  const publicBackground = brandForm.backgroundStyle === 'solid'
+    ? backgroundColor
+    : `radial-gradient(circle at 18% 0%, ${primaryColor}33, transparent 34%), radial-gradient(circle at 92% 12%, ${secondaryColor}24, transparent 32%), linear-gradient(180deg, ${backgroundColor} 0%, #07130f 54%, ${backgroundColor} 100%)`;
   const [publicProducts, setPublicProducts] = useState([]);
 
   useEffect(() => {
@@ -386,12 +442,31 @@ export function ClientPublicSite() {
     };
   }, [tenantId]);
 
+  useEffect(() => {
+    if (!logoUrl) return undefined;
+    const selector = "link[rel='icon']";
+    let link = document.querySelector(selector);
+    const previousHref = link?.getAttribute('href') || '/favicon.ico';
+
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'icon');
+      document.head.appendChild(link);
+    }
+
+    link.setAttribute('href', logoUrl);
+
+    return () => {
+      link?.setAttribute('href', previousHref);
+    };
+  }, [logoUrl]);
+
   const displayRows = publicProducts.length
     ? publicProducts.map(item => [item.name, formatMoney(item.price), item.status || 'Available', item.image_url])
     : preset.rows.map(row => [...row, '']);
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--c-page-bg)', color: 'var(--c-text)' }}>
+    <div className="min-h-screen" style={{ background: publicBackground, color: 'var(--c-text)' }}>
       <header className="px-5 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
@@ -436,8 +511,13 @@ export function ClientPublicSite() {
             <p className="text-base md:text-lg leading-relaxed max-w-2xl mb-8" style={{ color: 'var(--c-muted)' }}>
               {heroSubtitle}
             </p>
+            {businessDescription && (
+              <p className="text-sm leading-relaxed max-w-2xl mb-8" style={{ color: 'var(--c-muted)' }}>
+                {businessDescription}
+              </p>
+            )}
             <div className="flex flex-wrap gap-3">
-              <a href={settings.primary_action_url || '#start'} className="rounded-xl px-5 py-3 text-sm font-black" style={{ background: primaryColor, color: '#04130d' }}>
+              <a href={contactHref} target={contactExternal ? '_blank' : undefined} rel={contactExternal ? 'noreferrer' : undefined} className="rounded-xl px-5 py-3 text-sm font-black" style={{ background: primaryColor, color: '#04130d' }}>
                 {primaryLabel}
               </a>
               {systemType === 'delivery_dispatch' ? (
@@ -473,16 +553,27 @@ export function ClientPublicSite() {
 
               <div className="grid gap-4 p-4 md:grid-cols-[1fr_240px]">
                 <div className="rounded-2xl p-4" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
-                  {bannerUrl && (
-                    <div className="mb-4 overflow-hidden rounded-2xl" style={{ aspectRatio: '16 / 7', border: '1px solid var(--c-border)' }}>
+                  <div
+                    className="mb-4 overflow-hidden rounded-2xl"
+                    style={{
+                      aspectRatio: '16 / 7',
+                      border: '1px solid var(--c-border)',
+                      background: `linear-gradient(135deg, ${primaryColor}33, ${secondaryColor}24), ${backgroundColor}`,
+                    }}
+                  >
+                    {bannerUrl ? (
                       <SafeImage src={bannerUrl} fallbackType="banner" className="h-full w-full object-cover" />
-                    </div>
-                  )}
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center px-6 text-center">
+                        <span className="text-sm font-black" style={{ color: 'var(--c-text)' }}>{brandForm.tagline || `${businessName} is getting ready.`}</span>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="mb-4 flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-black" style={{ color: 'var(--c-text)' }}>{settings.preview_title || preset.title}</p>
-                      <p className="mt-1 text-xs" style={{ color: 'var(--c-muted)' }}>{settings.preview_subtitle || preset.eyebrow}</p>
+                      <p className="mt-1 text-xs" style={{ color: 'var(--c-muted)' }}>{brandForm.tagline || settings.preview_subtitle || preset.eyebrow}</p>
                     </div>
                     <span className="rounded-full px-3 py-1 text-[11px] font-black" style={{ background: primaryColor, color: '#04130d' }}>Live</span>
                   </div>
@@ -523,6 +614,14 @@ export function ClientPublicSite() {
                   </div>
                   <p className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>{preset.side[0]}</p>
                   <p className="mt-2 text-3xl font-black" style={{ color: 'var(--c-text)' }}>{preset.side[1]}</p>
+                  <div id="contact" className="mt-5 space-y-2 text-xs" style={{ color: 'var(--c-muted)' }}>
+                    {brandForm.whatsapp && <p>WhatsApp: {brandForm.whatsapp}</p>}
+                    {brandForm.email && <p>Email: {brandForm.email}</p>}
+                    {brandForm.address && <p>Address: {brandForm.address}</p>}
+                    {Object.entries(brandForm.socials).filter(([, value]) => value).map(([label, url]) => (
+                      <a key={label} href={url} target="_blank" rel="noreferrer" className="block capitalize" style={{ color: primaryColor }}>{label}</a>
+                    ))}
+                  </div>
                   {systemType === 'delivery_dispatch' && (
                     <label className="mt-5 block">
                       <span className="mb-2 block text-xs font-bold" style={{ color: 'var(--c-muted)' }}>Track delivery/job</span>
@@ -561,7 +660,7 @@ export function ClientPublicSite() {
       <footer className="px-5 pb-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 border-t pt-5 text-xs sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: 'var(--c-border-subtle)', color: 'var(--c-muted)' }}>
           <span>{businessName} official site</span>
-          {showPoweredBy && <span>Powered by Bratstvo Digital</span>}
+          {showPoweredBy && <span>⚡ Powered by Bratstvo Digital System</span>}
         </div>
       </footer>
     </div>
@@ -658,6 +757,147 @@ function BrandingMediaPanel({ tenant, tenantId }) {
           aspectRatio="16 / 7"
         />
       </div>
+    </section>
+  );
+}
+
+function BrandingSettingsPanel({ tenant, tenantId }) {
+  const [form, setForm] = useState(() => normalizeBrandingForm(tenant));
+  const [message, setMessage] = useState('');
+  const [saving, setSaving] = useState(false);
+  const logoUrl = tenant?.branding?.logo_url || tenant?.settings?.logo_url || '';
+  const bannerUrl = tenant?.branding?.banner_url || tenant?.settings?.banner_url || '';
+
+  useEffect(() => {
+    setForm(normalizeBrandingForm(tenant));
+  }, [tenant]);
+
+  const updateField = (name, value) => setForm(current => ({ ...current, [name]: value }));
+  const updateSocial = (name, value) => setForm(current => ({ ...current, socials: { ...current.socials, [name]: value } }));
+
+  const saveSettings = async event => {
+    event.preventDefault();
+    setSaving(true);
+    setMessage('');
+
+    try {
+      const updated = await updateClientBrandingSettings(tenantId, form);
+      setForm(normalizeBrandingForm({
+        ...tenant,
+        businessName: updated.business_name,
+        branding: updated.branding,
+        settings: updated.settings,
+      }));
+      setMessage('Brand settings saved. Public site branding will refresh on the next page load.');
+    } catch (err) {
+      setMessage(err.message || 'Unable to save brand settings.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <section className="rounded-2xl p-5" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+      <div className="mb-5">
+        <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--c-accent)' }}>Brand settings</p>
+        <h2 className="mt-2 text-2xl font-black" style={{ color: 'var(--c-text)' }}>Website identity and contact details.</h2>
+        <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
+          These fields control the client public website, dashboard preview and contact action.
+        </p>
+      </div>
+
+      {message && <p className="mb-4 rounded-xl px-3 py-2 text-xs" style={{ background: 'var(--c-primary-soft)', color: 'var(--c-text)', border: '1px solid rgba(24,217,138,.24)' }}>{message}</p>}
+
+      <form onSubmit={saveSettings} className="grid gap-5 xl:grid-cols-[1fr_320px]">
+        <div className="grid gap-4">
+          <label className="grid gap-2">
+            <span className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>Business name</span>
+            <input value={form.businessName} onChange={event => updateField('businessName', event.target.value)} className="premium-input px-3 py-3 text-sm outline-none" />
+          </label>
+          <label className="grid gap-2">
+            <span className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>Tagline</span>
+            <input value={form.tagline} onChange={event => updateField('tagline', event.target.value)} className="premium-input px-3 py-3 text-sm outline-none" placeholder="Fast delivery, honest service, real updates." />
+          </label>
+          <label className="grid gap-2">
+            <span className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>Business description</span>
+            <textarea value={form.description} onChange={event => updateField('description', event.target.value)} rows={4} className="premium-input px-3 py-3 text-sm outline-none" placeholder="Describe what this business offers to customers." />
+          </label>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              ['primaryColor', 'Primary color'],
+              ['secondaryColor', 'Secondary color'],
+              ['backgroundColor', 'Background color'],
+            ].map(([name, label]) => (
+              <label key={name} className="grid gap-2">
+                <span className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>{label}</span>
+                <input type="color" value={form[name]} onChange={event => updateField(name, event.target.value)} className="h-12 w-full rounded-xl border-0 bg-transparent p-0" />
+              </label>
+            ))}
+          </div>
+
+          <label className="grid gap-2">
+            <span className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>Background style</span>
+            <select value={form.backgroundStyle} onChange={event => updateField('backgroundStyle', event.target.value)} className="premium-input px-3 py-3 text-sm outline-none">
+              <option value="premium">Premium gradient</option>
+              <option value="solid">Solid color</option>
+            </select>
+          </label>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <label className="grid gap-2">
+              <span className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>WhatsApp number</span>
+              <input value={form.whatsapp} onChange={event => updateField('whatsapp', event.target.value)} className="premium-input px-3 py-3 text-sm outline-none" placeholder="60123456789" />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>Email</span>
+              <input value={form.email} onChange={event => updateField('email', event.target.value)} className="premium-input px-3 py-3 text-sm outline-none" placeholder="hello@business.com" />
+            </label>
+            <label className="grid gap-2">
+              <span className="text-xs font-bold" style={{ color: 'var(--c-muted)' }}>Address</span>
+              <input value={form.address} onChange={event => updateField('address', event.target.value)} className="premium-input px-3 py-3 text-sm outline-none" placeholder="Business address" />
+            </label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {Object.entries(form.socials).map(([name, value]) => (
+              <label key={name} className="grid gap-2">
+                <span className="text-xs font-bold capitalize" style={{ color: 'var(--c-muted)' }}>{name}</span>
+                <input value={value} onChange={event => updateSocial(name, event.target.value)} className="premium-input px-3 py-3 text-sm outline-none" placeholder={`https://${name}.com/business`} />
+              </label>
+            ))}
+          </div>
+
+          <label className="flex items-center gap-3 rounded-xl p-3" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
+            <input type="checkbox" checked={form.hideWatermark} onChange={event => updateField('hideWatermark', event.target.checked)} />
+            <span className="text-sm font-bold" style={{ color: 'var(--c-text)' }}>Hide public watermark when plan allows it</span>
+          </label>
+
+          <button type="submit" disabled={saving} className="rounded-xl px-5 py-3 text-sm font-black disabled:opacity-60" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+            {saving ? 'Saving...' : 'Save brand settings'}
+          </button>
+        </div>
+
+        <div className="rounded-2xl p-4" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
+          <div className="mb-4 overflow-hidden rounded-2xl" style={{ aspectRatio: '16 / 9', background: `linear-gradient(135deg, ${form.primaryColor}44, ${form.secondaryColor}22), ${form.backgroundColor}`, border: '1px solid var(--c-border)' }}>
+            {bannerUrl && <SafeImage src={bannerUrl} fallbackType="banner" className="h-full w-full object-cover" />}
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center overflow-hidden rounded-xl text-sm font-black" style={{ background: form.primaryColor, color: '#04130d' }}>
+              {logoUrl ? <SafeImage src={logoUrl} fallbackType="logo" className="h-full w-full object-cover" /> : tenantInitials(form.businessName)}
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-black" style={{ color: 'var(--c-text)' }}>{form.businessName || 'Business name'}</p>
+              <p className="mt-1 truncate text-xs" style={{ color: 'var(--c-muted)' }}>{form.tagline || 'Business tagline'}</p>
+            </div>
+          </div>
+          <p className="mt-4 text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>{form.description || 'Business description preview appears here.'}</p>
+          <span className="mt-4 inline-flex rounded-xl px-4 py-2 text-xs font-black" style={{ background: form.primaryColor, color: '#04130d' }}>
+            {form.whatsapp ? 'Contact WhatsApp' : 'Contact'}
+          </span>
+          <p className="mt-4 text-[11px]" style={{ color: 'var(--c-muted)' }}>Favicon preview uses the uploaded logo on the public client page.</p>
+        </div>
+      </form>
     </section>
   );
 }
@@ -923,13 +1163,7 @@ function SharedSystemPage({ page, tenant, tenantId }) {
     return (
       <div className="grid gap-5">
         <BrandingMediaPanel tenant={tenant} tenantId={tenantId} />
-        <DashboardPanel title="Brand settings" subtitle="Prepare the public website identity for this business.">
-          <PlaceholderCards items={[
-            ['Primary color', 'Set the main brand color used on buttons, badges and highlights.', Palette],
-            ['Tagline', 'Add a short line that explains the business clearly.', Star],
-            ['Public website settings', 'Control contact button labels, hero text and display preferences.', Settings],
-          ]} />
-        </DashboardPanel>
+        <BrandingSettingsPanel tenant={tenant} tenantId={tenantId} />
       </div>
     );
   }

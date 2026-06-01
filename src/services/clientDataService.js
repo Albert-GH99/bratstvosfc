@@ -107,16 +107,89 @@ export async function updateClientBrandingAsset(clientBusinessId, image, type = 
     [pathKey]: image?.path || '',
   };
 
-  const { data, error } = await db
+  const updatePayload = {
+    branding,
+    settings,
+    [urlKey]: image?.publicUrl || image?.url || '',
+    [pathKey]: image?.path || '',
+  };
+
+  let { data, error } = await db
     .from('tenants')
-    .update({
-      branding,
-      settings,
-      [urlKey]: image?.publicUrl || image?.url || '',
-      [pathKey]: image?.path || '',
-    })
+    .update(updatePayload)
     .eq('id', clientBusinessId)
     .select('id,business_name,subdomain,custom_domain,status,plan,system_type,branding,settings,logo_url,logo_path,banner_url,banner_path,created_at')
+    .single();
+
+  if (error && /logo_url|logo_path|banner_url|banner_path|schema cache|column/i.test(error.message || '')) {
+    const retry = await db
+      .from('tenants')
+      .update({ branding, settings })
+      .eq('id', clientBusinessId)
+      .select('id,business_name,subdomain,custom_domain,status,plan,system_type,branding,settings,created_at')
+      .single();
+
+    data = retry.data;
+    error = retry.error;
+  }
+
+  if (error) throw error;
+  return data;
+}
+
+export async function updateClientBrandingSettings(clientBusinessId, values = {}) {
+  requireClientBusinessId(clientBusinessId);
+  const db = requireSupabase();
+
+  const { data: current, error: currentError } = await db
+    .from('tenants')
+    .select('branding,settings')
+    .eq('id', clientBusinessId)
+    .maybeSingle();
+
+  if (currentError) throw currentError;
+
+  const branding = {
+    ...(current?.branding || {}),
+    business_name: values.businessName || '',
+    tagline: values.tagline || '',
+    description: values.description || '',
+    primary_color: values.primaryColor || '#16c47f',
+    secondary_color: values.secondaryColor || '#7ef6c1',
+    background_color: values.backgroundColor || '#030705',
+    background_style: values.backgroundStyle || 'premium',
+    whatsapp: values.whatsapp || '',
+    email: values.email || '',
+    address: values.address || '',
+    socials: values.socials || {},
+    hideWatermark: Boolean(values.hideWatermark),
+  };
+
+  const settings = {
+    ...(current?.settings || {}),
+    tagline: values.tagline || '',
+    business_description: values.description || '',
+    hero_title: values.businessName || '',
+    hero_subtitle: values.tagline || values.description || '',
+    whatsapp: values.whatsapp || '',
+    email: values.email || '',
+    address: values.address || '',
+    social_links: values.socials || {},
+    hideWatermark: Boolean(values.hideWatermark),
+  };
+
+  const updatePayload = {
+    branding,
+    settings,
+  };
+
+  if (values.businessName) updatePayload.business_name = values.businessName;
+
+  const { data, error } = await db
+    .from('tenants')
+    .update(updatePayload)
+    .eq('id', clientBusinessId)
+    .select('id,business_name,subdomain,custom_domain,status,plan,system_type,branding,settings,created_at')
     .single();
 
   if (error) throw error;

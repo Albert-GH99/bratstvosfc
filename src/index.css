@@ -194,15 +194,23 @@
   --c-noise-opacity: 0.035;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 html {
   background: var(--c-bg);
   scroll-behavior: smooth;
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
   background: var(--c-bg);
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .page-shell {
@@ -215,10 +223,14 @@ body {
   background: var(--c-bg);
   color: var(--c-text);
   isolation: isolate;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 .app-background-base {
   background: #03130f;
+  pointer-events: none;
 }
 
 .app-background-texture {
@@ -228,12 +240,14 @@ body {
   opacity: 0.22;
   mix-blend-mode: soft-light;
   filter: saturate(0.82) contrast(0.88);
+  pointer-events: none;
 }
 
 .app-background-overlay {
   background:
     linear-gradient(180deg, rgba(3, 7, 5, 0.78) 0%, rgba(3, 12, 8, 0.66) 42%, rgba(3, 7, 5, 0.84) 100%),
     radial-gradient(circle at 50% 0%, rgba(24, 217, 138, 0.08), transparent 34rem);
+  pointer-events: none;
 }
 
 .app-background-glow {
@@ -241,6 +255,7 @@ body {
     radial-gradient(circle at 18% 7%, rgba(24, 217, 138, 0.16), transparent 30rem),
     radial-gradient(circle at 86% 18%, rgba(126, 246, 193, 0.08), transparent 28rem);
   opacity: 0.85;
+  pointer-events: none;
 }
 
 .app-background-grid {
