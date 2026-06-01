@@ -119,10 +119,9 @@
 
   body {
     @apply bg-background text-foreground;
-    overscroll-behavior: none;
     background: var(--c-bg);
     color: var(--c-text);
-    min-height: 100vh;
+    min-height: 100%;
     text-rendering: geometricPrecision;
   }
 
@@ -198,6 +197,10 @@ html,
 body,
 #root {
   min-height: 100%;
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  touch-action: pan-y;
 }
 
 html {
@@ -209,8 +212,13 @@ html {
 
 body {
   background: var(--c-bg);
+  position: static;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+[data-scroll-lock="true"] body {
+  overflow: hidden;
 }
 
 .page-shell {

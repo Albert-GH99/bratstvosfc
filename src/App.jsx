@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -139,6 +140,17 @@ function MainRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    if (!import.meta.env.DEV || typeof window === 'undefined') return;
+
+    window.requestAnimationFrame(() => {
+      console.log(
+        'elementsFromPoint(center)',
+        document.elementsFromPoint(window.innerWidth / 2, window.innerHeight / 2),
+      );
+    });
+  }, []);
+
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>

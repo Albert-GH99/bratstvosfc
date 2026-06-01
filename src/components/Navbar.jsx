@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Languages, Menu, Moon, ShieldCheck, Sun, X } from 'lucide-react';
@@ -27,6 +27,20 @@ export default function Navbar() {
   const setupLabel = lang === 'en' ? 'Start Setup' : 'Mula Setup';
 
   const isActive = href => href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (open) {
+      root.dataset.scrollLock = 'true';
+    } else {
+      delete root.dataset.scrollLock;
+    }
+
+    return () => {
+      delete root.dataset.scrollLock;
+    };
+  }, [open]);
 
   return (
     <nav className="sticky left-0 right-0 top-0 z-50 px-4 py-2.5 sm:px-6 md:py-3 lg:px-8">
