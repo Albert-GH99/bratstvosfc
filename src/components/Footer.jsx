@@ -93,7 +93,7 @@ export default function Footer() {
                 ? 'For business owners who want a professional website, order system, booking system or custom digital setup.'
                 : 'Untuk pemilik bisnes yang mahukan website professional, sistem order, sistem booking atau setup digital khas.'}
             </p>
-            <Link to="/admin/signin" className="mt-4 inline-block text-xs font-bold" style={{ color: 'var(--c-muted)' }}>
+            <Link to="/master/signin" className="mt-4 inline-block text-xs font-bold" style={{ color: 'var(--c-muted)' }}>
               Admin
             </Link>
           </div>

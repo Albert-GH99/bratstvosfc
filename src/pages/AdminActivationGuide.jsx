@@ -13,7 +13,7 @@ const adminSteps = [
   'After payment, approve and start build.',
   'Client account is created.',
   'Client receives login email.',
-  'If client uses Bratstvo subdomain, activate clientslug.bratstvosfc.com.',
+  'If client uses Bratstvo path link, prepare bratstvosfc.com/clientslug.',
   'If client uses custom domain, configure domain DNS/hosting.',
 ];
 
@@ -78,8 +78,8 @@ export default function AdminActivationGuide() {
                 Use this page when reviewing setup requests. It keeps operational steps out of the public homepage while documenting what Bratstvo admin and the client need to do.
               </p>
             </div>
-            <PremiumButton to="/admin" variant="secondary" className="px-4 py-3 text-sm">
-              <ArrowLeft size={16} /> Back to admin
+            <PremiumButton to="/master" variant="secondary" className="px-4 py-3 text-sm">
+              <ArrowLeft size={16} /> Back to Master
             </PremiumButton>
           </div>
 
@@ -94,14 +94,14 @@ export default function AdminActivationGuide() {
           </div>
 
           <div className="mt-5 grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
-            <InfoBlock icon={Globe2} title="Netlify Free DNS / subdomain flow">
+            <InfoBlock icon={Globe2} title="Client link and custom domain flow">
               <div className="space-y-3 text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
                 <p>Custom domain availability is checked through the Supabase Edge Function <strong style={{ color: 'var(--c-text)' }}>check-domain-availability</strong>, which calls Spaceship server-side with protected secrets. .my and .com.my can fall back to manual admin confirmation if the API does not support them.</p>
-                <p>Create the client slug first, then manually point the subdomain at Netlify.</p>
+                <p>Create the client slug first. The default public link stays path-based on bratstvosfc.com.</p>
                 <div className="rounded-2xl p-4 font-mono text-xs" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)', color: 'var(--c-text)' }}>
-                  Host: clientslug<br />
-                  Value: gregarious-moxie-22f44a.netlify.app<br />
-                  Domain in Netlify: clientslug.bratstvosfc.com
+                  Public link: bratstvosfc.com/clientslug<br />
+                  Dashboard: bratstvosfc.com/core/clientslug<br />
+                  Custom domain: future/manual setup only
                 </div>
                 <p>After adding the custom domain in Netlify, wait for DNS propagation and SSL readiness before telling the client to share the live link.</p>
               </div>
@@ -110,10 +110,10 @@ export default function AdminActivationGuide() {
             <InfoBlock icon={ServerCog} title="Supabase client activation">
               <div className="grid gap-3">
                 {[
-                  'Client row must include business_name, subdomain/custom_domain, status, plan, system_type, branding and settings.',
-                  'Only active clients should load on wildcard subdomains.',
+                  'Client row must include business_name, client slug/custom_domain, status, plan, system_type, branding and settings.',
+                  'Only active clients should load on public client routes.',
                   'All client product/order/customer/settings queries must filter by the client business id.',
-                  'Onboarding email should point to custom domain login if available, otherwise https://{subdomain}.bratstvosfc.com/login.',
+                  'Onboarding email should point to /login?next=/core/clientslug until custom domain login is manually configured.',
                 ].map(item => (
                   <div key={item} className="flex gap-3 rounded-2xl p-3" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
                     <CheckCircle2 size={16} className="mt-0.5 shrink-0" style={{ color: 'var(--c-accent)' }} />

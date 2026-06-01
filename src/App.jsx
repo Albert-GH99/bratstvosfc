@@ -68,18 +68,9 @@ function MainRoutes() {
 
       <Route path="/login" element={<Login />} />
       <Route path="/master/signin" element={<Login />} />
-      <Route path="/admin/signin" element={<Navigate to={`/login?next=${encodeURIComponent('/master')}`} replace />} />
       <Route path="/signin" element={<Navigate to={`/login?next=${encodeURIComponent('/master')}`} replace />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       {PasswordChangeRoute({ next: '/master' })}
-
-      <Route path="/admin" element={<Navigate to="/master" replace />} />
-      <Route path="/admin/clients" element={<Navigate to="/master/clients" replace />} />
-      <Route path="/admin/requests" element={<Navigate to="/master/requests" replace />} />
-      <Route path="/admin/revenue" element={<Navigate to="/master/revenue" replace />} />
-      <Route path="/admin/analytics" element={<Navigate to="/master/analytics" replace />} />
-      <Route path="/admin/staff" element={<Navigate to="/master/staff" replace />} />
-      <Route path="/admin/activation-guide" element={<Navigate to="/master/activation-guide" replace />} />
 
       <Route element={<AdminRoute unauthenticatedElement={masterLoginRedirect} />}>
         <Route path="/master" element={<Admin />} />

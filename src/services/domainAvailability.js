@@ -54,7 +54,7 @@ export async function checkDomainAvailability(name) {
         price: null,
         currency: null,
         status: 'error',
-        message: 'Domain tak dapat disemak sekarang. Cuba lagi atau pilih subdomain Bratstvo dahulu.',
+        message: 'Domain tak dapat disemak sekarang. Cuba lagi atau pilih link path Bratstvo dahulu.',
       })),
     };
   }

@@ -180,7 +180,7 @@ export default function Navbar() {
                   Login
                 </Link>
                 <Link
-                  to="/admin/signin"
+                  to="/master/signin"
                   onClick={() => setOpen(false)}
                   className="inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-xs font-black"
                   style={{ color: 'var(--c-muted)' }}

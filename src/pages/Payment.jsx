@@ -29,7 +29,7 @@ export default function Payment() {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
-  const canUpload = invoice && ['awaiting_payment', 'payment_rejected'].includes(invoice.payment_status);
+  const canUpload = invoice && ['awaiting_payment', 'payment_pending', 'payment_rejected'].includes(invoice.payment_status);
 
   useEffect(() => {
     const loadInvoice = async () => {
@@ -89,7 +89,7 @@ export default function Payment() {
             <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Official payment instruction</p>
             <h1 className="text-4xl md:text-5xl font-black mb-4" style={{ color: 'var(--c-text)' }}>Payment after request review</h1>
             <p className="text-sm md:text-base max-w-2xl leading-relaxed" style={{ color: 'var(--c-muted)' }}>
-              Official payment instructions will be sent after your request has been reviewed. Bank transfer, DuitNow QR or a payment link can be issued depending on the confirmed setup amount.
+              Official payment instructions will be sent after your request has been reviewed. Manual bank transfer and DuitNow QR are supported first. WhatsApp is only a secondary support channel.
             </p>
           </div>
 

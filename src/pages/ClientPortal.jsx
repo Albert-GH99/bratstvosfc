@@ -547,7 +547,7 @@ export function ClientPublicSite() {
                 <span className="h-3 w-3 rounded-full bg-green-400" />
                 <div className="ml-3 flex min-w-0 flex-1 items-center gap-2 rounded-full px-3 py-1.5 text-xs" style={{ background: 'var(--c-input-bg)', color: 'var(--c-muted)' }}>
                   <Search size={13} />
-                  <span className="truncate">{tenant?.customDomain || `${tenant?.subdomain || 'client'}.bratstvosfc.com`}</span>
+                  <span className="truncate">{tenant?.customDomain || `bratstvosfc.com/${tenant?.subdomain || 'client'}`}</span>
                 </div>
               </div>
 
@@ -1067,13 +1067,51 @@ function PlaceholderCards({ items }) {
   );
 }
 
+function SafeDraftForm({ title, fields, buttonLabel = 'Save draft' }) {
+  const initial = Object.fromEntries(fields.map(field => [field, '']));
+  const [form, setForm] = useState(initial);
+  const [saved, setSaved] = useState(false);
+
+  const submit = event => {
+    event.preventDefault();
+    setSaved(true);
+  };
+
+  return (
+    <DashboardPanel title={title} subtitle="Placeholder-safe form. Data is not written until the matching table is connected.">
+      <form onSubmit={submit} className="grid gap-3 md:grid-cols-2">
+        {fields.map(field => (
+          <label key={field} className="block">
+            <span className="mb-2 block text-xs font-bold" style={{ color: 'var(--c-muted)' }}>{field}</span>
+            <input
+              value={form[field]}
+              onChange={event => {
+                setSaved(false);
+                setForm(current => ({ ...current, [field]: event.target.value }));
+              }}
+              className="premium-input w-full px-3 py-3 text-sm outline-none"
+              placeholder={field}
+            />
+          </label>
+        ))}
+        <div className="md:col-span-2 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+            <CheckCircle2 size={15} /> {buttonLabel}
+          </button>
+          {saved && <p className="text-xs" style={{ color: 'var(--c-muted)' }}>Draft captured locally for this screen.</p>}
+        </div>
+      </form>
+    </DashboardPanel>
+  );
+}
+
 function BusinessProfilePanel({ tenant }) {
   return (
     <aside className="rounded-xl p-5" style={{ background: 'var(--c-surface-strong)', border: '1px solid var(--c-border)', boxShadow: 'var(--c-shadow)' }}>
       <p className="text-xs font-black uppercase tracking-widest mb-3" style={{ color: 'var(--c-accent)' }}>Business profile</p>
       {[
         ['Business', tenant?.businessName],
-        ['Website', tenant?.customDomain || tenant?.subdomain || '-'],
+        ['Website', tenant?.customDomain || `/${tenant?.subdomain || 'client'}`],
         ['System', tenant?.systemType || '-'],
         ['Plan', tenant?.plan || '-'],
       ].map(([label, value]) => (
@@ -1172,7 +1210,7 @@ function SharedSystemPage({ page, tenant, tenantId }) {
       <DashboardPanel title="Billing and plan" subtitle="Plan, limits, domain and watermark rules for this client.">
         <PlaceholderCards items={[
           ['Current plan', tenant?.plan || 'Active plan will appear here.', CreditCard],
-          ['Domain status', tenant?.customDomain || tenant?.subdomain || 'Domain status will appear here.', MapPin],
+          ['Domain status', tenant?.customDomain || `/${tenant?.subdomain || 'client'}`, MapPin],
           ['Watermark rules', 'Starter and Growth show public branding. Business, Pro and Elite can hide it.', Settings],
         ]} />
       </DashboardPanel>
@@ -1217,6 +1255,7 @@ function EcommerceContent({ page, products, orders, customers, tenantId, setProd
   if (page === 'products') {
     return (
       <div className="grid gap-5">
+        <SafeDraftForm title="Add product" fields={['Product name', 'Price', 'Stock', 'Status']} buttonLabel="Save product draft" />
         <ProductImagePanel
           tenantId={tenantId}
           products={products}
@@ -1253,9 +1292,12 @@ function DeliveryDispatchContent({ page }) {
   }
   if (page === 'dashboard' || page === 'jobs') {
     return (
-      <DashboardPanel title={page === 'dashboard' ? 'Active job list' : 'Job list'} subtitle="Operational dispatch queue for pickups, drop-offs and runners.">
-        <SimpleTable columns={['Job ID', 'Pickup', 'Drop-off', 'Runner', 'Status', 'Priority', 'Updated']} rows={dispatchJobs} />
-      </DashboardPanel>
+      <div className="grid gap-5">
+        <SafeDraftForm title="Add dispatch job" fields={['Pickup location', 'Drop-off location', 'Priority', 'Customer contact']} buttonLabel="Save job draft" />
+        <DashboardPanel title={page === 'dashboard' ? 'Active job list' : 'Job list'} subtitle="Operational dispatch queue for pickups, drop-offs and runners.">
+          <SimpleTable columns={['Job ID', 'Pickup', 'Drop-off', 'Runner', 'Status', 'Priority', 'Updated']} rows={dispatchJobs} />
+        </DashboardPanel>
+      </div>
     );
   }
   if (page === 'assign-runner') {
@@ -1292,7 +1334,14 @@ function DeliveryDispatchContent({ page }) {
       </div>
     );
   }
-  if (page === 'runners') return <DashboardPanel title="Runners / Staff" subtitle="Runner list and current job assignment."><SimpleTable columns={['Name', 'Phone', 'Vehicle', 'Status', 'Current Job']} rows={runners} /></DashboardPanel>;
+  if (page === 'runners') {
+    return (
+      <div className="grid gap-5">
+        <SafeDraftForm title="Add runner / staff" fields={['Name', 'Phone', 'Vehicle', 'Starting area']} buttonLabel="Save runner draft" />
+        <DashboardPanel title="Runners / Staff" subtitle="Runner list and current job assignment."><SimpleTable columns={['Name', 'Phone', 'Vehicle', 'Status', 'Current Job']} rows={runners} /></DashboardPanel>
+      </div>
+    );
+  }
   if (page === 'job-status') return <DashboardPanel title="Job status board" subtitle="Dispatch kanban by job progress."><PlaceholderCards items={['Assigned', 'On the way', 'Arrived', 'Completed', 'Cancelled'].map(status => [status, 'Jobs in this status will appear here.', Clock3])} /></DashboardPanel>;
   if (page === 'proof-uploads') return <DashboardPanel title="Proof uploads" subtitle="Delivery proof photos and documents."><PlaceholderCards items={[['JOB-1042', 'Photo placeholder - uploaded by Aiman, 10:42 AM', ImageIcon], ['JOB-1041', 'Signature placeholder - uploaded by Nora, 10:18 AM', ImageIcon]]} /></DashboardPanel>;
   if (page === 'reports') return <DashboardPanel title="Reports" subtitle="Daily dispatch and runner performance."><PlaceholderCards items={[['Daily jobs', '26 jobs created today.', BarChart3], ['Completed', '18 jobs completed.', CheckCircle2], ['Delayed', '2 jobs delayed.', Clock3], ['Runner performance', 'Completion and response time by runner.', Users]]} /></DashboardPanel>;
@@ -1301,7 +1350,16 @@ function DeliveryDispatchContent({ page }) {
 
 function BookingContent({ page }) {
   if (page === 'products') return <NotAvailablePanel title="Products not available" message="Booking systems use trips, events, bookings and participants instead of product inventory." />;
-  if (page === 'dashboard' || page === 'trips-events') return <DashboardPanel title="Trips / Events" subtitle="Upcoming trips, events and available slots."><SimpleTable columns={['Trip / Event', 'Date', 'Slots', 'Status']} rows={[['Bukit sunrise trip', 'Saturday', '12 slots', 'Open'], ['Workshop session', 'Wednesday', '6 slots', 'Open']]} /></DashboardPanel>;
+  if (page === 'dashboard' || page === 'trips-events') {
+    return (
+      <div className="grid gap-5">
+        <SafeDraftForm title="Add trip / event" fields={['Trip or event name', 'Date', 'Slot count', 'Deposit amount']} buttonLabel="Save trip draft" />
+        <DashboardPanel title="Trips / Events" subtitle="Upcoming trips, events and available slots.">
+          <SimpleTable columns={['Trip / Event', 'Date', 'Slots', 'Status']} rows={[['Bukit sunrise trip', 'Saturday', '12 slots', 'Open'], ['Workshop session', 'Wednesday', '6 slots', 'Open']]} />
+        </DashboardPanel>
+      </div>
+    );
+  }
   if (page === 'bookings') return <DashboardPanel title="Bookings" subtitle="Booking table and payment status."><SimpleTable columns={['Booking', 'Customer', 'Trip', 'Payment', 'Status']} rows={[['BKG-1021', 'Nadia', 'Bukit sunrise trip', 'Deposit paid', 'Confirmed']]} /></DashboardPanel>;
   if (page === 'participants') return <DashboardPanel title="Participants" subtitle="Participant details for each trip or event."><SimpleTable columns={['Name', 'Phone', 'Trip', 'Check-in']} rows={[['Alya Rahman', '+60 12-441 2929', 'Bukit sunrise trip', 'Pending']]} /></DashboardPanel>;
   if (page === 'calendar') return <DashboardPanel title="Calendar" subtitle="Trip and event calendar placeholder."><div className="grid min-h-[240px] place-items-center rounded-xl text-sm" style={{ background: 'var(--c-input-bg)', border: '1px dashed var(--c-border)', color: 'var(--c-muted)' }}>Calendar view will appear here once schedules are connected.</div></DashboardPanel>;
@@ -1314,8 +1372,22 @@ function AppointmentContent({ page }) {
   if (page === 'products') return <NotAvailablePanel title="Products not available" message="Appointment systems use services, staff and appointment schedules instead of product inventory." />;
   if (page === 'dashboard' || page === 'calendar') return <DashboardPanel title="Calendar view" subtitle="Appointment calendar placeholder."><div className="grid min-h-[240px] place-items-center rounded-xl text-sm" style={{ background: 'var(--c-input-bg)', border: '1px dashed var(--c-border)', color: 'var(--c-muted)' }}>Calendar view will appear here once appointment slots are connected.</div></DashboardPanel>;
   if (page === 'appointments') return <DashboardPanel title="Appointments" subtitle="Appointment table and customer confirmation status."><SimpleTable columns={['Time', 'Customer', 'Service', 'Staff', 'Status']} rows={[['10:30 AM', 'Farah', 'Consultation', 'Izzat', 'Confirmed'], ['2:00 PM', 'Haziq', 'Repair check', 'Mira', 'Pending']]} /></DashboardPanel>;
-  if (page === 'services') return <DashboardPanel title="Services" subtitle="Service list and duration settings."><SimpleTable columns={['Service', 'Duration', 'Price', 'Status']} rows={[['Consultation', '30 min', 'RM80.00', 'Active'], ['Repair check', '45 min', 'RM120.00', 'Active']]} /></DashboardPanel>;
-  if (page === 'staff') return <DashboardPanel title="Staff schedule" subtitle="Staff list, role and availability."><SimpleTable columns={['Name', 'Role', 'Today', 'Status']} rows={[['Izzat', 'Consultant', '9:00 AM - 5:00 PM', 'Available'], ['Mira', 'Technician', '12:00 PM - 8:00 PM', 'Available']]} /></DashboardPanel>;
+  if (page === 'services') {
+    return (
+      <div className="grid gap-5">
+        <SafeDraftForm title="Add service" fields={['Service name', 'Duration', 'Price', 'Staff needed']} buttonLabel="Save service draft" />
+        <DashboardPanel title="Services" subtitle="Service list and duration settings."><SimpleTable columns={['Service', 'Duration', 'Price', 'Status']} rows={[['Consultation', '30 min', 'RM80.00', 'Active'], ['Repair check', '45 min', 'RM120.00', 'Active']]} /></DashboardPanel>
+      </div>
+    );
+  }
+  if (page === 'staff') {
+    return (
+      <div className="grid gap-5">
+        <SafeDraftForm title="Add staff" fields={['Staff name', 'Role', 'Available hours', 'Status']} buttonLabel="Save staff draft" />
+        <DashboardPanel title="Staff schedule" subtitle="Staff list, role and availability."><SimpleTable columns={['Name', 'Role', 'Today', 'Status']} rows={[['Izzat', 'Consultant', '9:00 AM - 5:00 PM', 'Available'], ['Mira', 'Technician', '12:00 PM - 8:00 PM', 'Available']]} /></DashboardPanel>
+      </div>
+    );
+  }
   if (page === 'customers') return <DashboardPanel title="Customers" subtitle="Appointment customer records."><SimpleTable columns={['Name', 'Phone', 'Last Visit', 'Status']} rows={[['Farah', '+60 11-220 1200', 'Today', 'Active']]} /></DashboardPanel>;
   if (page === 'reminders') return <DashboardPanel title="Reminders" subtitle="Appointment confirmations and follow-up reminders."><PlaceholderCards items={[['Confirmation reminders', 'Pending customer confirmations will appear here.', Clock3]]} /></DashboardPanel>;
   return null;
@@ -1325,20 +1397,48 @@ function FoodOrderContent({ page, orders }) {
   if (page === 'products') return <NotAvailablePanel title="Products not available" message="Food Order systems use Menu, Categories, Kitchen Queue and Tables / QR instead of a product dashboard." />;
   if (page === 'dashboard' || page === 'orders') return <DashboardPanel title={page === 'dashboard' ? 'Recent food orders' : 'Orders'} subtitle="Food order status from order received to ready."><SimpleTable columns={['Order', 'Customer', 'Type', 'Status', 'Total']} rows={(orders.length ? orders : [{ id: 'ORD-1008', customer_name: 'Walk-in customer', status: 'Preparing', total_amount: 35 }]).map(item => [item.id, item.customer_name || 'Customer', item.source || 'Pickup', item.status || 'New', formatMoney(item.total_amount)])} /></DashboardPanel>;
   if (page === 'kitchen-queue') return <DashboardPanel title="Kitchen Queue" subtitle="Queue board for kitchen preparation."><PlaceholderCards items={[['New', 'Orders waiting for kitchen.', ShoppingBag], ['Preparing', 'Food currently being prepared.', Utensils], ['Ready', 'Orders ready for pickup or delivery.', CheckCircle2]]} /></DashboardPanel>;
-  if (page === 'menu') return <DashboardPanel title="Menu" subtitle="Menu item table with image placeholder."><SimpleTable columns={['Image', 'Item', 'Category', 'Price', 'Status']} rows={[['Image placeholder', 'Nasi box set', 'Meals', 'RM12.00', 'Active'], ['Image placeholder', 'Iced latte', 'Drinks', 'RM8.00', 'Active']]} /></DashboardPanel>;
+  if (page === 'menu') {
+    return (
+      <div className="grid gap-5">
+        <SafeDraftForm title="Add menu item" fields={['Item name', 'Category', 'Price', 'Preparation time']} buttonLabel="Save menu draft" />
+        <DashboardPanel title="Menu" subtitle="Menu item table with image placeholder."><SimpleTable columns={['Image', 'Item', 'Category', 'Price', 'Status']} rows={[['Image placeholder', 'Nasi box set', 'Meals', 'RM12.00', 'Active'], ['Image placeholder', 'Iced latte', 'Drinks', 'RM8.00', 'Active']]} /></DashboardPanel>
+      </div>
+    );
+  }
   if (page === 'categories') return <DashboardPanel title="Categories" subtitle="Menu categories for customer ordering."><SimpleTable columns={['Category', 'Items', 'Status']} rows={[['Meals', '12', 'Active'], ['Drinks', '8', 'Active']]} /></DashboardPanel>;
   if (page === 'tables-qr') return <DashboardPanel title="Tables / QR" subtitle="Table list and QR code placeholder."><PlaceholderCards items={[['Table A1', 'QR placeholder for dine-in orders.', Receipt], ['Table A2', 'QR placeholder for dine-in orders.', Receipt]]} /></DashboardPanel>;
-  if (page === 'pickup-delivery') return <DashboardPanel title="Pickup / Delivery" subtitle="Pickup and delivery status board."><PlaceholderCards items={[['Pickup queue', 'Orders waiting for pickup.', ShoppingBag], ['Delivery queue', 'Orders assigned to delivery.', Truck]]} /></DashboardPanel>;
+  if (page === 'pickup-delivery') {
+    return (
+      <div className="grid gap-5">
+        <SafeDraftForm title="Pickup / delivery settings" fields={['Pickup hours', 'Delivery radius', 'Delivery fee', 'Ordering status']} buttonLabel="Save settings draft" />
+        <DashboardPanel title="Pickup / Delivery" subtitle="Pickup and delivery status board."><PlaceholderCards items={[['Pickup queue', 'Orders waiting for pickup.', ShoppingBag], ['Delivery queue', 'Orders assigned to delivery.', Truck]]} /></DashboardPanel>
+      </div>
+    );
+  }
   return null;
 }
 
 function CustomContent({ page }) {
   if (page === 'products') return <NotAvailablePanel title="Products not available" message="This custom system is configured around project requests, files, appointments and quotes." />;
-  if (page === 'dashboard' || page === 'project-brief') return <DashboardPanel title="Project brief" subtitle="Summary of the custom workflow and requested features."><PlaceholderCards items={[['Business flow', 'Capture how this business handles customers and operations.', Receipt], ['Required files', 'Documents, references and content will appear here.', ImageIcon]]} /></DashboardPanel>;
+  if (page === 'dashboard' || page === 'project-brief') {
+    return (
+      <div className="grid gap-5">
+        <SafeDraftForm title="Project brief" fields={['Business goal', 'Main workflow', 'Required pages', 'Integration notes']} buttonLabel="Save brief draft" />
+        <DashboardPanel title="Project brief" subtitle="Summary of the custom workflow and requested features."><PlaceholderCards items={[['Business flow', 'Capture how this business handles customers and operations.', Receipt], ['Required files', 'Documents, references and content will appear here.', ImageIcon]]} /></DashboardPanel>
+      </div>
+    );
+  }
   if (page === 'requests') return <DashboardPanel title="Requests" subtitle="Customer or internal request list."><SimpleTable columns={['Request', 'Customer', 'Status', 'Updated']} rows={[['REQ-101', 'Client enquiry', 'Open', 'Today']]} /></DashboardPanel>;
-  if (page === 'files') return <DashboardPanel title="Files" subtitle="Shared files and references."><PlaceholderCards items={[['File library', 'Documents and uploaded files will appear here.', ImageIcon]]} /></DashboardPanel>;
-  if (page === 'appointment') return <DashboardPanel title="Appointment" subtitle="Appointment placeholder for custom workflows."><PlaceholderCards items={[['Appointment request', 'Booking or consultation requests will appear here.', CalendarDays]]} /></DashboardPanel>;
-  if (page === 'quote') return <DashboardPanel title="Quote" subtitle="Quote and estimate placeholder."><PlaceholderCards items={[['Pending quote', 'Quote drafts and approvals will appear here.', Receipt]]} /></DashboardPanel>;
+  if (page === 'files') return <DashboardPanel title="Files / references" subtitle="Shared files and reference upload placeholder."><PlaceholderCards items={[['Reference upload', 'Documents, brand assets and example links will appear here.', ImageIcon], ['File notes', 'Describe what each reference should be used for.', Receipt]]} /></DashboardPanel>;
+  if (page === 'appointment') {
+    return (
+      <div className="grid gap-5">
+        <SafeDraftForm title="Consultation notes" fields={['Meeting date', 'Topic', 'Decision', 'Next action']} buttonLabel="Save notes draft" />
+        <DashboardPanel title="Appointment" subtitle="Appointment placeholder for custom workflows."><PlaceholderCards items={[['Appointment request', 'Booking or consultation requests will appear here.', CalendarDays]]} /></DashboardPanel>
+      </div>
+    );
+  }
+  if (page === 'quote') return <DashboardPanel title="Quote status" subtitle="Quote and estimate placeholder."><PlaceholderCards items={[['Pending quote', 'Quote drafts and approvals will appear here.', Receipt], ['Approved scope', 'Confirmed deliverables will appear here.', CheckCircle2]]} /></DashboardPanel>;
   return null;
 }
 
@@ -1392,7 +1492,7 @@ export function ClientWorkspacePage({ page = 'dashboard' }) {
         setOrders(orderRows);
         setCustomers(customerRows);
       } catch (err) {
-        if (active) setError(err.message || 'Unable to load records.');
+        if (active) setError('Some records are not connected yet. Placeholder tools are still available for this workspace.');
       } finally {
         if (active) setLoading(false);
       }

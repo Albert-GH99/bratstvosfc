@@ -7,10 +7,14 @@ import {
   Copy,
   BarChart3,
   FileCheck2,
+  Globe2,
+  HelpCircle,
+  Layers,
   MessageCircle,
   RefreshCw,
   Save,
   Search,
+  ServerCog,
   Settings,
   ShieldCheck,
   Users,
@@ -21,37 +25,45 @@ import { useAuth } from '../context/AuthContext';
 import { useLang } from '@/context/LanguageContext';
 import { BRATSTVO_DOMAIN } from '../lib/appConfig';
 import { getAccessProfile, roleCapabilities } from '../lib/authProfiles';
+import { emailEnvironmentVariables, emailTemplateList } from '@/config/emailTemplates';
 
 const REQUEST_COLUMNS = '*';
 
-const filters = ['all', 'pending', 'approved', 'rejected'];
-const adminSections = ['Overview', 'Setup Requests', 'Clients', 'Revenue', 'Analytics', 'Staff', 'Settings'];
+const filters = ['all', 'pending', 'reviewed', 'payment_pending', 'paid', 'approved', 'rejected'];
+const adminSections = ['Overview', 'Setup Requests', 'Clients', 'Payments', 'Plans', 'Revenue', 'Domains', 'Support', 'Staff', 'Settings'];
 
 const sectionRoutes = {
-  Overview: '/admin',
-  'Setup Requests': '/admin/requests',
-  Clients: '/admin/clients',
-  Revenue: '/admin/revenue',
-  Analytics: '/admin/analytics',
-  Staff: '/admin/staff',
-  Settings: '/admin',
+  Overview: '/master',
+  'Setup Requests': '/master/requests',
+  Clients: '/master/clients',
+  Payments: '/master',
+  Plans: '/master',
+  Revenue: '/master/revenue',
+  Domains: '/master',
+  Support: '/master',
+  Staff: '/master/staff',
+  Settings: '/master',
 };
 
 function sectionFromPath(pathname) {
   const path = pathname.toLowerCase();
   if (path.endsWith('/clients')) return 'Clients';
   if (path.endsWith('/requests')) return 'Setup Requests';
+  if (path.endsWith('/payments')) return 'Payments';
+  if (path.endsWith('/plans')) return 'Plans';
   if (path.endsWith('/revenue')) return 'Revenue';
-  if (path.endsWith('/analytics')) return 'Analytics';
+  if (path.endsWith('/domains')) return 'Domains';
+  if (path.endsWith('/support')) return 'Support';
   if (path.endsWith('/staff')) return 'Staff';
+  if (path.endsWith('/settings')) return 'Settings';
   return 'Overview';
 }
 
 const copy = {
   en: {
-    badge: 'Admin dashboard',
-    title: 'Setup requests',
-    subtitle: 'Review incoming setup requests and update approval, payment and request notes.',
+    badge: 'Master HQ',
+    title: 'Bratstvo internal control center',
+    subtitle: 'Manage setup requests, clients, manual payments, plans, domains, support and operating status from one place.',
     listTitle: 'Client setup requests',
     listSub: 'Latest public setup submissions',
     search: 'Search business, owner, phone, email, request ID',
@@ -79,9 +91,9 @@ const copy = {
     whatsapp: 'WhatsApp Client',
   },
   my: {
-    badge: 'Admin dashboard',
-    title: 'Setup requests',
-    subtitle: 'Semak setup request dan update approval, payment dan nota.',
+    badge: 'Master HQ',
+    title: 'Bratstvo internal control center',
+    subtitle: 'Urus setup request, client, payment manual, plan, domain, support dan status operasi dari satu tempat.',
     listTitle: 'Client setup requests',
     listSub: 'Permintaan setup terkini',
     search: 'Cari bisnes, owner, phone, email, request ID',
@@ -119,7 +131,7 @@ function formatDate(value) {
 }
 
 function statusColor(status) {
-  if (status === 'approved' || status === 'paid' || status === 'sent') return 'var(--c-accent)';
+  if (['approved', 'paid', 'sent', 'live', 'reviewed'].includes(status)) return 'var(--c-accent)';
   return 'var(--c-muted)';
 }
 
@@ -157,6 +169,26 @@ function businessSlug(businessName) {
     .replace(/^$/, 'client');
 }
 
+function requestSlug(request) {
+  return cleanDomain(request?.client_slug || request?.slug || request?.subdomain || businessSlug(request?.business_name));
+}
+
+function publicPath(request) {
+  return `/${requestSlug(request)}`;
+}
+
+function dashboardPath(request) {
+  return `/core/${requestSlug(request)}`;
+}
+
+function publicLink(request) {
+  return `${BRATSTVO_DOMAIN}${publicPath(request)}`;
+}
+
+function sensitiveValue(value, canSeeSensitive) {
+  return canSeeSensitive ? displayValue(value) : 'Owner only';
+}
+
 function cleanDomain(value) {
   return String(value || '')
     .trim()
@@ -170,7 +202,7 @@ function resolveClientWebsite(request, draft = {}) {
   const customDomain = cleanDomain(draft.custom_domain ?? request.custom_domain);
 
   if (customDomain) return customDomain;
-  return `${businessSlug(request.business_name)}.${BRATSTVO_DOMAIN}`;
+  return publicLink(request);
 }
 
 function billingPlanLabel(value) {
@@ -183,7 +215,7 @@ function billingPlanLabel(value) {
 }
 
 function domainTypeLabel(value) {
-  return value === 'custom_domain' ? 'Custom domain' : 'Bratstvo subdomain';
+  return value === 'custom_domain' ? 'Custom domain' : 'Bratstvo path link';
 }
 
 function websiteStatusLabel(value) {
@@ -250,6 +282,7 @@ export default function Admin() {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const capabilities = accessProfile?.capabilities || roleCapabilities('client');
+  const canSeeSensitive = Boolean(capabilities.fullAccess);
 
   const stats = useMemo(() => {
     const pending = requests.filter(item => item.status === 'pending').length;
@@ -257,7 +290,7 @@ export default function Admin() {
     const rejected = requests.filter(item => item.status === 'rejected').length;
     const paid = requests.filter(item => item.payment_status === 'paid').length;
     const unpaid = requests.filter(item => item.payment_status === 'unpaid').length;
-    const totalPaid = requests.reduce((sum, item) => sum + amount(item.amount_paid), 0);
+    const totalPaid = capabilities.canViewRevenue ? requests.reduce((sum, item) => sum + amount(item.amount_paid), 0) : 0;
 
     return [
       ['Pending', pending, Clock3],
@@ -265,9 +298,9 @@ export default function Admin() {
       ['Rejected', rejected, XCircle],
       ['Paid', paid, CheckCircle2],
       ['Unpaid', unpaid, Banknote],
-      ['Revenue', formatMoney(totalPaid), FileCheck2],
+      ['Revenue', capabilities.canViewRevenue ? formatMoney(totalPaid) : 'Owner only', FileCheck2],
     ];
-  }, [requests]);
+  }, [capabilities.canViewRevenue, requests]);
 
   const revenueStats = useMemo(() => {
     const approvedOrPaid = requests.filter(item => item.status === 'approved' || item.payment_status === 'paid');
@@ -294,11 +327,37 @@ export default function Admin() {
 
   const approvedClients = useMemo(() => requests.filter(item => item.status === 'approved'), [requests]);
 
+  const paymentRows = useMemo(
+    () => requests.filter(item => item.payment_status || amount(item.total_amount) || amount(item.balance_amount)),
+    [requests],
+  );
+
+  const planRows = useMemo(() => {
+    const counts = new Map();
+    requests.forEach(request => {
+      const plan = billingPlanLabel(field(request, 'billing_plan', 'plan_name'));
+      counts.set(plan, (counts.get(plan) || 0) + 1);
+    });
+    return Array.from(counts, ([plan, count]) => ({ plan, count }));
+  }, [requests]);
+
+  const domainRows = useMemo(
+    () => requests.filter(item => item.domain_type || item.custom_domain || item.requested_full_domain || item.client_website),
+    [requests],
+  );
+
+  const supportRows = useMemo(
+    () => requests.filter(item => item.notes || item.admin_note || item.admin_notes || item.whatsapp || item.phone),
+    [requests],
+  );
+
   const filteredRequests = useMemo(() => {
     const searchText = query.trim().toLowerCase();
 
     return requests.filter(request => {
-      const matchesFilter = filter === 'all' || request.status === filter;
+      const statusValue = String(request.status || 'pending').toLowerCase();
+      const paymentValue = String(request.payment_status || '').toLowerCase();
+      const matchesFilter = filter === 'all' || statusValue === filter || paymentValue === filter;
       const haystack = [
         request.business_name,
         request.owner_name,
@@ -440,7 +499,7 @@ export default function Admin() {
     updateRequest(
       request,
       generateClientLinkUpdates(request),
-      'Proposed client link generated. Website is not live yet until deployment/subdomain setup is completed.',
+      'Proposed client link generated. Website is not live yet until deployment/path setup is completed.',
       'client-link',
     );
   };
@@ -593,8 +652,11 @@ You will be required to change your password after first login.`;
               const hidden =
                 (item === 'Setup Requests' && !capabilities.canViewRequests) ||
                 (item === 'Clients' && !capabilities.canViewClients) ||
+                (item === 'Payments' && !capabilities.canViewPayments) ||
+                (item === 'Plans' && !capabilities.canViewPlans) ||
                 (item === 'Revenue' && !capabilities.canViewRevenue) ||
-                (item === 'Analytics' && !capabilities.canViewRevenue) ||
+                (item === 'Domains' && !capabilities.canViewDomains) ||
+                (item === 'Support' && !capabilities.canViewSupport) ||
                 (item === 'Staff' && !capabilities.canManageStaff) ||
                 (item === 'Settings' && !capabilities.canManageSettings);
               if (hidden) return null;
@@ -603,7 +665,6 @@ You will be required to change your password after first login.`;
                   key={item}
                   onClick={() => {
                     setSection(item);
-                    navigate(sectionRoutes[item] || '/admin');
                   }}
                   className="shrink-0 rounded-xl px-4 py-3 text-xs font-black"
                   style={{
@@ -629,11 +690,12 @@ You will be required to change your password after first login.`;
           </div>
 
           {section === 'Overview' && (
-            <div className="grid lg:grid-cols-3 gap-4 mb-8">
+            <div className="grid lg:grid-cols-4 gap-4 mb-8">
               {[
                 ['Requests ready for review', requests.filter(item => item.status === 'pending').length, Clock3],
                 ['Approved clients', approvedClients.length, Users],
-                ['Email automation', requests.some(item => item.client_email_sent) ? 'Active' : 'Not confirmed', MessageCircle],
+                ['Manual payments', paymentRows.filter(item => item.payment_status !== 'paid').length, Banknote],
+                ['System status', supabase ? 'Supabase connected' : 'Supabase missing', ServerCog],
               ].map(([label, value, Icon]) => (
                 <div key={label} className="rounded-2xl p-6" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
                   <Icon size={20} className="mb-4" style={{ color: 'var(--c-accent)' }} />
@@ -656,22 +718,6 @@ You will be required to change your password after first login.`;
             </div>
           )}
 
-          {section === 'Analytics' && capabilities.canViewRevenue && (
-            <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-              {[
-                ['Approval rate', `${requests.length ? Math.round((approvedClients.length / requests.length) * 100) : 0}%`, BarChart3],
-                ['Pending follow-up', requests.filter(item => item.status === 'pending').length, Clock3],
-                ['Live websites', requests.filter(item => ['live', 'custom_domain_live'].includes(item.client_website_status)).length, CheckCircle2],
-              ].map(([label, value, Icon]) => (
-                <div key={label} className="rounded-2xl p-6" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
-                  <Icon size={20} className="mb-4" style={{ color: 'var(--c-accent)' }} />
-                  <p className="text-xs font-bold mb-2" style={{ color: 'var(--c-muted)' }}>{label}</p>
-                  <p className="text-2xl font-black" style={{ color: 'var(--c-text)' }}>{value}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
           {section === 'Clients' && capabilities.canViewClients && (
             <div className="rounded-2xl p-5 mb-8" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
               <h2 className="font-black mb-4" style={{ color: 'var(--c-text)' }}>Clients</h2>
@@ -679,11 +725,100 @@ You will be required to change your password after first login.`;
                 {approvedClients.map(client => (
                   <div key={client.id || client.request_id} className="rounded-xl p-4" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
                     <p className="font-black mb-2" style={{ color: 'var(--c-text)' }}>{displayValue(client.business_name)}</p>
-                    <p className="text-xs mb-1" style={{ color: 'var(--c-muted)' }}>{displayValue(client.email)}</p>
-                    <p className="text-xs" style={{ color: 'var(--c-muted)' }}>{websiteStatusLabel(client.client_website_status)}</p>
+                    {[
+                      ['Slug', requestSlug(client)],
+                      ['System', field(client, 'selected_system', 'system_name') || client.system_type],
+                      ['Plan', field(client, 'billing_plan', 'plan_name')],
+                      ['Status', client.status || 'approved'],
+                      ['Created', formatDate(client.created_at)],
+                      ['Public', publicPath(client)],
+                      ['Dashboard', dashboardPath(client)],
+                    ].map(([label, value]) => (
+                      <div key={label} className="flex justify-between gap-4 py-1.5 text-xs" style={{ color: 'var(--c-muted)' }}>
+                        <span>{label}</span>
+                        <span className="font-black text-right" style={{ color: 'var(--c-text)' }}>{displayValue(value)}</span>
+                      </div>
+                    ))}
                   </div>
                 ))}
                 {approvedClients.length === 0 && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>No approved clients yet.</p>}
+              </div>
+            </div>
+          )}
+
+          {section === 'Payments' && capabilities.canViewPayments && (
+            <div className="rounded-2xl p-5 mb-8" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+              <h2 className="font-black mb-2" style={{ color: 'var(--c-text)' }}>Payment review</h2>
+              <p className="mb-5 text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>Manual bank transfer, DuitNow QR and receipt checks stay owner-only until real payment RBAC is implemented.</p>
+              <div className="grid gap-3">
+                {paymentRows.map(request => (
+                  <div key={request.id || request.request_id} className="grid gap-3 rounded-xl p-4 lg:grid-cols-[1fr_1fr_auto]" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
+                    <div>
+                      <p className="font-black" style={{ color: 'var(--c-text)' }}>{displayValue(request.request_id)}</p>
+                      <p className="mt-1 text-xs" style={{ color: 'var(--c-muted)' }}>{displayValue(request.business_name)}</p>
+                    </div>
+                    <div className="grid gap-1 text-xs" style={{ color: 'var(--c-muted)' }}>
+                      <span>Amount: <strong style={{ color: 'var(--c-text)' }}>{formatMoney(request.total_amount || request.setup_price)}</strong></span>
+                      <span>Status: <strong style={{ color: statusColor(request.payment_status) }}>{request.payment_status || 'pending_review'}</strong></span>
+                      <span>Receipt: <strong style={{ color: 'var(--c-text)' }}>{request.receipt_url ? 'Receipt uploaded' : 'Preview placeholder'}</strong></span>
+                    </div>
+                    <button onClick={() => setPaymentStatus(request, 'paid')} disabled={anyBusy || !capabilities.canManagePayments} className="rounded-xl px-4 py-2 text-xs font-black disabled:opacity-40" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
+                      {actionBusy(request, 'payment-paid') ? 'Updating...' : 'Mark paid'}
+                    </button>
+                  </div>
+                ))}
+                {paymentRows.length === 0 && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>No payment records yet.</p>}
+              </div>
+            </div>
+          )}
+
+          {section === 'Plans' && capabilities.canViewPlans && (
+            <div className="rounded-2xl p-5 mb-8" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+              <h2 className="font-black mb-4" style={{ color: 'var(--c-text)' }}>Plans</h2>
+              <div className="grid gap-3 md:grid-cols-3">
+                {planRows.map(item => (
+                  <div key={item.plan} className="rounded-xl p-4" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
+                    <Layers size={18} className="mb-3" style={{ color: 'var(--c-accent)' }} />
+                    <p className="font-black" style={{ color: 'var(--c-text)' }}>{item.plan}</p>
+                    <p className="mt-2 text-xs" style={{ color: 'var(--c-muted)' }}>{item.count} request/client records</p>
+                  </div>
+                ))}
+                {planRows.length === 0 && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>Plan records will appear after setup requests arrive.</p>}
+              </div>
+            </div>
+          )}
+
+          {section === 'Domains' && capabilities.canViewDomains && (
+            <div className="rounded-2xl p-5 mb-8" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+              <h2 className="font-black mb-4" style={{ color: 'var(--c-text)' }}>Domains</h2>
+              <div className="grid gap-3 md:grid-cols-2">
+                {domainRows.map(request => (
+                  <div key={request.id || request.request_id} className="rounded-xl p-4" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
+                    <Globe2 size={18} className="mb-3" style={{ color: 'var(--c-accent)' }} />
+                    <p className="font-black" style={{ color: 'var(--c-text)' }}>{displayValue(request.business_name)}</p>
+                    <p className="mt-2 text-xs" style={{ color: 'var(--c-muted)' }}>Public link: {publicPath(request)}</p>
+                    <p className="mt-1 text-xs" style={{ color: 'var(--c-muted)' }}>Custom domain: {request.custom_domain || request.requested_full_domain || 'Future option'}</p>
+                    <p className="mt-1 text-xs" style={{ color: 'var(--c-muted)' }}>Status: {request.domain_status || websiteStatusLabel(request.client_website_status)}</p>
+                  </div>
+                ))}
+                {domainRows.length === 0 && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>Domain records will appear after setup requests arrive.</p>}
+              </div>
+            </div>
+          )}
+
+          {section === 'Support' && capabilities.canViewSupport && (
+            <div className="rounded-2xl p-5 mb-8" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+              <h2 className="font-black mb-4" style={{ color: 'var(--c-text)' }}>Support</h2>
+              <div className="grid gap-3 md:grid-cols-2">
+                {supportRows.slice(0, 12).map(request => (
+                  <div key={request.id || request.request_id} className="rounded-xl p-4" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
+                    <HelpCircle size={18} className="mb-3" style={{ color: 'var(--c-accent)' }} />
+                    <p className="font-black" style={{ color: 'var(--c-text)' }}>{displayValue(request.business_name)}</p>
+                    <p className="mt-2 text-xs" style={{ color: 'var(--c-muted)' }}>Contact: {sensitiveValue(request.whatsapp || request.phone, canSeeSensitive)}</p>
+                    <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>{displayValue(request.admin_note || request.admin_notes || request.notes)}</p>
+                  </div>
+                ))}
+                {supportRows.length === 0 && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>Support notes will appear after setup requests arrive.</p>}
               </div>
             </div>
           )}
@@ -701,8 +836,21 @@ You will be required to change your password after first login.`;
             <div className="rounded-2xl p-5 mb-8" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
               <h2 className="font-black mb-3" style={{ color: 'var(--c-text)' }}>Settings</h2>
               <p className="text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>
-                Required automation settings: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, RESEND_API_KEY and SITE_URL=https://bratstvosfc.com.
+                Required future automation settings: {emailEnvironmentVariables.join(', ')}.
               </p>
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                {emailTemplateList.map(template => (
+                  <div key={template.key} className="rounded-xl p-4" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
+                    <p className="text-sm font-black" style={{ color: 'var(--c-text)' }}>{template.subject}</p>
+                    <p className="mt-2 text-xs leading-relaxed" style={{ color: 'var(--c-muted)' }}>{template.preview}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 rounded-xl p-4" style={{ background: 'var(--c-primary-soft)', border: '1px solid rgba(24,217,138,.24)' }}>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--c-text)' }}>
+                  Email templates are structure-only. Resend is not configured here and no real emails are sent from this screen.
+                </p>
+              </div>
             </div>
           )}
 
@@ -781,9 +929,9 @@ You will be required to change your password after first login.`;
 
                     {[
                       ['Owner', request.owner_name],
-                      ['Phone', request.phone],
-                      ['WhatsApp', request.whatsapp],
-                      ['Email', request.email],
+                      ['Phone', sensitiveValue(request.phone, canSeeSensitive)],
+                      ['WhatsApp', sensitiveValue(request.whatsapp, canSeeSensitive)],
+                      ['Email', sensitiveValue(request.email, canSeeSensitive)],
                       ['Industry', request.industry],
                     ].map(([label, value]) => (
                       <div key={label} className="flex justify-between gap-4 text-xs" style={{ color: 'var(--c-muted)' }}>
@@ -800,9 +948,10 @@ You will be required to change your password after first login.`;
                       ['Billing plan', billingPlanLabel(field(request, 'billing_plan', 'plan_name'))],
                       ['Domain type', domainTypeLabel(request.domain_type)],
                       ...(request.domain_type === 'custom_domain' ? [['Custom domain', request.custom_domain]] : []),
-                      ['Client website', request.client_website || resolveClientWebsite(request)],
+                      ['Public link', publicPath(request)],
+                      ['Dashboard link', dashboardPath(request)],
                       ['Website status', websiteStatusLabel(request.client_website_status)],
-                      ['Temp password', request.temp_password ? 'Generated' : 'Not generated'],
+                      ['Temp password', canSeeSensitive ? (request.temp_password ? 'Generated' : 'Not generated') : 'Owner only'],
                       ['Email status', emailStatusLabel(request)],
                     ].map(([label, value]) => (
                       <div key={label} className="flex justify-between gap-4 text-xs" style={{ color: 'var(--c-muted)' }}>
@@ -852,6 +1001,12 @@ You will be required to change your password after first login.`;
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button onClick={() => updateRequest(request, { status: 'reviewed', reviewed_at: new Date().toISOString() }, `Request marked reviewed for ${request.request_id || request.id}.`, 'status-reviewed')} disabled={anyBusy || !capabilities.canEditFollowUp} className="rounded-xl px-4 py-2 text-sm font-black inline-flex items-center justify-center gap-2 disabled:opacity-40" style={{ color: 'var(--c-text)', border: '1px solid var(--c-border)' }}>
+                        <FileCheck2 size={15} /> {actionBusy(request, 'status-reviewed') ? 'Updating...' : 'Mark reviewed'}
+                      </button>
+                      <button onClick={() => updateRequest(request, { payment_status: 'payment_pending' }, `Payment marked pending for ${request.request_id || request.id}.`, 'payment-pending')} disabled={anyBusy || !capabilities.canEditFinance} className="rounded-xl px-4 py-2 text-sm font-black inline-flex items-center justify-center gap-2 disabled:opacity-40" style={{ color: 'var(--c-text)', border: '1px solid var(--c-border)' }}>
+                        <Clock3 size={15} /> {actionBusy(request, 'payment-pending') ? 'Updating...' : 'Payment pending'}
+                      </button>
                       <button onClick={() => approveRequest(request)} disabled={anyBusy || !capabilities.canApprove} className="rounded-xl px-4 py-2 text-sm font-black inline-flex items-center justify-center gap-2 disabled:opacity-40" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>
                         <CheckCircle2 size={15} /> {actionBusy(request, 'status-approved') ? 'Approving...' : t.approveInvite}
                       </button>

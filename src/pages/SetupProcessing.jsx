@@ -7,12 +7,15 @@ const copy = {
   en: {
     label: 'Request submitted',
     title: 'Your setup request is in',
-    text: 'We will review your request and send the official payment instruction by email. If needed, we may also follow up through WhatsApp Business.',
-    status: 'Pending confirmation',
+    text: 'Your request is safely received. Bratstvo will review the scope, then send payment instruction for manual confirmation.',
+    status: 'Pending review',
     paymentTitle: 'Payment instruction',
-    paymentText: 'Official payment link or bank transfer instruction will be sent after your request is reviewed.',
+    paymentText: 'Manual bank transfer, DuitNow QR or official payment link can be sent after review. No payment gateway is active yet.',
     paymentStatus: 'Payment status',
     estimatedAmount: 'Estimated amount',
+    publicLink: 'Future public link',
+    flowTitle: 'Activation flow',
+    flow: ['Request received', 'Payment instruction pending review', 'Bratstvo review', 'Payment confirmed', 'Workspace generated', 'Login/onboarding later'],
     followUp: 'Secondary WhatsApp follow-up',
     home: 'OK, back to home',
     noData: 'No setup data found. Please submit the setup form again.',
@@ -20,12 +23,15 @@ const copy = {
   my: {
     label: 'Request dihantar',
     title: 'Request setup anda sudah diterima',
-    text: 'Kami akan review request anda dan hantar payment instruction rasmi melalui email. Jika perlu, kami juga akan follow up melalui WhatsApp Business.',
-    status: 'Pending confirmation',
+    text: 'Request anda sudah diterima. Bratstvo akan review scope, kemudian hantar payment instruction untuk confirmation manual.',
+    status: 'Pending review',
     paymentTitle: 'Payment instruction',
-    paymentText: 'Payment link rasmi akan dihantar selepas request disemak.',
+    paymentText: 'Bank transfer manual, DuitNow QR atau payment link rasmi boleh dihantar selepas review. Payment gateway belum aktif.',
     paymentStatus: 'Status payment',
     estimatedAmount: 'Anggaran jumlah',
+    publicLink: 'Link public akan datang',
+    flowTitle: 'Flow activation',
+    flow: ['Request diterima', 'Payment instruction pending review', 'Bratstvo review', 'Payment confirmed', 'Workspace dijana', 'Login/onboarding kemudian'],
     followUp: 'Follow-up WhatsApp sekunder',
     home: 'OK, kembali ke Home',
     noData: 'Data setup tidak dijumpai. Sila hantar form setup semula.',
@@ -70,13 +76,28 @@ export default function SetupProcessing() {
                   ['Owner', payload.ownerName],
                   ['System', payload.system],
                   ['Package', payload.package],
-                  ['Domain', payload.requestedDomain || 'Bratstvo subdomain'],
+                  [t.publicLink, payload.publicLink || 'bratstvosfc.com/client'],
+                  ['Custom domain', payload.requestedDomain || 'Future option'],
                 ].map(([key, value]) => (
                   <div key={key} className="flex justify-between gap-4 py-2" style={{ borderBottom: '1px solid var(--c-border-subtle)' }}>
                     <span className="text-xs" style={{ color: 'var(--c-muted)' }}>{key}</span>
                     <span className="text-xs font-black text-right" style={{ color: 'var(--c-text)' }}>{value}</span>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {payload && (
+              <div className="mb-7 rounded-2xl p-5" style={{ background: 'var(--c-bg)', border: '1px solid var(--c-border)' }}>
+                <p className="mb-4 text-sm font-black" style={{ color: 'var(--c-text)' }}>{t.flowTitle}</p>
+                <div className="grid gap-2 md:grid-cols-3">
+                  {t.flow.map((item, index) => (
+                    <div key={item} className="rounded-xl p-3" style={{ background: index === 0 ? 'var(--c-primary-soft)' : 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+                      <p className="text-[11px] font-black" style={{ color: 'var(--c-accent)' }}>Step {index + 1}</p>
+                      <p className="mt-1 text-xs font-bold leading-relaxed" style={{ color: 'var(--c-text)' }}>{item}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 

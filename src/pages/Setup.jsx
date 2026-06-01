@@ -127,20 +127,20 @@ const copy = {
     monthly: 'Monthly',
     yearly: 'Yearly',
     domainTitle: 'Domain option',
-    domainSubdomain: 'Bratstvo subdomain',
-    domainCustom: 'Custom domain from RM125/year',
+    domainSubdomain: 'Bratstvo path link',
+    domainCustom: 'Future custom domain from RM125/year',
     customDomain: 'Your domain',
     domainName: 'Business/domain name',
-    domainHint: 'If you buy a custom domain, customers see a link like bisnesanda.com. If not, the system still runs on a Bratstvo subdomain such as bisnesanda.bratstvosfc.com.',
+    domainHint: 'Launch link stays path-based first: bratstvosfc.com/bisnesanda. Custom domain is a future/Business yearly option and will not be automated yet.',
     domainPriceNote: 'Final price depends on selected extension.',
     domainCheckNote: 'Initial check only. Domain will be confirmed again before purchase.',
     domainAdminMessage: 'Availability will be confirmed before purchase.',
-    domainCheckError: 'Domain could not be checked right now. Try again or use a Bratstvo subdomain first.',
+    domainCheckError: 'Domain could not be checked right now. Try again or use a Bratstvo path link first.',
     checkDomain: 'Check domain',
     checkingDomain: 'Checking...',
     selectDomain: 'Select',
     selectedDomain: 'Selected domain',
-    subdomainPreview: 'Use Bratstvo subdomain',
+    subdomainPreview: 'Use Bratstvo path link',
     domainAvailable: 'Available',
     domainTaken: 'Taken',
     domainPremium: 'Premium',
@@ -166,7 +166,7 @@ const copy = {
     customQuote: 'Custom quote after review',
     quoteNote: 'Final quote is confirmed after we understand your business needs.',
     maxNote: 'Max 3 systems',
-    paymentInstruction: 'Official payment link/instruction will be sent after your request is reviewed.',
+    paymentInstruction: 'Payment instruction will be sent after Bratstvo reviews your request.',
     submit: 'Submit setup request',
     submitting: 'Submitting...',
     emailError: 'Please enter a valid email address.',
@@ -201,20 +201,20 @@ const copy = {
     monthly: 'Bulanan',
     yearly: 'Tahunan',
     domainTitle: 'Pilihan domain',
-    domainSubdomain: 'Subdomain Bratstvo',
-    domainCustom: 'Custom domain dari RM125/tahun',
+    domainSubdomain: 'Link path Bratstvo',
+    domainCustom: 'Custom domain masa depan dari RM125/tahun',
     customDomain: 'Domain anda',
     domainName: 'Nama bisnes/domain',
-    domainHint: 'Kalau ambil custom domain, customer akan nampak link seperti bisnesanda.com. Kalau tak ambil domain, system masih boleh jalan guna subdomain Bratstvo seperti bisnesanda.bratstvosfc.com.',
+    domainHint: 'Link launch kekal path-based dahulu: bratstvosfc.com/bisnesanda. Custom domain ialah pilihan masa depan/Business yearly dan belum diautomasi.',
     domainPriceNote: 'Harga akhir bergantung pada extension yang dipilih.',
     domainCheckNote: 'Semakan awal sahaja. Domain akan disahkan semula sebelum pembelian.',
     domainAdminMessage: 'Domain akan disahkan sebelum pembelian.',
-    domainCheckError: 'Domain tak dapat disemak sekarang. Cuba lagi atau pilih subdomain Bratstvo dahulu.',
+    domainCheckError: 'Domain tak dapat disemak sekarang. Cuba lagi atau pilih link path Bratstvo dahulu.',
     checkDomain: 'Semak domain',
     checkingDomain: 'Sedang semak...',
     selectDomain: 'Pilih',
     selectedDomain: 'Domain dipilih',
-    subdomainPreview: 'Guna subdomain Bratstvo',
+    subdomainPreview: 'Guna link path Bratstvo',
     domainAvailable: 'Available',
     domainTaken: 'Taken',
     domainPremium: 'Premium',
@@ -240,7 +240,7 @@ const copy = {
     customQuote: 'Custom quote selepas review',
     quoteNote: 'Quote akhir disahkan selepas kami faham keperluan bisnes anda.',
     maxNote: 'Maksimum 3 sistem',
-    paymentInstruction: 'Payment link rasmi akan dihantar selepas request disemak.',
+    paymentInstruction: 'Payment instruction akan dihantar selepas Bratstvo review request anda.',
     submit: 'Hantar setup request',
     submitting: 'Sedang hantar...',
     emailError: 'Sila masukkan alamat e-mel yang sah.',
@@ -295,6 +295,10 @@ function formatMoney(value) {
 
 function isSelectableDomainStatus(status) {
   return ['available', 'premium', 'manual_confirmation_required'].includes(status);
+}
+
+function setupSlug(value) {
+  return normalizeDomainName(value || 'client') || 'client';
 }
 
 function SetupStepper({ steps, current }) {
@@ -392,6 +396,7 @@ export default function Setup() {
   const selectedDomainCheck = form.requestedFullDomain ? domainChecks[form.requestedFullDomain] : null;
   const selectedDomainPricing = getDomainPricing(form.requestedDomainExtension);
   const selectedDomainYearlyPrice = domainAddon && form.requestedFullDomain ? getDomainYearlyPrice(form.requestedDomainExtension) : 0;
+  const pathBasedLink = `bratstvosfc.com/${setupSlug(form.businessName || 'bisnesanda')}`;
 
   const pricing = useMemo(() => {
     const fixedSystems = selectedSystems.filter(system => !isCustomSystem(system) && !hasCustomPackage);
@@ -545,7 +550,7 @@ Notes: ${summary.notes}`;
       `Package: ${selectedPackage.name}`,
       `Subtotal: ${pricing.subtotalLabel}`,
       `Discount: ${Math.round(pricing.discountPercent * 100)}% (${formatMoney(pricing.discountAmount)})`,
-      `Domain add-on: ${domainAddon ? `${formatMoney(selectedDomainYearlyPrice)}/year - ${form.requestedFullDomain || form.customDomain}` : 'No - Bratstvo subdomain'}`,
+      `Domain add-on: ${domainAddon ? `${formatMoney(selectedDomainYearlyPrice)}/year - ${form.requestedFullDomain || form.customDomain}` : `No - ${pathBasedLink}`}`,
       domainAddon ? `Domain status: ${form.domainStatus || 'pending_check'}` : '',
       `Estimated total: ${pricing.totalLabel}`,
       `Payment: Official payment instruction will be sent by email after review.`,
@@ -587,7 +592,7 @@ Notes: ${summary.notes}`;
       notes: [form.notes, pricingNote].filter(Boolean).join('\n\n'),
       status: 'pending',
       payment_status: 'pending_review',
-      payment_method: 'manual_bank',
+      payment_method: 'manual_bank_transfer',
       payment_instruction_status: 'pending_review',
       payment_instruction_sent_at: null,
       receipt_url: null,
@@ -607,9 +612,10 @@ Notes: ${summary.notes}`;
       care: billingPlanLabel(payload.billing_plan, lang),
       notes: form.notes || (lang === 'en' ? 'No notes' : 'Tiada nota'),
       pricing: pricing.totalLabel,
-      paymentStatus: 'Pending confirmation',
+      paymentStatus: 'Pending review',
       paymentInstructionStatus: 'pending_review',
       requestedDomain: domainAddon ? form.requestedFullDomain : '',
+      publicLink: pathBasedLink,
     };
 
     try {
@@ -672,6 +678,7 @@ Notes: ${summary.notes}`;
         paymentStatus: summary.paymentStatus,
         paymentInstructionStatus: summary.paymentInstructionStatus,
         requestedDomain: summary.requestedDomain,
+        publicLink: summary.publicLink,
         whatsappMessage: buildMessage(request, summary),
       };
 
@@ -927,7 +934,7 @@ Notes: ${summary.notes}`;
                       <div className="mt-3 rounded-2xl p-4" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
                         <p className="text-xs font-black" style={{ color: 'var(--c-muted)' }}>{t.subdomainPreview}</p>
                         <p className="mt-1 break-all text-sm font-black" style={{ color: 'var(--c-text)' }}>
-                          {normalizeDomainName(form.businessName || 'bisnesanda') || 'bisnesanda'}.bratstvosfc.com
+                          {pathBasedLink}
                         </p>
                       </div>
                     )}

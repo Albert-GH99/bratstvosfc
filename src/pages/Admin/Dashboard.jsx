@@ -87,11 +87,11 @@ export default function Dashboard() {
   };
 
   if (isAdmin) {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/master" replace />;
   }
 
   if (!user?.id) {
-    return <Navigate to="/login?next=/dashboard" replace />;
+    return <Navigate to="/login?next=/master" replace />;
   }
 
   if (portal?.profile?.must_change_password) {

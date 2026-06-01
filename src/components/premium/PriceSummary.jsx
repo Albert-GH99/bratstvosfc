@@ -23,8 +23,8 @@ export default function PriceSummary({
   const badge = selectedSystems.length >= 3 ? 'Best value' : selectedSystems.length === 2 ? 'Bundle Saver' : 'Max 3 systems';
   const domainPriceLabel = domainAddon && requestedDomain
     ? `RM${Number(domainYearlyPrice || selectedDomainPricing?.sellPrice || 0).toLocaleString()}/year`
-    : 'Bratstvo subdomain';
-  const domainNameLabel = domainAddon && requestedDomain ? requestedDomain : 'Bratstvo subdomain';
+    : 'Bratstvo path link';
+  const domainNameLabel = domainAddon && requestedDomain ? requestedDomain : 'Bratstvo path link';
 
   return (
     <motion.aside
@@ -87,7 +87,7 @@ export default function PriceSummary({
         </div>
         <div className="rounded-xl p-3" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
           <Globe2 size={15} style={{ color: 'var(--c-accent)' }} />
-          <p className="mt-2 text-xs font-black" style={{ color: 'var(--c-text)' }}>{domainAddon ? 'Custom domain' : 'Subdomain'}</p>
+          <p className="mt-2 text-xs font-black" style={{ color: 'var(--c-text)' }}>{domainAddon ? 'Custom domain' : 'Path link'}</p>
           <p className="text-[10px]" style={{ color: 'var(--c-muted)' }}>{domainAddon && selectedDomainPricing ? selectedDomainPricing.label : 'domain'}</p>
         </div>
       </div>

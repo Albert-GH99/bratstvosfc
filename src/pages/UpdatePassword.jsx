@@ -7,7 +7,6 @@ import { useAuth } from '@/context/AuthContext';
 function safeNextPath(value = '') {
   if (!value || typeof value !== 'string') return '';
   if (!value.startsWith('/') || value.startsWith('//')) return '';
-  if (value.startsWith('/admin')) return value.replace(/^\/admin/, '/master') || '/master';
   return value;
 }
 

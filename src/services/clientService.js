@@ -81,6 +81,8 @@ export async function getClientPortalData(user, tenantId) {
   const profile = await getClientByUser(user, tenantId);
 
   if (!profile) {
+    const slug = setupRequest?.client_slug || setupRequest?.subdomain || profile.client_slug || profile.subdomain || 'client';
+
     return {
       profile: null,
       client: null,
@@ -123,7 +125,7 @@ export async function getClientPortalData(user, tenantId) {
         plan_name: setupRequest?.billing_plan || 'Assigned plan',
         status: setupRequest?.client_website_status || 'pending_setup',
         system_url: `https://${profile.client_website}`,
-        dashboard_url: '/dashboard',
+        dashboard_url: `/core/${slug}`,
       }] : [],
       noAccess: false,
     };

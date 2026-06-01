@@ -31,7 +31,7 @@ const copy = {
     monthSuffix: '/month',
     yearSuffix: '/year',
     domainTitle: 'Domain add-on',
-    domainText: 'Custom domain support from RM125/year. .com, .net and .com.my are RM125/year, .my is RM179/year, and .co is RM229/year. Bratstvo subdomain is available when you want to launch faster.',
+    domainText: 'Custom domain support from RM125/year. .com, .net and .com.my are RM125/year, .my is RM179/year, and .co is RM229/year. Bratstvo path links are available when you want to launch faster.',
     compareTitle: 'Compare what your business gets',
     featureLabels: ['Customer page', 'Owner dashboard', 'Customer records', 'Status updates', 'Growth support'],
     faqTitle: 'Questions business owners usually ask',
