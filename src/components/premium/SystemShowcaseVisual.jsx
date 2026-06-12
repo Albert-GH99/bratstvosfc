@@ -41,11 +41,11 @@ const themes = {
   },
   food: {
     icon: Utensils,
-    title: 'Kitchen queue',
+    title: 'F&B operations',
     accent: '#fbbf24',
     hero: 'Nasi Lemak Set',
-    rows: ['Preparing', 'Ready pickup', 'Delivery'],
-    chips: ['Menu', 'Kitchen', 'Pickup'],
+    rows: ['New dine-in', 'Preparing takeaway', 'Ready delivery'],
+    chips: ['QR Order', 'Kitchen', 'Sales'],
   },
   dispatch: {
     icon: Truck,
@@ -218,11 +218,11 @@ function AppointmentVisual({ theme }) {
 function FoodVisual({ theme }) {
   return (
     <div className="relative grid grid-cols-[0.92fr_1.08fr] gap-3">
-      <LiveBadge label="Kitchen updated" accent={theme.accent} className="absolute -right-1 -top-3 z-10" />
+      <LiveBadge label="Order masuk kitchen" accent={theme.accent} className="absolute -right-1 -top-3 z-10" />
       <div className="rounded-2xl p-4" style={{ background: `linear-gradient(135deg, ${theme.accent}33, var(--c-surface))`, border: '1px solid var(--c-border)' }}>
         <Utensils size={22} style={{ color: theme.accent }} />
         <p className="mt-4 text-sm font-black" style={{ color: 'var(--c-text)' }}>{theme.hero}</p>
-        <p className="text-[11px]" style={{ color: 'var(--c-muted)' }}>2 pax - spicy normal</p>
+        <p className="text-[11px]" style={{ color: 'var(--c-muted)' }}>Table A4 - sambal asing</p>
       </div>
       <div className="space-y-2">
         {theme.rows.map((row, index) => (

@@ -57,6 +57,12 @@ const copy = {
     customNeed: 'What do you need?',
     deposit: 'Deposit',
     fullPayment: 'Full payment',
+    paymentOption: 'Payment option',
+    payNow: 'Pay now',
+    payLater: 'Pay later',
+    distance: 'Delivery distance (KM)',
+    deliveryCharge: 'Delivery charge',
+    orderNotes: 'Order notes',
     difficulty: 'Difficulty',
     itinerary: 'Itinerary',
     bring: 'What to bring',
@@ -115,6 +121,12 @@ const copy = {
     customNeed: 'Apa yang anda perlukan?',
     deposit: 'Deposit',
     fullPayment: 'Full payment',
+    paymentOption: 'Pilihan payment',
+    payNow: 'Bayar sekarang',
+    payLater: 'Bayar kemudian',
+    distance: 'Jarak delivery (KM)',
+    deliveryCharge: 'Delivery charge',
+    orderNotes: 'Nota order',
     difficulty: 'Tahap kesukaran',
     itinerary: 'Itinerary',
     bring: 'Apa yang perlu dibawa',
@@ -180,6 +192,9 @@ function ProductFlow({ type, settings, onSubmit, labels, lang }) {
     pickupTime: settings.pickupTimes[0] || '10:00 AM',
     table: 'A1',
     variant: 'Standard',
+    distance: 3,
+    paymentOption: labels.payLater,
+    notes: 'Sambal asing',
   });
   const [confirmation, setConfirmation] = useState('');
   const products = settings.products.filter(item => item.active !== false);
@@ -187,7 +202,10 @@ function ProductFlow({ type, settings, onSubmit, labels, lang }) {
   const set = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
   const setQty = (item, change) => setCart(prev => ({ ...prev, [item.id]: Math.max(0, (prev[item.id] || 0) + change) }));
   const lines = products.map(item => ({ ...item, qty: cart[item.id] || 0 })).filter(item => item.qty > 0);
-  const total = lines.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const itemTotal = lines.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const isDelivery = type === 'food' && form.fulfilment === labels.delivery;
+  const deliveryCharge = isDelivery ? (form.distance <= 5 ? 5 : 5 + (form.distance - 5)) : 0;
+  const total = itemTotal + deliveryCharge;
   const fulfilmentOptions = type === 'qr'
     ? []
     : type === 'food'
@@ -199,8 +217,8 @@ function ProductFlow({ type, settings, onSubmit, labels, lang }) {
     const id = createSubmissionId(type === 'qr' ? 'QR' : 'ORD');
     const itemSummary = lines.map(item => `${item.qty}x ${item.name}`).join(', ');
     const message = lang === 'my'
-      ? `Hai ${settings.businessName}, order baru ${id}: ${itemSummary}. Jumlah ${formatMoney(total)}. Customer ${form.name}, ${form.phone}.`
-      : `Hi ${settings.businessName}, new order ${id}: ${itemSummary}. Total ${formatMoney(total)}. Customer ${form.name}, ${form.phone}.`;
+      ? `Hai ${settings.businessName}, order baru ${id}: ${itemSummary}. Jumlah ${formatMoney(total)}. ${isDelivery ? `Delivery ${formatMoney(deliveryCharge)} dan full payment diperlukan.` : `Payment: ${form.paymentOption}.`} Customer ${form.name}, ${form.phone}.`
+      : `Hi ${settings.businessName}, new order ${id}: ${itemSummary}. Total ${formatMoney(total)}. ${isDelivery ? `Delivery ${formatMoney(deliveryCharge)} and full payment required.` : `Payment: ${form.paymentOption}.`} Customer ${form.name}, ${form.phone}.`;
 
     onSubmit({
       id,
@@ -208,7 +226,7 @@ function ProductFlow({ type, settings, onSubmit, labels, lang }) {
       status: 'pending',
       createdAt: new Date().toISOString(),
       customer: { name: form.name, phone: form.phone, address: form.address },
-      details: { fulfilment: form.fulfilment, pickupTime: form.pickupTime, table: form.table, variant: form.variant },
+      details: { fulfilment: form.fulfilment, pickupTime: form.pickupTime, table: form.table, variant: form.variant, notes: form.notes, deliveryCharge, paymentStatus: isDelivery ? labels.fullPayment : form.paymentOption },
       items: lines,
       total,
       whatsappMessage: message,
@@ -247,6 +265,9 @@ function ProductFlow({ type, settings, onSubmit, labels, lang }) {
             {type === 'product' && variantOptions.length > 0 && <Select label={labels.variant} value={form.variant} onChange={value => set('variant', value)} options={variantOptions} />}
             {fulfilmentOptions.length > 0 && <Select label={labels.fulfilment} value={form.fulfilment} onChange={value => set('fulfilment', value)} options={fulfilmentOptions} />}
             {settings.pickupEnabled && type !== 'qr' && <Select label={labels.pickupTime} value={form.pickupTime} onChange={value => set('pickupTime', value)} options={settings.pickupTimes} />}
+            {isDelivery && <Field label={labels.distance} value={form.distance} onChange={value => set('distance', Math.max(1, value))} type="number" />}
+            {type === 'food' && <Select label={labels.paymentOption} value={isDelivery ? labels.fullPayment : form.paymentOption} onChange={value => set('paymentOption', value)} options={isDelivery ? [labels.fullPayment] : [labels.payLater, labels.payNow]} />}
+            {type === 'food' && <Field label={labels.orderNotes} value={form.notes} onChange={value => set('notes', value)} />}
           </div>
           <div className="mt-4 space-y-2">
             {lines.length === 0 && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>{labels.emptyCart}</p>}
@@ -256,6 +277,12 @@ function ProductFlow({ type, settings, onSubmit, labels, lang }) {
                 <span>{formatMoney(line.price * line.qty)}</span>
               </div>
             ))}
+            {isDelivery && (
+              <div className="flex justify-between text-xs" style={{ color: 'var(--c-muted)' }}>
+                <span>{labels.deliveryCharge}</span>
+                <span>{formatMoney(deliveryCharge)}</span>
+              </div>
+            )}
             <div className="flex justify-between pt-3 font-black" style={{ color: 'var(--c-text)', borderTop: '1px solid var(--c-border)' }}>
               <span>{labels.total}</span>
               <span style={{ color: 'var(--c-accent)' }}>{formatMoney(total)}</span>

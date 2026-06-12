@@ -2,7 +2,7 @@ import { BarChart3, CheckCircle2, RefreshCw, Trash2, Users } from 'lucide-react'
 import { formatMoney, getPackageAccess } from './demoSystems';
 import { getFeatureList } from '@/data/systemsData';
 
-const statusList = ['pending', 'processing', 'completed', 'rejected'];
+const statusList = ['pending', 'processing', 'ready', 'completed', 'rejected'];
 
 const copy = {
   en: {
@@ -14,6 +14,7 @@ const copy = {
     pending: 'Pending',
     processing: 'Processing',
     completed: 'Completed',
+    ready: 'Ready',
     rejected: 'Rejected',
     revenue: 'Demo total',
     clear: 'Clear demo entries',
@@ -43,6 +44,7 @@ const copy = {
     pending: 'Menunggu',
     processing: 'Dalam proses',
     completed: 'Selesai',
+    ready: 'Sedia',
     rejected: 'Ditolak',
     revenue: 'Jumlah demo',
     clear: 'Kosongkan rekod demo',
@@ -69,7 +71,7 @@ const modulesByType = {
   product: ['Orders', 'Products', 'Customers', 'Chats/WhatsApp', 'Analytics', 'Settings', 'Website/Sales channels'],
   booking: ['Trips/Activities', 'Participants', 'Deposits', 'Slot availability', 'Itinerary editor', 'Reminder settings', 'Booking calendar'],
   appointment: ['Appointment calendar', 'Customer record', 'Staff schedule', 'Service list', 'Appointment status', 'No-show/completed', 'Reminders'],
-  food: ['QR/table settings', 'Table list', 'Menu management', 'Kitchen queue', 'Order status', 'Payment status', 'Open/close ordering'],
+  food: ['Menu and categories', 'QR generator', 'Kitchen queue', 'Dine-in / takeaway / delivery', 'Payment status', 'Costing and stock', 'Sales analytics'],
   dispatch: ['Create job/task', 'Assign staff/runner', 'Live/current location', 'Daily staff movement', 'Proof/photo/note', 'Job history', 'Runner performance'],
   custom: ['Consultation requests', 'Requirement notes', 'Page planning', 'Appointment slots', 'Custom quote status', 'Reference links'],
 };
@@ -224,6 +226,26 @@ function CrmBoard({ submissions, settings, labels, onUpdate }) {
   );
 }
 
+function FoodSalesPreview({ total, submissions, lang }) {
+  const completedTotal = submissions.filter(item => item.status === 'completed').reduce((sum, item) => sum + Number(item.total || 0), 0);
+  const displaySales = total || 2480;
+  const profit = completedTotal ? completedTotal * 0.42 : displaySales * 0.42;
+  const labels = lang === 'my'
+    ? [['Sales hari ini', formatMoney(displaySales)], ['Profit estimate', formatMoney(profit)], ['Best seller', 'Nasi Lemak Ayam'], ['Stock alert', 'Chicken 4.2kg']]
+    : [['Today sales', formatMoney(displaySales)], ['Profit estimate', formatMoney(profit)], ['Best seller', 'Nasi Lemak Ayam'], ['Stock alert', 'Chicken 4.2kg']];
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      {labels.map(([label, value], index) => (
+        <div key={label} className="rounded-2xl p-4" style={{ background: index === 0 ? 'var(--c-primary-soft)' : 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+          <p className="text-xs font-black" style={{ color: 'var(--c-muted)' }}>{label}</p>
+          <p className="mt-2 text-xl font-black" style={{ color: index < 2 ? 'var(--c-accent)' : 'var(--c-text)' }}>{value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function DemoAdminView({ system, state, packageName, onUpdateSubmission, onClearData, lang = 'en' }) {
   const labels = copy[lang] || copy.en;
   const isDispatch = system.sandboxType === 'dispatch';
@@ -269,6 +291,8 @@ export default function DemoAdminView({ system, state, packageName, onUpdateSubm
       </div>
 
       <DashboardModules system={system} type={system.sandboxType} packageName={packageName} labels={labels} lang={lang} />
+
+      {system.sandboxType === 'food' && <FoodSalesPreview total={total} submissions={submissions} lang={lang} />}
 
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-3">
         <div className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>

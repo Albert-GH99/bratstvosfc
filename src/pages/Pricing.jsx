@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, CheckCircle2, ChevronDown, CircleDollarSign, Globe2, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChefHat, ChevronDown, CircleDollarSign, Globe2, QrCode, ShieldCheck, Sparkles, Utensils, X } from 'lucide-react';
 import { getText, oneTimePackages, subscriptionPlans } from '../data/systems';
 import { useLang } from '@/context/LanguageContext';
 import GradientBackground from '@/components/premium/GradientBackground';
@@ -33,6 +33,11 @@ const copy = {
     domainTitle: 'Domain add-on',
     domainText: 'Custom domain support from RM125/year. .com, .net and .com.my are RM125/year, .my is RM179/year, and .co is RM229/year. Bratstvo path links are available when you want to launch faster.',
     compareTitle: 'Compare what your business gets',
+    foodValueEyebrow: 'Food System value',
+    foodValueTitle: 'Why Bratstvo Food System is more berbaloi?',
+    foodValueSub: 'A practical premium starting point for Malaysian food businesses that need ordering, kitchen operations and a branded website without an expensive full POS setup.',
+    typicalPos: 'Typical POS setup',
+    bratstvoFood: 'Bratstvo Food System',
     featureLabels: ['Customer page', 'Owner dashboard', 'Customer records', 'Status updates', 'Growth support'],
     faqTitle: 'Questions business owners usually ask',
     faq: [
@@ -62,6 +67,11 @@ const copy = {
     domainTitle: 'Add-on domain',
     domainText: 'Custom domain bermula RM125/tahun. .com, .net dan .com.my RM125/tahun, .my RM179/tahun, dan .co RM229/tahun. Subdomain Bratstvo boleh digunakan jika anda mahu launch lebih cepat.',
     compareTitle: 'Bandingkan apa yang bisnes anda dapat',
+    foodValueEyebrow: 'Nilai Food System',
+    foodValueTitle: 'Kenapa Bratstvo Food System lebih berbaloi?',
+    foodValueSub: 'Titik mula premium yang practical untuk food business Malaysia yang perlukan ordering, kitchen operation dan website berjenama tanpa setup POS penuh yang mahal.',
+    typicalPos: 'Setup POS biasa',
+    bratstvoFood: 'Bratstvo Food System',
     featureLabels: ['Halaman customer', 'Dashboard owner', 'Rekod customer', 'Status update', 'Growth support'],
     faqTitle: 'Soalan biasa pemilik bisnes',
     faq: [
@@ -156,6 +166,63 @@ function FaqItem({ item, open, onClick }) {
   );
 }
 
+function FoodValueComparison({ labels, lang }) {
+  const typical = lang === 'my'
+    ? ['Setup mahal', 'Bergantung pada hardware', 'Komitmen bulanan', 'Complex untuk seller kecil', 'Customisation terhad', 'Tidak semestinya website-ready']
+    : ['Expensive setup', 'Hardware dependent', 'Monthly commitment', 'Complex for small sellers', 'Less flexible customisation', 'Not always website-ready'];
+  const bratstvo = lang === 'my'
+    ? ['Setup bermula dengan harga mampu milik', 'Website + ordering system included', 'QR order dan kitchen screen included', 'WhatsApp flow dan custom branding', 'Sesuai untuk gerai hingga restoran', 'Mula simple, upgrade kemudian', 'Dibina ikut workflow SME Malaysia']
+    : ['Starts from an affordable setup', 'Website + ordering system included', 'QR order and kitchen screen included', 'WhatsApp flow and custom branding', 'Suitable from stalls to restaurants', 'Start simple and upgrade later', 'Built around Malaysian SME workflow'];
+
+  return (
+    <SectionShell eyebrow={labels.foodValueEyebrow} title={labels.foodValueTitle} subtitle={labels.foodValueSub}>
+      <div className="grid gap-5 lg:grid-cols-2">
+        <PremiumCard className="p-6 md:p-8" hover={false}>
+          <div className="mb-6 flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl" style={{ background: 'var(--c-input-bg)', color: 'var(--c-muted)', border: '1px solid var(--c-border)' }}><CircleDollarSign size={21} /></span>
+            <h3 className="text-2xl font-black" style={{ color: 'var(--c-text)' }}>{labels.typicalPos}</h3>
+          </div>
+          <div className="grid gap-3">
+            {typical.map(item => (
+              <div key={item} className="flex gap-3 rounded-xl p-3 text-sm" style={{ background: 'var(--c-input-bg)', color: 'var(--c-muted)', border: '1px solid var(--c-border)' }}>
+                <X size={15} className="mt-0.5 shrink-0" />
+                {item}
+              </div>
+            ))}
+          </div>
+        </PremiumCard>
+        <PremiumCard glow className="p-6 md:p-8" hover={false}>
+          <div className="mb-6 flex items-center gap-3">
+            <span className="grid h-12 w-12 place-items-center rounded-2xl" style={{ background: 'var(--c-primary-soft)', color: 'var(--c-accent)', border: '1px solid rgba(24,217,138,.3)' }}><Utensils size={21} /></span>
+            <div>
+              <p className="premium-eyebrow">Website + Ordering + Operations</p>
+              <h3 className="mt-1 text-2xl font-black" style={{ color: 'var(--c-text)' }}>{labels.bratstvoFood}</h3>
+            </div>
+          </div>
+          <div className="grid gap-3">
+            {bratstvo.map(item => (
+              <div key={item} className="flex gap-3 rounded-xl p-3 text-sm font-bold" style={{ background: 'var(--c-primary-soft)', color: 'var(--c-text)', border: '1px solid rgba(24,217,138,.22)' }}>
+                <CheckCircle2 size={15} className="mt-0.5 shrink-0" style={{ color: 'var(--c-accent)' }} />
+                {item}
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 grid grid-cols-3 gap-2">
+            {[[QrCode, 'QR order'], [ChefHat, 'Kitchen'], [Sparkles, 'Branding']].map(([Icon, label]) => (
+              <div key={label} className="rounded-xl p-3 text-center text-[10px] font-black" style={{ background: 'var(--c-input-bg)', color: 'var(--c-muted)', border: '1px solid var(--c-border)' }}>
+                <Icon size={15} className="mx-auto mb-2" style={{ color: 'var(--c-accent)' }} />{label}
+              </div>
+            ))}
+          </div>
+          <PremiumButton to="/setup?system=food-order&package=Business" className="mt-6 w-full px-5 py-3 text-sm">
+            {lang === 'my' ? 'Request Food System Setup' : 'Request Food System Setup'} <ArrowRight size={15} />
+          </PremiumButton>
+        </PremiumCard>
+      </div>
+    </SectionShell>
+  );
+}
+
 export default function Pricing() {
   const { lang } = useLang();
   const t = copy[lang] || copy.en;
@@ -238,6 +305,8 @@ export default function Pricing() {
           </div>
         </div>
       </SectionShell>
+
+      <FoodValueComparison labels={t} lang={lang} />
 
       <SectionShell eyebrow={t.faqTitle} title={t.faqTitle}>
         <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">

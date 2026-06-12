@@ -8,6 +8,7 @@ import PremiumButton from '@/components/premium/PremiumButton';
 import PremiumCard from '@/components/premium/PremiumCard';
 import SectionShell from '@/components/premium/SectionShell';
 import SystemShowcaseVisual from '@/components/premium/SystemShowcaseVisual';
+import FoodSystemExperience from '@/components/food/FoodSystemExperience';
 
 const copy = {
   en: {
@@ -169,6 +170,8 @@ export default function Systems() {
           <SystemShowcaseVisual type={featured.demoType} label={selectedPackage} className="mobile-visual-preview" />
         </div>
       </SectionShell>
+
+      <FoodSystemExperience />
 
       <section className="relative px-5 pb-8 md:px-6">
         <div className="mx-auto grid max-w-7xl gap-4 lg:grid-cols-[1fr_auto] lg:items-end">

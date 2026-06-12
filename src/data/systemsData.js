@@ -160,38 +160,38 @@ const systems = [
     name: { en: 'Food Order System', my: 'Food Order System' },
     image: '',
     shortDesc: {
-      en: 'Support dine-in QR orders, online food orders, pickup, delivery, kitchen queues and payment status.',
-      my: 'Untuk QR dine-in, online food order, pickup, delivery, kitchen queue dan status payment.',
+      en: 'A premium F&B operating system with QR ordering, kitchen screen, payment flow, delivery setup, costing and sales tracking.',
+      my: 'Sistem operasi F&B premium dengan QR order, kitchen screen, payment flow, delivery setup, costing dan sales tracking.',
     },
     longDesc: {
-      en: 'A food ordering system for restaurants, cafes and small food sellers. It can run QR table ordering for dine-in or online orders for pickup, delivery and preorder.',
-      my: 'Food Order System untuk restoran, cafe dan penjual makanan kecil. Boleh guna mode QR table order untuk dine-in atau online order untuk pickup, delivery dan preorder.',
+      en: 'Run dine-in, takeaway and delivery orders in one branded system. Customers order from a mobile-first menu, orders move to the kitchen screen, and owners track menu, payment, stock, costing and sales from the admin dashboard.',
+      my: 'Urus order dine-in, takeaway dan delivery dalam satu sistem berjenama. Customer order melalui menu mobile-first, order masuk ke kitchen screen, dan owner boleh track menu, payment, stock, costing serta sales dari admin dashboard.',
     },
     suitableFor: {
-      en: 'Restaurants, cafes, home bakers, caterers, kuih sellers, small food businesses and preorder food sellers.',
-      my: 'Restoran, cafe, home baker, catering, penjual kuih, small food business dan preorder food seller.',
+      en: 'Restaurants, cafes, stalls, home-based food sellers, caterers and cloud kitchens that want to start fast and upgrade later.',
+      my: 'Restoran, cafe, gerai, home-based food seller, catering dan cloud kitchen yang mahu mula cepat dan upgrade kemudian.',
     },
     packages: packageNames,
     featuresByPackage: {
       Starter: {
-        en: ['Menu page', 'Basic cart', 'WhatsApp food order summary'],
-        my: ['Menu page', 'Basic cart', 'WhatsApp food order summary'],
+        en: ['Digital menu', 'Basic checkout', 'WhatsApp order summary', 'Basic admin'],
+        my: ['Digital menu', 'Basic checkout', 'WhatsApp order summary', 'Basic admin'],
       },
       Growth: {
-        en: ['QR table mode', 'Voucher support', 'Pickup and delivery records'],
-        my: ['QR table mode', 'Voucher support', 'Rekod pickup dan delivery'],
+        en: ['QR ordering', 'Kitchen dashboard', 'Takeaway and delivery flow', 'Basic sales summary'],
+        my: ['QR order', 'Kitchen dashboard', 'Flow takeaway dan delivery', 'Sales summary asas'],
       },
       Business: {
-        en: ['Kitchen queue', 'Payment status', 'Open or close ordering setting'],
-        my: ['Kitchen queue', 'Status payment', 'Open atau close ordering setting'],
+        en: ['Full dine-in, takeaway and delivery', 'QR generator and payment flow', 'Promo, voucher and costing', 'Sales analytics'],
+        my: ['Dine-in, takeaway dan delivery penuh', 'QR generator dan payment flow', 'Promo, voucher dan costing', 'Sales analytics'],
       },
       Pro: {
-        en: ['Repeat-order automation', 'Menu availability controls', 'Peak item insights'],
-        my: ['Repeat-order automation', 'Menu availability control', 'Insight item popular'],
+        en: ['Inventory and ingredient costing', 'Advanced reports', 'Multi-staff access', 'Custom automation'],
+        my: ['Inventory dan ingredient costing', 'Report lanjutan', 'Akses multi-staff', 'Custom automation'],
       },
       Elite: {
-        en: ['Custom dine-in or online flow', 'Custom kitchen process', 'Premium operations dashboard'],
-        my: ['Dine-in atau online flow custom', 'Kitchen process custom', 'Dashboard operasi premium'],
+        en: ['Multi-branch operations', 'Advanced custom system', 'Full automation', 'Priority support'],
+        my: ['Operasi multi-branch', 'Advanced custom system', 'Full automation', 'Priority support'],
       },
     },
     demoType: 'food',
@@ -378,6 +378,8 @@ export function getDemoItems(systemId) {
     food: [
       { id: 'nasi', name: 'Nasi Lemak Ayam', price: 12.9, stock: 25 },
       { id: 'kuih', name: 'Kuih Mix Box', price: 18, stock: 15 },
+      { id: 'rice', name: 'Chicken Rice Set', price: 11.9, stock: 22 },
+      { id: 'coffee', name: 'Iced Kopi Premium', price: 6.5, stock: 40 },
     ],
     dispatch: [
       { id: 'pickup', name: 'Staff Movement Job', price: 0, slots: 20 },

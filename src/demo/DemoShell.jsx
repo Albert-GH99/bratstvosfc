@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { LayoutDashboard, MapPin, Settings, Smartphone, ShoppingBag } from 'lucide-react';
+import { ChefHat, CheckCircle2, LayoutDashboard, MapPin, Settings, Smartphone, ShoppingBag, Utensils } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLang } from '@/context/LanguageContext';
 import DemoAdminView from './DemoAdminView';
@@ -22,6 +22,7 @@ const copy = {
     setup: 'Business details',
     customer: 'Customer Page',
     admin: 'Owner Dashboard',
+    kitchen: 'Kitchen Screen',
     dispatchSetup: 'Business Details',
     dispatchStaff: 'Staff/Runner App',
     dispatchAdmin: 'HR/Admin Dashboard',
@@ -40,6 +41,7 @@ const copy = {
     setup: 'Detail bisnes',
     customer: 'Halaman Customer',
     admin: 'Dashboard Owner',
+    kitchen: 'Kitchen Screen',
     dispatchSetup: 'Detail Bisnes',
     dispatchStaff: 'App Staff/Runner',
     dispatchAdmin: 'Dashboard HR/Admin',
@@ -55,7 +57,60 @@ const tabIcons = {
   admin: LayoutDashboard,
   staff: Smartphone,
   tracking: MapPin,
+  kitchen: ChefHat,
 };
+
+function FoodKitchenPreview({ submissions, onUpdate, lang = 'en' }) {
+  const columns = [
+    ['pending', lang === 'my' ? 'Order Baru' : 'New Orders', '#fbbf24'],
+    ['processing', lang === 'my' ? 'Sedang Masak' : 'Preparing', '#60a5fa'],
+    ['ready', lang === 'my' ? 'Sedia' : 'Ready', '#18d98a'],
+  ];
+  const orders = submissions.length ? submissions : [
+    { id: 'D-104', status: 'pending', details: { fulfilment: 'Delivery', notes: 'Sambal asing' }, items: [{ name: 'Nasi Lemak Ayam', qty: 2 }] },
+    { id: 'T-A4', status: 'processing', details: { fulfilment: 'Dine-in QR table', notes: 'Kurang pedas' }, items: [{ name: 'Chicken Rice', qty: 1 }] },
+    { id: 'P-092', status: 'ready', details: { fulfilment: 'Takeaway', notes: '' }, items: [{ name: 'Kuih Mix Box', qty: 1 }] },
+  ];
+
+  return (
+    <div className="grid gap-5">
+      <div>
+        <p className="premium-eyebrow mb-2">Kitchen dashboard</p>
+        <h2 className="text-2xl font-black" style={{ color: 'var(--c-text)' }}>{lang === 'my' ? 'Order masuk terus ke kitchen.' : 'Orders move directly to the kitchen.'}</h2>
+        <p className="mt-2 text-sm leading-relaxed" style={{ color: 'var(--c-muted)' }}>{lang === 'my' ? 'Asingkan dine-in, takeaway dan delivery. Highlight order urgent dan update status dengan satu tap.' : 'Separate dine-in, takeaway and delivery. Highlight urgent orders and update status with one tap.'}</p>
+      </div>
+      <div className="grid gap-4 xl:grid-cols-3">
+        {columns.map(([status, title, color]) => (
+          <div key={status} className="rounded-2xl p-4" style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-black" style={{ color: 'var(--c-text)' }}>{title}</h3>
+              <span className="rounded-full px-2.5 py-1 text-xs font-black" style={{ background: `${color}25`, color }}>{orders.filter(item => item.status === status).length}</span>
+            </div>
+            <div className="grid gap-3">
+              {orders.filter(item => item.status === status).map((order, index) => (
+                <div key={order.id} className="rounded-xl p-3" style={{ background: index === 0 && status === 'pending' ? 'rgba(251,191,36,.12)' : 'var(--c-input-bg)', border: `1px solid ${index === 0 && status === 'pending' ? 'rgba(251,191,36,.45)' : 'var(--c-border)'}` }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-sm font-black" style={{ color: 'var(--c-text)' }}>{order.id}</p>
+                    <span className="text-[10px] font-black" style={{ color }}>{order.details?.fulfilment}</span>
+                  </div>
+                  <p className="mt-2 text-xs" style={{ color: 'var(--c-muted)' }}>{order.items?.map(item => `${item.qty || 1}x ${item.name}`).join(', ')}</p>
+                  {order.details?.notes && <p className="mt-2 rounded-lg p-2 text-[10px] font-black" style={{ background: 'var(--c-surface)', color: 'var(--c-text)' }}>Note: {order.details.notes}</p>}
+                  {submissions.length > 0 && (
+                    <div className="mt-3 flex gap-2">
+                      {status === 'pending' && <button type="button" onClick={() => onUpdate(order.id, { status: 'processing' })} className="rounded-lg px-3 py-2 text-[10px] font-black" style={{ background: '#60a5fa', color: '#04100b' }}><Utensils size={12} className="mr-1 inline" />Preparing</button>}
+                      {status === 'processing' && <button type="button" onClick={() => onUpdate(order.id, { status: 'ready' })} className="rounded-lg px-3 py-2 text-[10px] font-black" style={{ background: 'var(--c-accent)', color: 'var(--c-accent-contrast)' }}>Ready</button>}
+                      {status === 'ready' && <button type="button" onClick={() => onUpdate(order.id, { status: 'completed' })} className="rounded-lg px-3 py-2 text-[10px] font-black" style={{ background: 'var(--c-input-bg)', color: 'var(--c-text)', border: '1px solid var(--c-border)' }}><CheckCircle2 size={12} className="mr-1 inline" />Completed</button>}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function DispatchTrackingPreview({ lang = 'en' }) {
   const labels = lang === 'my'
@@ -132,7 +187,8 @@ export default function DemoShell() {
   }, [requestedPackage]);
 
   useEffect(() => {
-    if (!access.hasAdmin && activeTab === 'admin') setActiveTab(activeSystem?.sandboxType === 'dispatch' ? 'staff' : 'customer');
+    if (!access.hasAdmin && ['admin', 'kitchen'].includes(activeTab)) setActiveTab(activeSystem?.sandboxType === 'dispatch' ? 'staff' : 'customer');
+    if (activeTab === 'kitchen' && activeSystem?.sandboxType !== 'food') setActiveTab('customer');
   }, [access.hasAdmin, activeTab, activeSystem]);
 
   const persist = nextState => {
@@ -182,6 +238,7 @@ export default function DemoShell() {
   };
 
   const isDispatch = activeSystem?.sandboxType === 'dispatch';
+  const isFood = activeSystem?.sandboxType === 'food';
   const tabs = isDispatch
     ? [
       { id: 'setup', label: labels.dispatchSetup },
@@ -189,11 +246,18 @@ export default function DemoShell() {
       { id: 'staff', label: labels.dispatchStaff },
       { id: 'tracking', label: labels.dispatchTracking },
     ]
-    : [
+    : isFood
+      ? [
+        { id: 'setup', label: labels.setup },
+        { id: 'customer', label: labels.customer },
+        { id: 'kitchen', label: labels.kitchen, disabled: !access.hasAdmin },
+        { id: 'admin', label: labels.admin, disabled: !access.hasAdmin },
+      ]
+      : [
       { id: 'setup', label: labels.setup },
       { id: 'customer', label: labels.customer },
       { id: 'admin', label: labels.admin, disabled: !access.hasAdmin },
-    ];
+      ];
 
   if (!requestedId || !activeSystem) return null;
 
@@ -240,7 +304,7 @@ export default function DemoShell() {
             </div>
           </div>
 
-          <div className={`rounded-2xl p-2 mb-5 grid gap-2 ${isDispatch ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-3'}`} style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
+          <div className={`rounded-2xl p-2 mb-5 grid gap-2 ${isDispatch || isFood ? 'grid-cols-2 lg:grid-cols-4' : 'grid-cols-3'}`} style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}>
             {tabs.map(tab => {
               const Icon = tabIcons[tab.id];
               const active = activeTab === tab.id;
@@ -268,6 +332,7 @@ export default function DemoShell() {
           {activeTab === 'admin' && (
             <DemoAdminView system={activeSystem} state={state} packageName={packageName} onUpdateSubmission={updateSubmission} onClearData={resetCurrentDemo} lang={lang} />
           )}
+          {activeTab === 'kitchen' && <FoodKitchenPreview submissions={state.submissions || []} onUpdate={updateSubmission} lang={lang} />}
           {activeTab === 'tracking' && <DispatchTrackingPreview lang={lang} />}
         </div>
       </section>
