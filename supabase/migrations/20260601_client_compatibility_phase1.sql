@@ -1,312 +1,224 @@
-OVERNIGHT SAFE BUILD — BRATSTVO DIGITAL PHASE 4 TO PHASE 7
+-- SUPABASE PHASE 1 - CLIENT COMPATIBILITY MIGRATION ONLY
+--
+-- What this does:
+-- 1. Ensures public.clients can carry the same client-facing runtime data
+--    currently stored in public.tenants.
+-- 2. Backfills public.clients from public.tenants using the same UUID id.
+-- 3. Adds future client_id compatibility columns to products, orders,
+--    customers and tenant_media.
+-- 4. Backfills client_id from tenant_id where client_id is missing.
+-- 5. Adds indexes for future client_id lookups.
+--
+-- What this intentionally does NOT do:
+-- - Does not delete tables.
+-- - Does not rename tables.
+-- - Does not drop tenant_id.
+-- - Does not remove public.tenants.
+-- - Does not remove public.tenant_media.
+-- - Does not rename the tenant-assets storage bucket.
 
-IMPORTANT:
-Work carefully in order.
-Do NOT push Git.
-Do NOT delete files unless clearly unused and listed first.
-Do NOT delete Supabase tables.
-Do NOT drop columns.
-Do NOT rename Supabase tables yet.
-Do NOT change final routes.
-Do NOT reintroduce subdomain/hostname routing.
-Run npm run build after each phase.
-If build fails, STOP and report the error.
+begin;
 
-FINAL ROUTES:
-Public Bratstvo website:
-/ 
+create extension if not exists "pgcrypto";
 
-Bratstvo HQ:
-/master
+create table if not exists public.clients (
+  id uuid primary key default gen_random_uuid(),
+  business_name text not null default '',
+  owner_name text,
+  email text,
+  status text not null default 'active',
+  created_at timestamptz not null default now()
+);
 
-Client dashboard:
-/core/:slug
+alter table public.clients add column if not exists subdomain text;
+alter table public.clients add column if not exists custom_domain text;
+alter table public.clients add column if not exists plan text;
+alter table public.clients add column if not exists system_type text;
+alter table public.clients add column if not exists branding jsonb default '{}'::jsonb;
+alter table public.clients add column if not exists settings jsonb default '{}'::jsonb;
+alter table public.clients add column if not exists logo_url text;
+alter table public.clients add column if not exists logo_path text;
+alter table public.clients add column if not exists banner_url text;
+alter table public.clients add column if not exists banner_path text;
 
-Client public website:
-/:slug
+update public.clients
+set
+  branding = coalesce(branding, '{}'::jsonb),
+  settings = coalesce(settings, '{}'::jsonb);
 
-FINAL LANGUAGE:
-Use “client”, “business”, “workspace” only where useful.
-Do NOT show “tenant” in UI.
+alter table public.clients alter column branding set default '{}'::jsonb;
+alter table public.clients alter column settings set default '{}'::jsonb;
 
-CURRENT STACK:
-React + Vite + Tailwind + Supabase + Netlify.
+insert into public.clients (
+  id,
+  business_name,
+  subdomain,
+  custom_domain,
+  status,
+  plan,
+  system_type,
+  branding,
+  settings,
+  logo_url,
+  logo_path,
+  banner_url,
+  banner_path,
+  created_at
+)
+select
+  t.id,
+  coalesce(nullif(t.business_name, ''), 'Client'),
+  t.subdomain,
+  t.custom_domain,
+  coalesce(nullif(t.status, ''), 'active'),
+  t.plan,
+  t.system_type,
+  coalesce(t.branding, '{}'::jsonb),
+  coalesce(t.settings, '{}'::jsonb),
+  t.logo_url,
+  t.logo_path,
+  t.banner_url,
+  t.banner_path,
+  coalesce(t.created_at, now())
+from public.tenants t
+on conflict (id) do update
+set
+  business_name = coalesce(nullif(public.clients.business_name, ''), excluded.business_name),
+  subdomain = coalesce(public.clients.subdomain, excluded.subdomain),
+  custom_domain = coalesce(public.clients.custom_domain, excluded.custom_domain),
+  status = coalesce(nullif(public.clients.status, ''), excluded.status),
+  plan = coalesce(nullif(public.clients.plan, ''), excluded.plan),
+  system_type = coalesce(nullif(public.clients.system_type, ''), excluded.system_type),
+  branding = case
+    when public.clients.branding is null or public.clients.branding = '{}'::jsonb then excluded.branding
+    else public.clients.branding
+  end,
+  settings = case
+    when public.clients.settings is null or public.clients.settings = '{}'::jsonb then excluded.settings
+    else public.clients.settings
+  end,
+  logo_url = coalesce(public.clients.logo_url, excluded.logo_url),
+  logo_path = coalesce(public.clients.logo_path, excluded.logo_path),
+  banner_url = coalesce(public.clients.banner_url, excluded.banner_url),
+  banner_path = coalesce(public.clients.banner_path, excluded.banner_path);
 
-CURRENT STATUS:
-Phase 1 routing/auth completed.
-Phase 2 system-specific client dashboard completed.
-Phase 3 branding completed.
-Scroll issue fixed.
+alter table public.products add column if not exists client_id uuid;
+alter table public.orders add column if not exists client_id uuid;
+alter table public.customers add column if not exists client_id uuid;
+alter table public.tenant_media add column if not exists client_id uuid;
 
-====================================================
-PHASE 4 — MASTER HQ ADMIN
-====================================================
+update public.products
+set client_id = tenant_id
+where client_id is null
+  and tenant_id is not null;
 
-Goal:
-Make /master become Bratstvo internal control center.
+update public.orders
+set client_id = tenant_id
+where client_id is null
+  and tenant_id is not null;
 
-Do not redesign public site.
+update public.customers
+set client_id = tenant_id
+where client_id is null
+  and tenant_id is not null;
 
-Master HQ should manage:
-- setup requests
-- clients
-- payments
-- plans
-- revenue
-- domains
-- support
-- staff
-- system status
+update public.tenant_media
+set client_id = tenant_id
+where client_id is null
+  and tenant_id is not null;
 
-Create/clean sections:
-1. Overview
-2. Setup Requests
-3. Clients
-4. Payments
-5. Plans
-6. Revenue
-7. Domains
-8. Support
-9. Staff
-10. Settings
+create index if not exists clients_subdomain_idx on public.clients (subdomain);
+create index if not exists clients_custom_domain_idx on public.clients (custom_domain);
+create index if not exists products_client_id_idx on public.products (client_id);
+create index if not exists orders_client_id_idx on public.orders (client_id);
+create index if not exists customers_client_id_idx on public.customers (client_id);
+create index if not exists tenant_media_client_id_idx on public.tenant_media (client_id);
 
-MASTER PERMISSION:
-Owner can see everything.
-Staff should have limited view.
-Do not expose sensitive payment/client private data to staff unless owner role.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'products_client_id_fkey'
+      and conrelid = 'public.products'::regclass
+  ) then
+    alter table public.products
+      add constraint products_client_id_fkey
+      foreign key (client_id) references public.clients(id)
+      on delete cascade
+      not valid;
+  end if;
 
-If full RBAC is not ready:
-Add UI placeholders and clear role labels.
-Do not fake security.
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'orders_client_id_fkey'
+      and conrelid = 'public.orders'::regclass
+  ) then
+    alter table public.orders
+      add constraint orders_client_id_fkey
+      foreign key (client_id) references public.clients(id)
+      on delete cascade
+      not valid;
+  end if;
 
-Setup Requests flow:
-- pending
-- reviewed
-- payment pending
-- paid
-- approved
-- rejected
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'customers_client_id_fkey'
+      and conrelid = 'public.customers'::regclass
+  ) then
+    alter table public.customers
+      add constraint customers_client_id_fkey
+      foreign key (client_id) references public.clients(id)
+      on delete cascade
+      not valid;
+  end if;
 
-Clients list:
-- business name
-- slug
-- system type
-- plan
-- status
-- created date
-- public link /:slug
-- dashboard link /core/:slug
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'tenant_media_client_id_fkey'
+      and conrelid = 'public.tenant_media'::regclass
+  ) then
+    alter table public.tenant_media
+      add constraint tenant_media_client_id_fkey
+      foreign key (client_id) references public.clients(id)
+      on delete cascade
+      not valid;
+  end if;
+end $$;
 
-Payment review:
-- request id
-- client
-- amount
-- status
-- receipt preview placeholder
-- approve payment button placeholder
+commit;
 
-Output phase summary, run build.
-
-====================================================
-PHASE 5 — CLIENT SETUP / ACTIVATION FLOW
-====================================================
-
-Goal:
-Make setup-to-client flow clearer and more professional.
-
-Client flow:
-1. Submit setup request
-2. See request received page
-3. Payment instruction pending review
-4. Bratstvo reviews
-5. Payment confirmed
-6. Approve
-7. Client workspace generated
-8. Client receives login/onboarding later
-
-Do not integrate real payment gateway.
-
-Setup page:
-- industry
-- system selection
-- package
-- add-ons
-- domain option
-- business details
-- review
-
-After submit:
-Show professional request confirmation:
-- Request ID
-- selected system
-- selected package
-- estimated total
-- payment status: Pending review
-- message: Payment instruction will be sent after review
-
-Domain:
-Keep path-based client link:
-bratstvosfc.com/:slug
-
-Custom domain:
-Show as future/Business yearly option.
-Do not automate custom domain yet.
-
-Output phase summary, run build.
-
-====================================================
-PHASE 6 — CLIENT DASHBOARD REAL FORMS (PLACEHOLDER SAFE)
-====================================================
-
-Goal:
-Each system dashboard should have useful forms and tables, even if DB is not fully connected.
-
-Do not touch Supabase schema unless absolutely necessary.
-Use existing services where available.
-If table missing, show clean placeholder instead of raw error.
-
-For eCommerce:
-- Add product form
-- product image upload
-- product list
-- order table
-- customer list
-
-For Booking:
-- Add trip/event form
-- trip list
-- participant list
-- booking calendar placeholder
-
-For Appointment:
-- Add service form
-- appointment table
-- staff list
-- calendar placeholder
-
-For Food Order:
-- Add menu item form
-- kitchen queue
-- table/QR placeholder
-- pickup/delivery settings
-
-For Delivery Dispatch:
-- Add runner/staff form
-- add job form
-- assign runner
-- live map placeholder
-- status board
-- proof upload placeholder
-
-For Custom:
-- project brief
-- files/reference upload
-- appointment/consultation notes
-- quote status
-
-Important:
-Do not show Products for dispatch unless direct URL, and if direct URL show “not available for this system.”
-
-Output phase summary, run build.
-
-====================================================
-PHASE 7 — PAYMENT + EMAIL READY STRUCTURE
-====================================================
-
-Goal:
-Prepare professional manual payment and future Resend email flow.
-
-Do not configure Resend secrets.
-Do not change DNS.
-Do not send real emails unless existing flow already does.
-
-Payment:
-- manual bank transfer
-- DuitNow QR placeholder
-- receipt upload using existing payment-receipts bucket if already available
-- payment status:
-  pending_review
-  payment_pending
-  paid
-  failed
-  refunded
-
-Master HQ:
-- can mark payment as paid
-- can approve setup after payment
-
-Client side:
-- show payment status clearly
-- no WhatsApp-first payment flow
-- WhatsApp only secondary support
-
-Email-ready:
-Prepare template constants/components only:
-- setup request received
-- payment instruction
-- payment confirmed
-- setup approved
-- onboarding/login
-
-Do not integrate fully if Resend not ready.
-Output what env variables will be needed later.
-
-Run build.
-
-====================================================
-FINAL CLEANUP
-====================================================
-
-After all phases:
-1. Search for old bad routes:
-   /dashboard
-   /orders
-   /products
-   /admin
-   hostname
-   subdomain
-
-2. Make sure no dashboard links use:
-   /orders
-   /products
-   /settings
-
-They must use:
-/core/:slug/...
-
-3. Search visible UI for:
-tenant
-workspace not found
-loading tenant
-
-Replace with client/business-friendly text.
-
-4. Do not delete DB compatibility code yet.
-
-5. Run:
-npm run build
-
-6. Output final report:
-- files changed
-- phases completed
-- skipped items
-- errors
-- build result
-- testing checklist
-- recommended next manual test order
-
-TESTING CHECKLIST:
-/
-/systems
-/pricing
-/setup
-/master
-/core/matpiun
-/core/matpiun/branding
-/core/matpiun/jobs
-/core/matpiun/live-map
-/matpiun
-mobile one-finger scroll
-mouse wheel scroll
-login with next param
-Netlify build readiness
+-- Rollback notes:
+-- This migration is intentionally additive and compatibility-safe.
+-- If rollback is required before any application code depends on client_id,
+-- the optional rollback would be:
+--
+-- begin;
+-- alter table public.tenant_media drop constraint if exists tenant_media_client_id_fkey;
+-- alter table public.customers drop constraint if exists customers_client_id_fkey;
+-- alter table public.orders drop constraint if exists orders_client_id_fkey;
+-- alter table public.products drop constraint if exists products_client_id_fkey;
+-- drop index if exists public.tenant_media_client_id_idx;
+-- drop index if exists public.customers_client_id_idx;
+-- drop index if exists public.orders_client_id_idx;
+-- drop index if exists public.products_client_id_idx;
+-- drop index if exists public.clients_custom_domain_idx;
+-- drop index if exists public.clients_subdomain_idx;
+-- alter table public.tenant_media drop column if exists client_id;
+-- alter table public.customers drop column if exists client_id;
+-- alter table public.orders drop column if exists client_id;
+-- alter table public.products drop column if exists client_id;
+-- alter table public.clients drop column if exists banner_path;
+-- alter table public.clients drop column if exists banner_url;
+-- alter table public.clients drop column if exists logo_path;
+-- alter table public.clients drop column if exists logo_url;
+-- alter table public.clients drop column if exists settings;
+-- alter table public.clients drop column if exists branding;
+-- alter table public.clients drop column if exists system_type;
+-- alter table public.clients drop column if exists plan;
+-- alter table public.clients drop column if exists custom_domain;
+-- alter table public.clients drop column if exists subdomain;
+-- commit;

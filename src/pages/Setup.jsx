@@ -543,6 +543,7 @@ Notes: ${summary.notes}`;
 
     setIsSubmitting(true);
 
+    const requestId = makeRequestId();
     const systemNames = selectedSystems.map(system => getSystemName(system, lang));
     const phoneValue = form.phone || '';
     const pricingNote = [
@@ -561,7 +562,7 @@ Notes: ${summary.notes}`;
     ].filter(Boolean).join('\n');
 
     const payload = {
-      request_id: makeRequestId(),
+      request_id: requestId,
       business_name: form.businessName,
       owner_name: form.ownerName,
       whatsapp: phoneValue,
@@ -621,11 +622,9 @@ Notes: ${summary.notes}`;
     try {
       if (!supabase) throw new Error('Supabase is not configured.');
 
-      let { data, error } = await supabase
+      let { error } = await supabase
         .from('setup_requests')
-        .insert([payload])
-        .select()
-        .single();
+        .insert(payload);
 
       if (error && /requested_domain|selected_domain|domain_yearly_price|domain_check_status|domain_provider_preference|domain_requires_manual_confirmation|domain_status|payment_instruction_status|schema cache|column/i.test(error.message || '')) {
         const {
@@ -649,17 +648,14 @@ Notes: ${summary.notes}`;
 
         const retry = await supabase
           .from('setup_requests')
-          .insert([legacyPayload])
-          .select()
-          .single();
+          .insert(legacyPayload);
 
-        data = retry.data;
         error = retry.error;
       }
 
       if (error) throw error;
 
-      const request = data || payload;
+      const request = payload;
       const successPayload = {
         id: request.id,
         request_id: request.request_id,

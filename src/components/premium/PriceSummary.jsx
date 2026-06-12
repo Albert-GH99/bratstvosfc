@@ -5,6 +5,11 @@ function formatMoney(value) {
   return `RM${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+function getSystemLabel(system) {
+  const name = system?.name || system?.shortName;
+  return typeof name === 'object' ? name.en || name.my || '' : name || '';
+}
+
 export default function PriceSummary({
   labels,
   selectedSystems = [],
@@ -57,7 +62,7 @@ export default function PriceSummary({
         {selectedSystems.length === 0 && <p className="text-sm" style={{ color: 'var(--c-muted)' }}>-</p>}
         {selectedSystems.map(system => (
           <div key={system.id} className="flex justify-between gap-3 rounded-xl px-3 py-2" style={{ background: 'var(--c-input-bg)', border: '1px solid var(--c-border)' }}>
-            <span className="text-xs font-bold" style={{ color: 'var(--c-text)' }}>{system.name || system.shortName}</span>
+            <span className="text-xs font-bold" style={{ color: 'var(--c-text)' }}>{getSystemLabel(system)}</span>
             <span className="text-xs font-black" style={{ color: system.priceMode === 'custom' ? 'var(--c-muted)' : 'var(--c-accent)' }}>
               {system.priceMode === 'custom' || customQuote ? labels.customQuote : formatMoney(selectedPackage?.price)}
             </span>

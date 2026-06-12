@@ -29,6 +29,24 @@ export default function Navbar() {
   const isActive = href => href === '/' ? currentPath === '/' : currentPath.startsWith(href);
 
   useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+    const closeOnDesktop = event => {
+      if (event.matches) setOpen(false);
+    };
+
+    if (desktopQuery.matches) setOpen(false);
+    desktopQuery.addEventListener('change', closeOnDesktop);
+
+    return () => {
+      desktopQuery.removeEventListener('change', closeOnDesktop);
+    };
+  }, []);
+
+  useEffect(() => {
     const root = document.documentElement;
 
     if (open) {
